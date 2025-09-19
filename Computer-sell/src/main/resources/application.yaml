@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Computer-sell
+  profiles:
+    active: "@spring.profile.active@"
+
+management:
+  endpoint:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    root: INFO
+    web: INFO
