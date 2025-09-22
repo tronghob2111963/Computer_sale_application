@@ -4,6 +4,7 @@ package com.trong.Computer_sell.controller;
 import com.trong.Computer_sell.DTO.response.ResponseData;
 import com.trong.Computer_sell.DTO.response.ResponseError;
 import com.trong.Computer_sell.service.EmailService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j(topic = "EMAIL-CONTROLLER")
+@Tag(name = "Email Controller")
 public class EmailController {
 
     private final EmailService emailService;

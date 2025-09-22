@@ -2,16 +2,22 @@ package com.trong.Computer_sell.service.impl;
 
 import com.trong.Computer_sell.DTO.request.UserCreationRequestDTO;
 import com.trong.Computer_sell.DTO.request.UserPasswordRequest;
+import com.trong.Computer_sell.DTO.request.UserRequestDTO;
 import com.trong.Computer_sell.DTO.request.UserUpdateRequestDTO;
 import com.trong.Computer_sell.DTO.response.PageResponse;
 import com.trong.Computer_sell.DTO.response.UserResponseDTO;
 import com.trong.Computer_sell.common.UserStatus;
+import com.trong.Computer_sell.common.UserType;
 import com.trong.Computer_sell.exception.ResourceNotfoundException;
 import com.trong.Computer_sell.model.AddressEntity;
+import com.trong.Computer_sell.model.Role;
 import com.trong.Computer_sell.model.UserEntity;
+import com.trong.Computer_sell.model.UserHasRole;
 import com.trong.Computer_sell.repository.AddressRepository;
+import com.trong.Computer_sell.repository.UserHasRoleRepository;
 import com.trong.Computer_sell.repository.UserRepository;
 import com.trong.Computer_sell.service.EmailService;
+import com.trong.Computer_sell.service.UserRoleService;
 import com.trong.Computer_sell.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +45,9 @@ public class UserServiceImpl implements UserService {
     private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final UserRoleService userRoleService;
+
+    private final UserHasRoleRepository userHasRoleRepository;
     @Override
     public PageResponse<?> findAll(String keyword, int pageNo, int pageSize, String sortBy) {
 
@@ -107,18 +115,19 @@ public class UserServiceImpl implements UserService {
     //Create user
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public long save(UserCreationRequestDTO req) {
+    public long RegisterUser(UserCreationRequestDTO req) {
         log.info("Saving user: {}", req);
         UserEntity user = new UserEntity();
+        String password = passwordEncoder.encode(req.getPassword());
         user.setUsername(req.getUsername());
-        user.setPassword(req.getPassword());
+        user.setPassword(password);
         user.setFirstName(req.getFirstName());
         user.setLastName(req.getLastName());
         user.setGender(req.getGender());
         user.setDateOfBirth(req.getDateOfBirth());
         user.setPhone(req.getPhoneNumber());
         user.setEmail(req.getEmail());
-        user.setUserType(req.getUserType());
+        user.setUserType(UserType.CUSTOMER);
         user.setStatus(UserStatus.ACTIVE);
 
         userRepository.save(user);
@@ -142,6 +151,9 @@ public class UserServiceImpl implements UserService {
 
         }
 
+        //gan quyen cho CUSTOMER
+        userRoleService.assignRoleToUser(user, 4);
+
         //send Email Confirm
         try{
             emailService.emailVerification(req.getEmail(), req.getFirstName());
@@ -152,7 +164,6 @@ public class UserServiceImpl implements UserService {
 
         return user.getId();
     }
-
 
     //Update user
     @Override
@@ -189,7 +200,6 @@ public class UserServiceImpl implements UserService {
         addressRepository.saveAll(addresses);
 
 
-
     }
 
 
@@ -214,6 +224,60 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(user);
         log.info("Changed password with user id: {}", user);
+    }
+
+    @Override
+    public long saveUser(UserRequestDTO req) {
+        log.info("Saving user: {}", req);
+        UserEntity user = new UserEntity();
+        String password = passwordEncoder.encode(req.getPassword());
+        user.setUsername(req.getUsername());
+        user.setPassword(password);
+        user.setFirstName(req.getFirstName());
+        user.setLastName(req.getLastName());
+        user.setGender(req.getGender());
+        user.setDateOfBirth(req.getDateOfBirth());
+        user.setPhone(req.getPhoneNumber());
+        user.setEmail(req.getEmail());
+        user.setUserType(req.getUserType());
+        user.setStatus(UserStatus.ACTIVE);
+
+        userRepository.save(user);
+
+        log.info("Saved user: {}", user);
+
+        if(user.getId() != null){
+            List<AddressEntity> addresses = new ArrayList<>();
+            req.getAddresses().forEach(address -> {
+                AddressEntity addressEntity = new AddressEntity();
+                addressEntity.setUser(user);
+                addressEntity.setApartmentNumber(address.getApartmentNumber());
+                addressEntity.setStreetNumber(address.getStreetNumber());
+                addressEntity.setWard(address.getWard());
+                addressEntity.setCity(address.getCity());
+                addressEntity.setAddressType(address.getAddressType());
+                addresses.add(addressEntity);
+            });
+            addressRepository.saveAll(addresses);
+            log.info("Saving addresses: {}", addresses);
+
+        }
+
+        //gan quyen cho CUSTOMER
+        UserType userType = req.getUserType();
+        if(userType == UserType.ADMIN){
+            userRoleService.assignRoleToUser(user, 2);
+        }else if(userType == UserType.STAFF){
+            userRoleService.assignRoleToUser(user, 3);
+        }else if(userType == UserType.CUSTOMER){
+            userRoleService.assignRoleToUser(user, 4);
+        }else{
+            userRoleService.assignRoleToUser(user, 1);
+        }
+
+
+
+        return user.getId();
     }
 
 
@@ -247,3 +311,5 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 }
+
+

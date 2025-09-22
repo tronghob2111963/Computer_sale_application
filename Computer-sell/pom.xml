@@ -107,6 +107,26 @@
 			<version>3.0.0</version>
 		</dependency>
 
+<!--		JSon Web Token-->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId> <!-- hoặc jjwt-gson -->
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+
 	</dependencies>
 
 <!--	moi truong-->
@@ -132,9 +152,6 @@
 				<spring.profile.active>prod</spring.profile.active>
 			</properties>
 		</profile>
-
-
-
 	</profiles>
 
 	<build>
