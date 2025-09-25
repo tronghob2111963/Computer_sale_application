@@ -7,8 +7,11 @@ import com.trong.Computer_sell.DTO.request.TokenResponse;
 import com.trong.Computer_sell.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,4 +44,12 @@ public class AuthenticationController {
         log.info("Refresh Token Request");
         return TokenResponse.builder().accessToken("accesToken").refreshToken("refreshToken").build();
     }
+
+    @Operation(summary = "Remove Token", description = "Remove token by user name and password")
+    @PostMapping("/remove-token")
+    public ResponseEntity<String> removeToken(HttpServletRequest request) {
+        return new ResponseEntity<>(authenticationService.removeToken(request), HttpStatus.OK);
+    }
+
+
 }

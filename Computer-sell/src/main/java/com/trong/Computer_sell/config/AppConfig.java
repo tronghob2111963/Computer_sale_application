@@ -73,8 +73,8 @@ public class AppConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
-                registry.addMapping("**")
-//                        .allowedOrigins("http://localhost:4200")
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:5173") // FE
                         .allowedMethods("GET", "POST", "PUT", "DELETE") // Allowed HTTP methods
                         .allowedHeaders("*") // Allowed request headers
                         .allowCredentials(false)
@@ -91,8 +91,6 @@ public class AppConfig {
             throw new RuntimeException(e);
         }
     }
-
-
 
 
 
