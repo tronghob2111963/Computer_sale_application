@@ -4,23 +4,28 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
-
+import java.util.UUID;
 
 
 @Getter
 @Setter
 @MappedSuperclass
-public abstract class AbstractEntity<T extends Serializable> implements Serializable {
+public abstract class AbstractEntity implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
     @Column(name = "id")
-    T id;
+    private UUID id;
 
     @Column(name="created_at")
     @Temporal(TemporalType.TIMESTAMP)

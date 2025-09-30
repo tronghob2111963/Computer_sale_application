@@ -1,6 +1,6 @@
 package com.trong.Computer_sell.service;
 
-import com.trong.Computer_sell.exception.ResourceNotfoundException;
+import com.trong.Computer_sell.exception.ResourceNotFoundException;
 import com.trong.Computer_sell.model.Role;
 import com.trong.Computer_sell.model.UserEntity;
 import com.trong.Computer_sell.model.UserHasRole;
@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 
 @Service
@@ -22,7 +24,7 @@ public class UserRoleService {
 
     @Transactional
     public void assignRoleToUser(UserEntity user, Integer role_Id){
-        Role role = roleRepository.findById(role_Id).orElseThrow(() -> new ResourceNotfoundException("Role not found"));
+        Role role = roleRepository.findById(role_Id).orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         UserHasRole userHasRole = new UserHasRole();
         userHasRole.setUser(user);

@@ -1,10 +1,13 @@
 package com.trong.Computer_sell.model;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -13,7 +16,14 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "tbl_token")
-public class Token extends AbstractEntity<Integer> {
+public class Token implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
+
 
     @Column(name = "username", unique = true)
     private String username; // save username or email
@@ -26,4 +36,14 @@ public class Token extends AbstractEntity<Integer> {
 
     @Column(name = "reset_token")
     private String resetToken;
+
+    @Column(name="created_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name="updated_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    @UpdateTimestamp
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

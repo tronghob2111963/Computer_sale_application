@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
@@ -31,9 +32,13 @@ public class UserEntity implements UserDetails, Serializable {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
 
 
 
@@ -81,8 +86,7 @@ public class UserEntity implements UserDetails, Serializable {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<UserHasRole> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
-    private Set<GroupHasUser> groups = new HashSet<>();
+
 
     @Column(name="created_at")
     @Temporal(TemporalType.TIMESTAMP)

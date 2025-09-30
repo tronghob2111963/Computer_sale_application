@@ -8,7 +8,7 @@ import com.trong.Computer_sell.DTO.response.PageResponse;
 import com.trong.Computer_sell.DTO.response.UserResponseDTO;
 import com.trong.Computer_sell.common.UserStatus;
 import com.trong.Computer_sell.common.UserType;
-import com.trong.Computer_sell.exception.ResourceNotfoundException;
+import com.trong.Computer_sell.exception.ResourceNotFoundException;
 import com.trong.Computer_sell.model.AddressEntity;
 import com.trong.Computer_sell.model.Role;
 import com.trong.Computer_sell.model.UserEntity;
@@ -32,6 +32,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,19 +88,19 @@ public class UserServiceImpl implements UserService {
 
     //find user by id
     @Override
-    public UserResponseDTO findById(Long id) {
-         log.info("Find user with user id: {}", id);
-         UserEntity user = getUserById(id);
-         return UserResponseDTO.builder()
-                 .id(user.getId().toString())
-                 .username(user.getUsername())
-                 .firstName(user.getFirstName())
-                 .lastName(user.getLastName())
-                 .gender(user.getGender().toString())
-                 .dateOfBirth(user.getDateOfBirth())
-                 .phoneNumber(user.getPhone())
-                 .email(user.getEmail())
-                 .build();
+    public UserResponseDTO findById(UUID id) {
+        log.info("Find user with user id: {}", id);
+        UserEntity user = getUserById(id);
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .gender(user.getGender().toString())
+                .dateOfBirth(user.getDateOfBirth())
+                .phoneNumber(user.getPhone())
+                .email(user.getEmail())
+                .build();
     }
 
     @Override
@@ -115,7 +116,7 @@ public class UserServiceImpl implements UserService {
     //Create user
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public long RegisterUser(UserCreationRequestDTO req) {
+    public UUID RegisterUser(UserCreationRequestDTO req) {
         log.info("Saving user: {}", req);
         UserEntity user = new UserEntity();
         String password = passwordEncoder.encode(req.getPassword());
@@ -205,7 +206,7 @@ public class UserServiceImpl implements UserService {
 
     //Inactive user
     @Override
-    public void delete(Long id) {
+    public void delete(UUID id) {
         log.info("Deleting user with user id: {}", id);
         UserEntity user = getUserById(id);
         user.setStatus(UserStatus.INACTIVE);
@@ -227,7 +228,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public long saveUser(UserRequestDTO req) {
+    public UUID saveUser(UserRequestDTO req) {
         log.info("Saving user: {}", req);
         UserEntity user = new UserEntity();
         String password = passwordEncoder.encode(req.getPassword());
@@ -282,16 +283,18 @@ public class UserServiceImpl implements UserService {
 
 
     //method to get user by id
-    private UserEntity getUserById(Long id){
-        return userRepository.findById(id).orElseThrow(
-                () -> new ResourceNotfoundException("User not found")
-        );
+    private UserEntity getUserById(UUID id){
+        try{
+            return userRepository.findUserById(id);
+        }catch (Exception e){
+            throw new ResourceNotFoundException("User not found");
+        }
     }
 
     //method to get user page response
     private static PageResponse<Object> getUserPageResponse(int pageNo, int pageSize, Page<UserEntity> users) {
         List<UserResponseDTO> userResponse = users.stream().map(user -> UserResponseDTO.builder()
-                        .id(user.getId().toString())
+                        .id(user.getId())
                         .username(user.getUsername())
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
@@ -311,5 +314,4 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 }
-
 

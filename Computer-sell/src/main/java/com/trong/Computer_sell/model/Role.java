@@ -2,13 +2,13 @@ package com.trong.Computer_sell.model;
 
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +19,14 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "tbl_role")
-public class Role extends AbstractEntity<Long> implements Serializable {
+public class Role  {
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
 
     @Column(name = "name")
     private String name;
@@ -27,7 +34,14 @@ public class Role extends AbstractEntity<Long> implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @Column(name="created_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "role")
-    private Set<RoleHasPermission> roles = new HashSet<>();
+    @Column(name="updated_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    @UpdateTimestamp
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
 }

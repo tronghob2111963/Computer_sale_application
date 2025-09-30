@@ -6,6 +6,7 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.UUID;
 
 
 @Getter
@@ -14,7 +15,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserResponseDTO implements Serializable {
-    private String id;
+    private UUID id;
     private String username;
     private String email;
     private String firstName;

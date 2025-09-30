@@ -7,19 +7,19 @@ import com.trong.Computer_sell.DTO.request.UserUpdateRequestDTO;
 import com.trong.Computer_sell.DTO.response.PageResponse;
 import com.trong.Computer_sell.DTO.response.UserResponseDTO;
 
-import java.util.List;
+import java.util.UUID;
 
 public interface UserService {
 
     PageResponse<?> findAll(String keyword, int pageNo, int pageSize, String sortBy);
-    UserResponseDTO findById(Long id);
+    UserResponseDTO findById(UUID id);
     UserResponseDTO findByUsername(String username);
     UserResponseDTO findByEmail(String email);
-    long RegisterUser(UserCreationRequestDTO req);
+    UUID RegisterUser(UserCreationRequestDTO req);
     void update(UserUpdateRequestDTO req);
-    void delete(Long id);
+    void delete(UUID id);
     void changePassword(UserPasswordRequest req);
-    long saveUser(UserRequestDTO req);
+    UUID saveUser(UserRequestDTO req);
 
 
 }

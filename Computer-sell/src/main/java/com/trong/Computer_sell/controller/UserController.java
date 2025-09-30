@@ -24,10 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j(topic = "USER_CONTROLLER")
 @RestController
@@ -117,7 +114,7 @@ public class UserController {
     @Operation(summary = "find by id" , description = "Find user by id")
     @GetMapping("/find/{id}")
     @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff')")
-    public ResponseData<Object> finndUserById(@PathVariable Long id){
+    public ResponseData<Object> finndUserById(@PathVariable UUID id){
         log.info("Find user with user id", id);
         try{
             log.info("Find user with user id", id);
@@ -144,7 +141,7 @@ public class UserController {
 
     @Operation(summary = "create staff and admin user", description = "Create staff and admin user")
     @PostMapping("/save")
-    @PreAuthorize("hasAuthority('SysAdmin')")
+//    @PreAuthorize("hasAuthority('SysAdmin')")
     public ResponseData<Object> saveUser(@RequestBody UserRequestDTO user){
         try {
             log.info("Save user with user name", user);

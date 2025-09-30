@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,7 +21,7 @@ import java.util.List;
 public class UserUpdateRequestDTO implements Serializable {
 
     @NotNull(message = "Id is required")
-    private Long id;
+    private UUID id;
     @NotBlank(message = "First name must be not blank")
     private String firstName;
     @NotBlank(message = "Last name must be not blank")

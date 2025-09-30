@@ -3,7 +3,7 @@ package com.trong.Computer_sell.service.impl;
 
 
 import com.trong.Computer_sell.DTO.request.SignInRequest;
-import com.trong.Computer_sell.DTO.request.TokenResponse;
+import com.trong.Computer_sell.DTO.response.TokenResponse;
 import com.trong.Computer_sell.exception.InvalidDataException;
 import com.trong.Computer_sell.model.Token;
 import com.trong.Computer_sell.model.UserEntity;
@@ -72,8 +72,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
 
         return TokenResponse.builder()
+                .username(user.getUsername())
                 .accessToken(accessToken)
-//                .refreshToken(refreshToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 

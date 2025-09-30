@@ -2,8 +2,7 @@ package com.trong.Computer_sell.controller;
 
 
 import com.trong.Computer_sell.DTO.request.SignInRequest;
-import com.trong.Computer_sell.DTO.request.SignInRequest;
-import com.trong.Computer_sell.DTO.request.TokenResponse;
+import com.trong.Computer_sell.DTO.response.TokenResponse;
 import com.trong.Computer_sell.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,11 +37,11 @@ public class AuthenticationController {
     }
 
 
-    @Operation(summary = "Get refresh Token", description = "Get refresh token and refresh token by user name and password")
+    @Operation(summary = "Get Refresh Token", description = "Generate new access token and refresh token by username and password")
     @PostMapping("/refresh-token")
-    public TokenResponse getRefreshToken(@RequestBody SignInRequest request){
-        log.info("Refresh Token Request");
-        return TokenResponse.builder().accessToken("accesToken").refreshToken("refreshToken").build();
+    public ResponseEntity<TokenResponse> getRefreshToken(@RequestBody SignInRequest request) {
+        log.info("Refresh Token Request: {}", request.getUsername());
+        return ResponseEntity.ok(authenticationService.getRefreshToken(request));
     }
 
     @Operation(summary = "Remove Token", description = "Remove token by user name and password")

@@ -1,4 +1,4 @@
-package com.trong.Computer_sell.DTO.request;
+package com.trong.Computer_sell.DTO.response;
 
 
 import lombok.Builder;
@@ -11,6 +11,7 @@ import java.io.Serializable;
 @Setter
 @Builder
 public class TokenResponse implements Serializable {
+    private String username;
     private String accessToken;
     private String refreshToken;
 }

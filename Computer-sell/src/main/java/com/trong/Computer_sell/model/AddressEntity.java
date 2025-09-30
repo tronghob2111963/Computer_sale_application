@@ -18,7 +18,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tbl_address")
-public class AddressEntity extends AbstractEntity<Long> implements Serializable {
+public class AddressEntity extends AbstractEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)

@@ -31,7 +31,7 @@ public class AppConfig {
     @Value("${spring.sendgrid.api-key}")
     private String apiKey;
     //khoi tao spring web security
-    private String[] WHITE_LIST = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/auth/**", "user/register"};
+    private String[] WHITE_LIST = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/auth/**", "user/register", "/user/save"};
 
     private final CustomizeRequestFilter requestFilter;
     private final UserServiceDetail userServiceDetail;
@@ -40,6 +40,7 @@ public class AppConfig {
     @Bean
     public SecurityFilterChain configure(@NonNull HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers(WHITE_LIST).permitAll() /// cho phép truy cập vào các đường dẫn này mà không cần xác thực

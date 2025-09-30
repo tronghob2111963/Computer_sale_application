@@ -8,9 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity,Long> {
+public interface UserRepository extends JpaRepository<UserEntity, UUID> {
 
 
     //search user by keyword
@@ -23,4 +24,8 @@ public interface UserRepository extends JpaRepository<UserEntity,Long> {
     Page<UserEntity> searchUserByKeyword(String keyword, Pageable pageable);
 
     UserEntity findByUsername(String username);
+
+
+    @Query("SELECT u FROM UserEntity u WHERE u.id = :id")
+    UserEntity findUserById(UUID id);
 }

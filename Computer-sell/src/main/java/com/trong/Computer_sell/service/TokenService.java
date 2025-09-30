@@ -1,6 +1,6 @@
 package com.trong.Computer_sell.service;
 
-import com.trong.Computer_sell.exception.ResourceNotfoundException;
+import com.trong.Computer_sell.exception.ResourceNotFoundException;
 import com.trong.Computer_sell.model.Token;
 import com.trong.Computer_sell.repository.TokenRepository;
 import org.springframework.stereotype.Service;
@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Service
 public record TokenService(TokenRepository tokenRepository) {
+
     /**
      * Get token by username
      *
@@ -18,7 +19,7 @@ public record TokenService(TokenRepository tokenRepository) {
      * @return token
      */
     public Token getByUsername(String username) {
-        return tokenRepository.findByUsername(username).orElseThrow(() -> new ResourceNotfoundException("Not found token"));
+        return tokenRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("Not found token"));
     }
 
     /**
