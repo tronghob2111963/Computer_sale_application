@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -31,7 +32,7 @@ public class AppConfig {
     @Value("${spring.sendgrid.api-key}")
     private String apiKey;
     //khoi tao spring web security
-    private String[] WHITE_LIST = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/auth/**", "user/register", "/user/save"};
+    private String[] WHITE_LIST = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/auth/**", "user/register", "/user/save", "/product/**"};
 
     private final CustomizeRequestFilter requestFilter;
     private final UserServiceDetail userServiceDetail;
@@ -92,6 +93,7 @@ public class AppConfig {
             throw new RuntimeException(e);
         }
     }
+
 
 
 

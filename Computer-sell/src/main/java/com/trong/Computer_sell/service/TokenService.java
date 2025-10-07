@@ -1,7 +1,7 @@
 package com.trong.Computer_sell.service;
 
 import com.trong.Computer_sell.exception.ResourceNotFoundException;
-import com.trong.Computer_sell.model.Token;
+import com.trong.Computer_sell.model.TokenEntity;
 import com.trong.Computer_sell.repository.TokenRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ public record TokenService(TokenRepository tokenRepository) {
      * @param username
      * @return token
      */
-    public Token getByUsername(String username) {
+    public TokenEntity getByUsername(String username) {
         return tokenRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("Not found token"));
     }
 
@@ -28,13 +28,13 @@ public record TokenService(TokenRepository tokenRepository) {
      * @param token
      * @return
      */
-    public int save(Token token) {
-        Optional<Token> optional = tokenRepository.findByUsername(token.getUsername());
+    public int save(TokenEntity token) {
+        Optional<TokenEntity> optional = tokenRepository.findByUsername(token.getUsername());
         if (optional.isEmpty()) {
             tokenRepository.save(token);
             return token.getId();
         } else {
-            Token t = optional.get();
+            TokenEntity t = optional.get();
             t.setAccessToken(token.getAccessToken());
             t.setRefreshToken(token.getRefreshToken());
             tokenRepository.save(t);
@@ -48,7 +48,7 @@ public record TokenService(TokenRepository tokenRepository) {
      * @param username
      */
     public void delete(String username) {
-        Token token = getByUsername(username);
+        TokenEntity token = getByUsername(username);
         tokenRepository.delete(token);
     }
 }

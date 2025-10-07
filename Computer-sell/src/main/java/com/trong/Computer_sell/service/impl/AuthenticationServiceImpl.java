@@ -5,7 +5,7 @@ package com.trong.Computer_sell.service.impl;
 import com.trong.Computer_sell.DTO.request.SignInRequest;
 import com.trong.Computer_sell.DTO.response.TokenResponse;
 import com.trong.Computer_sell.exception.InvalidDataException;
-import com.trong.Computer_sell.model.Token;
+import com.trong.Computer_sell.model.TokenEntity;
 import com.trong.Computer_sell.model.UserEntity;
 import com.trong.Computer_sell.repository.UserRepository;
 import com.trong.Computer_sell.service.AuthenticationService;
@@ -21,7 +21,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -69,7 +68,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String accessToken = jwtService.generateAccessToken(request.getUsername(), authorities);
         String refreshToken = jwtService.generateRefreshToken(request.getUsername(), authorities);
 
-        tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+        tokenService.save(TokenEntity.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
 
         return TokenResponse.builder()
                 .username(user.getUsername())
@@ -106,7 +105,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String accessToken = jwtService.generateAccessToken(request.getUsername(), authorities);
         String refreshToken = jwtService.generateRefreshToken(request.getUsername(), authorities);
 
-        tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+        tokenService.save(TokenEntity.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
 
         return TokenResponse.builder()
                 .accessToken(accessToken)

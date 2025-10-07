@@ -51,7 +51,6 @@ public class UserServiceImpl implements UserService {
     private final UserHasRoleRepository userHasRoleRepository;
     @Override
     public PageResponse<?> findAll(String keyword, int pageNo, int pageSize, String sortBy) {
-
         log.info("Find all users with keyword: {}", keyword);
         int p = pageNo > 0 ? pageNo - 1 : 0;
         List<Sort.Order> sorts = new ArrayList<>();
@@ -83,8 +82,6 @@ public class UserServiceImpl implements UserService {
 
         return getUserPageResponse(pageNo, pageSize, usersPage);
     }
-
-
 
     //find user by id
     @Override
@@ -161,7 +158,6 @@ public class UserServiceImpl implements UserService {
         }catch (Exception e){
             throw new RuntimeException();
         }
-
 
         return user.getId();
     }
@@ -275,8 +271,6 @@ public class UserServiceImpl implements UserService {
         }else{
             userRoleService.assignRoleToUser(user, 1);
         }
-
-
 
         return user.getId();
     }
