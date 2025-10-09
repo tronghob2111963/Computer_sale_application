@@ -169,6 +169,9 @@ public class UserServiceImpl implements UserService {
         log.info("Updating user: {}", req);
         //get user by id
         UserEntity user = getUserById(req.getId());
+        if(user == null){
+            throw new ResourceNotFoundException("User not found");
+        }
         //set data
         user.setFirstName(req.getFirstName());
         user.setLastName(req.getLastName());
@@ -195,7 +198,6 @@ public class UserServiceImpl implements UserService {
 
         //save address
         addressRepository.saveAll(addresses);
-
 
     }
 

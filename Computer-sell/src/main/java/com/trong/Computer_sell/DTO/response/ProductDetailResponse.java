@@ -1,6 +1,5 @@
 package com.trong.Computer_sell.DTO.response;
 
-import com.trong.Computer_sell.model.ProductImageEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,9 +11,10 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class ProductResponseDTO {
+public class ProductDetailResponse {
     private String name;
     private BigDecimal price;
+    private String description;
     private String brandName;
     private String categoryName;
     private int warrantyPeriod;
