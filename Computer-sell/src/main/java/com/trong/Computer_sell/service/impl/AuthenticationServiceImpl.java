@@ -122,11 +122,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public String removeToken(HttpServletRequest request) {
         log.info("---------- removeToken ----------");
 
-        final String token = request.getHeader(REFERER);
+        final String token = request.getHeader("Authorization"); // ✅ đổi header
         if (StringUtils.isBlank(token)) {
-            throw new InvalidDataException("Token must be not blank");
+            throw new InvalidDataException("Token must not be blank");
         }
-        final String userName = jwtService.extractUsername(token, ACCESS_TOKEN);
+
+        // Nếu header có dạng: Bearer <token>
+        String jwtToken = token.replace("Bearer ", "").trim();
+
+        final String userName = jwtService.extractUsername(jwtToken, ACCESS_TOKEN);
         log.info("Username: {}", userName);
         tokenService.delete(userName);
         return "Removed!";

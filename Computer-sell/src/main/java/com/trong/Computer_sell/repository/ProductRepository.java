@@ -12,4 +12,11 @@ import java.util.UUID;
 public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
     @Query("SELECT p FROM ProductEntity p WHERE p.name LIKE %:keyword% ")
     Page<ProductEntity> searchUserByKeyword(String keyword, Pageable pageable);
+
+
+    @Query("SELECT p FROM ProductEntity p WHERE p.brandId.id = :brandId")
+    Page<ProductEntity> searchProductByBrandId(UUID brandId, Pageable pageable);
+
+    @Query("SELECT p FROM ProductEntity p WHERE p.category.id = :categoryId")
+    Page<ProductEntity> searchProductByCategoryId(UUID categoryId, Pageable pageable);
 }

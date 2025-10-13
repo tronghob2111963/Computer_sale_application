@@ -35,7 +35,6 @@ public class UserCreationRequestDTO implements Serializable {
 
     @Email(message = "Email is not valid")
     private String email;
-//    private UserType userType;
     private List<AddressRequestDTO> addresses;
 
 }

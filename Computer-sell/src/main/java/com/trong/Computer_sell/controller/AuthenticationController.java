@@ -47,7 +47,12 @@ public class AuthenticationController {
     @Operation(summary = "Remove Token", description = "Remove token by user name and password")
     @PostMapping("/remove-token")
     public ResponseEntity<String> removeToken(HttpServletRequest request) {
-        return new ResponseEntity<>(authenticationService.removeToken(request), HttpStatus.OK);
+       try{
+           log.info("Remove Token Request");
+           return ResponseEntity.ok(authenticationService.removeToken(request));
+       } catch (Exception e) {
+           throw new RuntimeException(e.getMessage());
+       }
     }
 
 

@@ -217,4 +217,98 @@ public class ProductServiceImpl implements ProductService {
                 .items(products)
                 .build();
     }
+
+    @Override
+    public PageResponse<?> getAllProductsByBrandId(UUID brandId, String keyword, int pageNo, int pageSize, String sortBy) {
+        log.info("Get all products by brand id");
+        int p = pageNo > 0 ? pageNo - 1 : 0;
+        List<Sort.Order> sorts = new ArrayList<>();
+        // Sort by ID
+        if (StringUtils.hasLength(sortBy)) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
+            Matcher matcher = pattern.matcher(sortBy);
+            if (matcher.find()) {
+                if (matcher.group(3).equalsIgnoreCase("asc")) {
+                    sorts.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
+                } else {
+                    sorts.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
+                }
+            }
+        }
+        //pagging
+        Pageable pageable = PageRequest.of(p, pageSize, Sort.by(sorts));
+        Page<ProductEntity>  productPage;
+        if(StringUtils.hasLength(keyword)){
+            keyword = "%" + keyword.toLowerCase() + "%";
+            productPage = productRepository.searchUserByKeyword(keyword ,pageable);
+
+        }else{
+            productPage = productRepository.searchProductByBrandId(brandId, pageable);
+        }
+        List<ProductResponseDTO> products = productPage.stream().map(product -> {
+            return ProductResponseDTO.builder()
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .brandName(brandRepository.findBrandById(product.getBrandId().getId()).getName())
+                    .categoryName(categoryRepository.findCategoryNameById(product.getCategory().getId()))
+                    .image(productImageRepository.findProductImageByProductId(product.getId()))
+                    .warrantyPeriod(product.getWarrantyPeriod())
+                    .build();
+        }).collect(Collectors.toList());
+
+        return PageResponse.builder()
+                .pageNo(productPage.getNumber() + 1)
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .items(products)
+                .build();
+    }
+
+    @Override
+    public PageResponse<?> getAllProductsByCategoryId(UUID categoryId, String keyword, int pageNo, int pageSize, String sortBy) {
+        log.info("Get all products by brand id");
+        int p = pageNo > 0 ? pageNo - 1 : 0;
+        List<Sort.Order> sorts = new ArrayList<>();
+        // Sort by ID
+        if (StringUtils.hasLength(sortBy)) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
+            Matcher matcher = pattern.matcher(sortBy);
+            if (matcher.find()) {
+                if (matcher.group(3).equalsIgnoreCase("asc")) {
+                    sorts.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
+                } else {
+                    sorts.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
+                }
+            }
+        }
+        //pagging
+        Pageable pageable = PageRequest.of(p, pageSize, Sort.by(sorts));
+        Page<ProductEntity>  productPage;
+        if(StringUtils.hasLength(keyword)){
+            keyword = "%" + keyword.toLowerCase() + "%";
+            productPage = productRepository.searchUserByKeyword(keyword ,pageable);
+
+        }else{
+            productPage = productRepository.searchProductByCategoryId(categoryId, pageable);
+        }
+        List<ProductResponseDTO> products = productPage.stream().map(product -> {
+            return ProductResponseDTO.builder()
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .brandName(brandRepository.findBrandById(product.getBrandId().getId()).getName())
+                    .categoryName(categoryRepository.findCategoryNameById(product.getCategory().getId()))
+                    .image(productImageRepository.findProductImageByProductId(product.getId()))
+                    .warrantyPeriod(product.getWarrantyPeriod())
+                    .build();
+        }).collect(Collectors.toList());
+
+        return PageResponse.builder()
+                .pageNo(productPage.getNumber() + 1)
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .items(products)
+                .build();
+    }
 }

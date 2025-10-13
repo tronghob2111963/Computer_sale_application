@@ -67,6 +67,42 @@ public class ProductController {
         }
     }
 
+    @Operation(summary = "Product List by brand id", description = "Product List by brand id")
+    @GetMapping("/list/brand/{brandId}")
+    public ResponseData<Object> listProductByBrandId(
+            @PathVariable UUID brandId,
+            @RequestParam(required = false) String keyword ,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sortBy
+    ){
+        log.info("List product by brand id");
+        try {
+            log.info("List product by brand id");
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Product found successfully", productService.getAllProductsByBrandId(brandId, keyword, page, size, sortBy));
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Product List by category id", description = "Product List by category id")
+    @GetMapping("/list/category/{categoryId}")
+    public ResponseData<Object> listProductByCategoryId(
+            @PathVariable UUID categoryId,
+            @RequestParam(required = false) String keyword ,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sortBy
+    ){
+        log.info("List product by category id");
+        try {
+            log.info("List product by category id");
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Product found successfully", productService.getAllProductsByCategoryId(categoryId, keyword, page, size, sortBy));
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
     @Operation(summary = "Update product", description = "Update product")
     @RequestBody(
             required = true,

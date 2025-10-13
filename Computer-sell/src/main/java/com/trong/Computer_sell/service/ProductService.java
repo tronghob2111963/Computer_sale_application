@@ -14,5 +14,7 @@ public interface ProductService {
     UUID deleteProduct(UUID id);
     ProductDetailResponse getProductById(UUID id);
     PageResponse<?> getAllProducts(String keyword, int pageNo, int pageSize, String sortBy);
+    PageResponse<?> getAllProductsByBrandId(UUID brandId, String keyword, int pageNo, int pageSize, String sortBy);
+    PageResponse<?> getAllProductsByCategoryId(UUID categoryId, String keyword, int pageNo, int pageSize, String sortBy);
 
 }
