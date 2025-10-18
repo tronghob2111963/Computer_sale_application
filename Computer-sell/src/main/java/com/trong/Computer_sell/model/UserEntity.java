@@ -6,7 +6,9 @@ import com.trong.Computer_sell.common.UserStatus;
 import com.trong.Computer_sell.common.UserType;
 import com.trong.Computer_sell.service.UserServiceDetail;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -27,9 +29,9 @@ import java.util.stream.Collectors;
 @Setter
 @Entity
 @Table(name = "tbl_users")
+@NoArgsConstructor // 👈 quan trọng: constructor rỗng
+@AllArgsConstructor
 public class UserEntity implements UserDetails, Serializable {
-
-
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -97,6 +99,12 @@ public class UserEntity implements UserDetails, Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @UpdateTimestamp
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    public UserEntity(UUID id) {
+        this.setId(id);
+    }
+
+
 
 
     @Override

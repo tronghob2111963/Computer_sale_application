@@ -7,10 +7,7 @@ import com.trong.Computer_sell.DTO.response.PageResponse;
 import com.trong.Computer_sell.DTO.response.ProductDetailResponse;
 import com.trong.Computer_sell.DTO.response.ProductResponseDTO;
 import com.trong.Computer_sell.model.*;
-import com.trong.Computer_sell.repository.BrandRepository;
-import com.trong.Computer_sell.repository.CategoryRepository;
-import com.trong.Computer_sell.repository.ProductImageRepository;
-import com.trong.Computer_sell.repository.ProductRepository;
+import com.trong.Computer_sell.repository.*;
 import com.trong.Computer_sell.service.LocalImageService;
 import com.trong.Computer_sell.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +37,7 @@ public class ProductServiceImpl implements ProductService {
     private final BrandRepository brandRepository;
     private final ProductImageRepository productImageRepository;
     private final LocalImageService localImageService;
+    private final ProductTypeRepository productTypeRepository;
     @Override
     public UUID createProduct(ProductRequestDTO productRequestDTO) {
         log.info("Creating product: {}", productRequestDTO);
@@ -48,6 +46,7 @@ public class ProductServiceImpl implements ProductService {
         productEntity.setPrice(productRequestDTO.getPrice());
         productEntity.setStock(productRequestDTO.getStock());
         productEntity.setWarrantyPeriod(productRequestDTO.getWarrantyPeriod());
+
 
         //gan category
         if (productRequestDTO.getCategoryId() != null) {
@@ -61,6 +60,13 @@ public class ProductServiceImpl implements ProductService {
         if (productRequestDTO.getBrandId() != null) {
             BrandEntity brand = brandRepository.findBrandById(productRequestDTO.getBrandId());
             productEntity.setBrandId(brand);
+        }
+
+        //gan product_type
+        if (productRequestDTO.getProductTypeId() != null) {
+            ProductTypeEntity productType = productTypeRepository.findById(productRequestDTO.getProductTypeId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy ProductType với ID: " + productRequestDTO.getProductTypeId()));
+            productEntity.setProductTypeId(productType);
         }
         productEntity.setDescription(productRequestDTO.getDescription());
         ProductEntity saved = productRepository.save(productEntity);
@@ -104,6 +110,12 @@ public class ProductServiceImpl implements ProductService {
         if (dto.getBrandId() != null) {
             BrandEntity brand = brandRepository.findBrandById(dto.getBrandId());
             productEntity.setBrandId(brand);
+        }
+        //gan product_type
+        if (dto.getProductTypeId() != null) {
+            ProductTypeEntity productType = productTypeRepository.findById(dto.getProductTypeId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy ProductType với ID: " + dto.getProductTypeId()));
+            productEntity.setProductTypeId(productType);
         }
         productEntity.setName(dto.getName());
         productEntity.setPrice(dto.getPrice());
@@ -154,14 +166,13 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Product với ID: " + id));
 
-
-
         return ProductDetailResponse.builder()
                 .name(product.getName())
                 .price(product.getPrice())
                 .description(product.getDescription())
                 .brandName(product.getBrandId().getName())
                 .categoryName(product.getCategory().getName())
+                .productType(productTypeRepository.findProductTypeById(product.getProductTypeId().getId()))
                 .warrantyPeriod(product.getWarrantyPeriod())
                 .image(product.getImages().stream().map(image -> image.getImageUrl()).collect(Collectors.toList()))
                 .build();
@@ -204,6 +215,7 @@ public class ProductServiceImpl implements ProductService {
                     .price(product.getPrice())
                     .brandName(brandRepository.findBrandById(product.getBrandId().getId()).getName())
                     .categoryName(categoryRepository.findCategoryNameById(product.getCategory().getId()))
+                    .productType(productTypeRepository.findProductTypeById(product.getProductTypeId().getId()))
                     .image(productImageRepository.findProductImageByProductId(product.getId()))
                     .warrantyPeriod(product.getWarrantyPeriod())
                     .build();

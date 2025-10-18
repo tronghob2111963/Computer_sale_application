@@ -18,6 +18,7 @@ public class ProductRequestDTO {
     private int stock;
     private UUID brandId;
     private UUID categoryId;
+    private UUID productTypeId;
     private int warrantyPeriod;
     private List<MultipartFile> image;
 }

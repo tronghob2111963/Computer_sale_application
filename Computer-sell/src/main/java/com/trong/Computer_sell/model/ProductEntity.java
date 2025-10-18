@@ -1,6 +1,7 @@
 package com.trong.Computer_sell.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "tbl_products")
@@ -34,10 +34,15 @@ public class ProductEntity extends AbstractEntity implements Serializable {
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
     private BrandEntity brandId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_type_id", referencedColumnName = "id")
+    private ProductTypeEntity productTypeId;
+
     @Column(name = "warranty_period")
     private Integer warrantyPeriod;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<ProductImageEntity> images = new ArrayList<>();
 
 

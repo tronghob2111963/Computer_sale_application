@@ -115,6 +115,18 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public UUID RegisterUser(UserCreationRequestDTO req) {
         log.info("Saving user: {}", req);
+
+        //kiem tra username da ton tai hay chua
+        if(userRepository.findByUsername(req.getUsername()) != null){
+            throw new ResourceNotFoundException("Username already exists");
+        }
+        if(userRepository.findByEmail(req.getEmail()) != null){
+            throw new ResourceNotFoundException("Email already exists");
+        }
+        if(userRepository.findByPhone(req.getPhoneNumber()) != null){
+            throw new ResourceNotFoundException("Phone already exists");
+        }
+
         UserEntity user = new UserEntity();
         String password = passwordEncoder.encode(req.getPassword());
         user.setUsername(req.getUsername());

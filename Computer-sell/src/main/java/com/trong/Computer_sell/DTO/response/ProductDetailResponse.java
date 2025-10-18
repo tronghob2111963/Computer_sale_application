@@ -17,6 +17,7 @@ public class ProductDetailResponse {
     private String description;
     private String brandName;
     private String categoryName;
+    private String productType;
     private int warrantyPeriod;
     private List<String> image;
 }

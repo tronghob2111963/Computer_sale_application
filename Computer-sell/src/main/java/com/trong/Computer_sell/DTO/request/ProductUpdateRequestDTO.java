@@ -22,9 +22,8 @@ public class ProductUpdateRequestDTO {
     private int stock;
     private UUID brandId;
     private UUID categoryId;
+    private UUID productTypeId;
     private int warrantyPeriod;
-
-
     @Schema(type = "array", format = "binary")
     private List<MultipartFile> image = new ArrayList<>();
 }

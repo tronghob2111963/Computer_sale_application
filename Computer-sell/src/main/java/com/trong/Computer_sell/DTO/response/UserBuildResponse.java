@@ -7,17 +7,16 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 
 @Getter
 @Setter
 @Builder
-public class ProductResponseDTO {
+public class UserBuildResponse {
+    private UUID id;
     private String name;
-    private BigDecimal price;
-    private String brandName;
-    private String categoryName;
-    private int warrantyPeriod;
-    private String productType;
-    private List<String> image;
+    private BigDecimal totalPrice;
+    private Boolean isPublic;
+    private List<UserBuildDetailResponse> details;
 }

@@ -23,9 +23,18 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     )
     Page<UserEntity> searchUserByKeyword(String keyword, Pageable pageable);
 
+
+    @Query("SELECT u FROM UserEntity u WHERE u.username = :username")
     UserEntity findByUsername(String username);
 
+    @Query("SELECT u FROM UserEntity u WHERE u.email = :email")
+    UserEntity findByEmail(String email);
+
+    @Query("SELECT u FROM UserEntity u WHERE u.phone = :phone")
+    UserEntity findByPhone(String phone);
 
     @Query("SELECT u FROM UserEntity u WHERE u.id = :id")
     UserEntity findUserById(UUID id);
+
+
 }
