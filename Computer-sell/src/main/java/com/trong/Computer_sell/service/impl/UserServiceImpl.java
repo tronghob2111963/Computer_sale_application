@@ -1,18 +1,16 @@
 package com.trong.Computer_sell.service.impl;
 
-import com.trong.Computer_sell.DTO.request.UserCreationRequestDTO;
-import com.trong.Computer_sell.DTO.request.UserPasswordRequest;
-import com.trong.Computer_sell.DTO.request.UserRequestDTO;
-import com.trong.Computer_sell.DTO.request.UserUpdateRequestDTO;
-import com.trong.Computer_sell.DTO.response.PageResponse;
-import com.trong.Computer_sell.DTO.response.UserResponseDTO;
+import com.trong.Computer_sell.DTO.request.user.UserCreationRequestDTO;
+import com.trong.Computer_sell.DTO.request.user.UserPasswordRequest;
+import com.trong.Computer_sell.DTO.request.user.UserRequestDTO;
+import com.trong.Computer_sell.DTO.request.user.UserUpdateRequestDTO;
+import com.trong.Computer_sell.DTO.response.common.PageResponse;
+import com.trong.Computer_sell.DTO.response.User.UserResponseDTO;
 import com.trong.Computer_sell.common.UserStatus;
 import com.trong.Computer_sell.common.UserType;
 import com.trong.Computer_sell.exception.ResourceNotFoundException;
 import com.trong.Computer_sell.model.AddressEntity;
-import com.trong.Computer_sell.model.Role;
 import com.trong.Computer_sell.model.UserEntity;
-import com.trong.Computer_sell.model.UserHasRole;
 import com.trong.Computer_sell.repository.AddressRepository;
 import com.trong.Computer_sell.repository.UserHasRoleRepository;
 import com.trong.Computer_sell.repository.UserRepository;
@@ -287,6 +285,11 @@ public class UserServiceImpl implements UserService {
         }
 
         return user.getId();
+    }
+
+    @Override
+    public PageResponse<?> findAllCustomerUser(String keyword, int pageNo, int pageSize, String sortBy) {
+        return null;
     }
 
 

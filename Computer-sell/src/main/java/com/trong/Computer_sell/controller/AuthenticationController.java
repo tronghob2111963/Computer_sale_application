@@ -1,15 +1,14 @@
 package com.trong.Computer_sell.controller;
 
 
-import com.trong.Computer_sell.DTO.request.SignInRequest;
-import com.trong.Computer_sell.DTO.response.TokenResponse;
+import com.trong.Computer_sell.DTO.request.auth.SignInRequest;
+import com.trong.Computer_sell.DTO.response.auth.TokenResponse;
 import com.trong.Computer_sell.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

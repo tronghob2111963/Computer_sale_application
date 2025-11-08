@@ -1,0 +1,85 @@
+<div class="p-6 space-y-4">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Tạo phiếu nhập</h1>
+    <a routerLink="/admin/import-receipts" class="px-4 py-2 border rounded">Quay lại</a>
+  </div>
+
+  <div *ngIf="error" class="text-red-600">{{ error }}</div>
+  <div *ngIf="success" class="text-green-600">{{ success }}</div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm">Nhân viên nhập</label>
+      <div class="flex items-center gap-2">
+        <input [(ngModel)]="model.employeeId" class="w-full border rounded px-3 py-2" placeholder="Employee ID" [readonly]="true" />
+        <details class="relative">
+          <summary class="px-3 py-2 border rounded cursor-pointer select-none">Đổi</summary>
+          <div class="absolute z-10 bg-white border rounded shadow p-2 mt-1 w-72 max-h-60 overflow-y-auto">
+            <div class="text-xs text-gray-500 mb-1">Chọn nhân viên khác</div>
+            <div *ngFor="let e of employees" class="px-2 py-1 hover:bg-gray-50 cursor-pointer" (click)="model.employeeId = e.id">
+              {{ e.username }} - {{ e.position }}
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm">Ghi chú</label>
+      <input [(ngModel)]="model.note" class="w-full border rounded px-3 py-2" placeholder="Ghi chú (không bắt buộc)" />
+    </div>
+  </div>
+
+  <div class="border rounded bg-white">
+    <div class="p-3 border-b flex items-center gap-2">
+      <input [(ngModel)]="keyword" (keyup.enter)="onSearchProducts()" class="border rounded px-3 py-2 flex-1" placeholder="Tìm sản phẩm..." />
+      <button (click)="onSearchProducts()" class="px-3 py-2 border rounded">Tìm</button>
+      <button (click)="addRow()" class="px-3 py-2 bg-blue-600 text-white rounded">Thêm dòng</button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-2 text-left">Sản phẩm</th>
+            <th class="px-4 py-2 text-left">Số lượng</th>
+            <th class="px-4 py-2 text-left">Giá nhập</th>
+            <th class="px-4 py-2 text-left">Tạm tính</th>
+            <th class="px-4 py-2 text-right">Xóa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let it of items; let i = index" class="border-t">
+            <td class="px-4 py-2">
+              <select [(ngModel)]="it.productId" class="border rounded px-3 py-2 w-72">
+                <option value="">Chọn sản phẩm</option>
+                <option *ngFor="let p of productOptions" [ngValue]="p.id">{{ p.name }}</option>
+              </select>
+            </td>
+            <td class="px-4 py-2 w-40">
+              <input type="number" min="1" [(ngModel)]="it.quantity" class="border rounded px-3 py-2 w-full" />
+            </td>
+            <td class="px-4 py-2 w-56">
+              <input type="number" min="0" [(ngModel)]="it.importPrice" class="border rounded px-3 py-2 w-full" />
+            </td>
+            <td class="px-4 py-2">
+              {{ ((it.quantity||0) * (it.importPrice||0)) | number:'1.0-0' }} đ
+            </td>
+            <td class="px-4 py-2 text-right">
+              <button (click)="removeRow(i)" class="px-3 py-1 border rounded text-red-600">Xóa</button>
+            </td>
+          </tr>
+          <tr *ngIf="!items.length">
+            <td colspan="5" class="px-4 py-10 text-center text-gray-500">Thêm sản phẩm để nhập</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="p-3 border-t text-right font-semibold">
+      Tổng: {{ subtotal | number:'1.0-0' }} đ
+    </div>
+  </div>
+
+  <div class="flex justify-end gap-2">
+    <a routerLink="/admin/import-receipts" class="px-4 py-2 border rounded">Hủy</a>
+    <button (click)="submit()" class="px-4 py-2 bg-blue-600 text-white rounded" [disabled]="loading">Tạo phiếu</button>
+  </div>
+</div>

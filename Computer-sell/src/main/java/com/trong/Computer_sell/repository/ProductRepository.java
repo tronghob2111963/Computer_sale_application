@@ -21,4 +21,14 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
 
     @Query("SELECT p FROM ProductEntity p WHERE p.category.id = :categoryId")
     Page<ProductEntity> searchProductByCategoryId(UUID categoryId, Pageable pageable);
+
+    @Query("SELECT p FROM ProductEntity p WHERE p.productTypeId.id = :productTypeId")
+    Page<ProductEntity> searchProductByProductTypeId(UUID productTypeId, Pageable pageable);
+
+
+    @Query("SELECT p FROM ProductEntity p " +
+            "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "AND p.productTypeId.id = :productTypeId")
+    Page<ProductEntity> searchProductByTypeAndKeyword(UUID productTypeId, String keyword, Pageable pageable);
+
 }

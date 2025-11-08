@@ -59,7 +59,7 @@ public class UserEntity implements UserDetails, Serializable {
 
 
     @Column(name="gender")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
@@ -76,12 +76,12 @@ public class UserEntity implements UserDetails, Serializable {
 
 
     @Column(name="type")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
     @Column(name ="status")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
@@ -99,6 +99,10 @@ public class UserEntity implements UserDetails, Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @UpdateTimestamp
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<AddressEntity> addresses = new HashSet<>();
 
     public UserEntity(UUID id) {
         this.setId(id);

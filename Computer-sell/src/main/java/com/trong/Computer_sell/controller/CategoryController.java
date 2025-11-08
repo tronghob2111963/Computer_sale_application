@@ -1,8 +1,8 @@
 package com.trong.Computer_sell.controller;
 
 
-import com.trong.Computer_sell.DTO.response.ResponseData;
-import com.trong.Computer_sell.DTO.response.ResponseError;
+import com.trong.Computer_sell.DTO.response.common.ResponseData;
+import com.trong.Computer_sell.DTO.response.common.ResponseError;
 import com.trong.Computer_sell.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +24,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @Operation(summary = "Get all categories", description = "Get all categories")
-    @GetMapping
+    @GetMapping("/list")
     public ResponseData<Object> getAllCategories(
             @RequestParam(required = false) String keyword ,
             @RequestParam(defaultValue = "0") int page,

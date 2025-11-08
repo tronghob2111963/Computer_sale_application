@@ -1,0 +1,88 @@
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4">Thanh toán</h1>
+
+  <div *ngIf="loading" class="animate-pulse space-y-3">
+    <div class="h-24 bg-gray-100 rounded"></div>
+    <div class="h-24 bg-gray-100 rounded"></div>
+  </div>
+  <div *ngIf="error" class="text-red-600">{{ error }}</div>
+
+  <div *ngIf="cart && cart.items.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- items -->
+    <div class="lg:col-span-2 bg-white shadow rounded overflow-hidden">
+      <div class="px-4 py-3 bg-gray-50 text-sm text-gray-600 flex justify-between">
+        <div>Sản phẩm</div>
+        <div>Tổng</div>
+      </div>
+
+      <div *ngFor="let it of cart.items" class="flex items-center justify-between px-4 py-4 border-t">
+        <div class="flex items-center gap-4">
+          <img [src]="it.productImg || '/placeholder.svg'" alt="img" class="w-14 h-14 object-cover rounded border" />
+          <div class="leading-tight">
+            <div class="font-medium">{{ it.productName }}</div>
+            <div class="text-sm text-gray-600">x{{ it.quantity }} · {{ it.price | number }} ₫</div>
+          </div>
+        </div>
+        <div class="font-semibold">{{ it.subtotal | number }} ₫</div>
+      </div>
+    </div>
+
+    <!-- summary / form -->
+    <div class="bg-white shadow rounded p-4 h-fit sticky top-4">
+      <div class="text-lg font-semibold mb-3">Thông tin thanh toán</div>
+
+      <label class="block text-sm text-gray-700 mb-1">Phương thức thanh toán</label>
+      <div class="space-y-2 mb-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="pm" [(ngModel)]="paymentMethod" value="CASH" />
+          <span>Thanh toán khi nhận hàng (COD)</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="pm" [(ngModel)]="paymentMethod" value="VNPAY" />
+          <span>Thanh toán VNPay</span>
+        </label>
+      </div>
+
+      <label class="block text-sm text-gray-700 mb-1">Mã khuyến mãi</label>
+      <div class="flex gap-2 mb-2">
+        <input [(ngModel)]="promoCode" placeholder="Nhập mã giảm giá (nếu có)"
+               class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring" />
+        <button (click)="applyPromo()" class="px-4 py-2 border rounded hover:bg-gray-50" [disabled]="promoChecking">Áp dụng</button>
+      </div>
+      <div *ngIf="promoInfo" class="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2 mb-2">
+        Đã áp dụng <b>{{ promoInfo.promoCode }}</b>: Giảm {{ promoInfo.discountPercent }}%
+      </div>
+      <div *ngIf="promoError" class="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mb-2">{{ promoError }}</div>
+
+      <div class="border-t my-3"></div>
+      <div class="space-y-1">
+        <div class="flex justify-between text-sm text-gray-700">
+          <span>Tạm tính</span>
+          <span>{{ total | number }} ₫</span>
+        </div>
+        <div *ngIf="discount > 0" class="flex justify-between text-sm text-green-700">
+          <span>Giảm giá</span>
+          <span>-{{ discount | number }} ₫</span>
+        </div>
+        <div class="flex justify-between text-xl font-bold">
+          <span>Thành tiền</span>
+          <span class="text-blue-700">{{ finalTotal | number }} ₫</span>
+        </div>
+      </div>
+      <button (click)="placeOrder()" [disabled]="submitting"
+              class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded disabled:opacity-60">
+        {{ submitting ? 'Đang xử lý...' : 'Đặt hàng' }}
+      </button>
+      <a routerLink="/cart" class="block text-center text-sm text-gray-600 mt-3 hover:underline">Quay lại giỏ hàng</a>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div *ngIf="toast.show" class="fixed right-4 bottom-4 z-50">
+    <div class="px-4 py-3 rounded shadow text-white"
+         [ngClass]="{ 'bg-green-600': toast.type==='success', 'bg-red-600': toast.type==='error' }">
+      {{ toast.message }}
+    </div>
+  </div>
+</div>
+

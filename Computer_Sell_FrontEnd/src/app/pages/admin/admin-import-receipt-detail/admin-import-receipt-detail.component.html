@@ -1,0 +1,49 @@
+<div class="p-6 space-y-4" *ngIf="!loading; else loadingTmpl">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Chi tiết phiếu nhập</h1>
+    <a routerLink="/admin/import-receipts" class="px-4 py-2 border rounded">Quay lại</a>
+  </div>
+
+  <div *ngIf="error" class="text-red-600">{{ error }}</div>
+  <ng-container *ngIf="data">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded border">
+      <div><b>Mã phiếu:</b> {{ data.receiptCode || data.code || data.id }}</div>
+      <div><b>Trạng thái:</b> {{ data.status }}</div>
+      <div><b>Nhân viên:</b> {{ data.employee?.username || data.employeeName || (data.employeeId?.slice(0,8)+'...') }}</div>
+      <div><b>Ngày nhập:</b> {{ data.receiptDate | date:'short' }}</div>
+      <div class="md:col-span-2"><b>Ghi chú:</b> {{ data.note }}</div>
+    </div>
+
+    <div class="overflow-x-auto bg-white rounded border">
+      <table class="min-w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-2 text-left">Sản phẩm</th>
+            <th class="px-4 py-2 text-left">Số lượng</th>
+            <th class="px-4 py-2 text-left">Giá nhập</th>
+            <th class="px-4 py-2 text-left">Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of items()" class="border-t">
+            <td class="px-4 py-2">{{ d.product?.name || d.productName || d.productId }}</td>
+            <td class="px-4 py-2">{{ d.quantity }}</td>
+            <td class="px-4 py-2">{{ d.importPrice | number:'1.0-0' }} đ</td>
+            <td class="px-4 py-2">{{ (d.subtotal || (d.quantity * d.importPrice)) | number:'1.0-0' }} đ</td>
+          </tr>
+          <tr *ngIf="!items().length">
+            <td colspan="4" class="px-4 py-10 text-center text-gray-500">Không có chi tiết</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="p-3 border-t text-right font-semibold">Tổng: {{ data.totalAmount | number:'1.0-0' }} đ</div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #loadingTmpl>
+  <div class="p-8 text-center text-gray-500">Đang tải chi tiết...</div>
+  <a routerLink="/admin/import-receipts" class="block mt-4 text-center underline">Quay lại danh sách</a>
+  
+</ng-template>
+

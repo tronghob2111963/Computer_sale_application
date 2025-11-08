@@ -2,11 +2,13 @@ package com.trong.Computer_sell.service.impl;
 
 
 
-import com.trong.Computer_sell.DTO.request.SignInRequest;
-import com.trong.Computer_sell.DTO.response.TokenResponse;
+import com.trong.Computer_sell.DTO.request.auth.SignInRequest;
+import com.trong.Computer_sell.DTO.response.auth.TokenResponse;
 import com.trong.Computer_sell.exception.InvalidDataException;
+import com.trong.Computer_sell.model.Role;
 import com.trong.Computer_sell.model.TokenEntity;
 import com.trong.Computer_sell.model.UserEntity;
+import com.trong.Computer_sell.repository.RoleRepository;
 import com.trong.Computer_sell.repository.UserRepository;
 import com.trong.Computer_sell.service.AuthenticationService;
 import com.trong.Computer_sell.service.JwtService;
@@ -28,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.trong.Computer_sell.common.TokenType.ACCESS_TOKEN;
-import static org.apache.http.HttpHeaders.REFERER;
 
 
 @Service
@@ -40,6 +41,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final TokenService tokenService;
+    private final RoleRepository roleRepository;
 
     @Override
     public TokenResponse getAccessToken(SignInRequest request) {
@@ -68,12 +70,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String accessToken = jwtService.generateAccessToken(request.getUsername(), authorities);
         String refreshToken = jwtService.generateRefreshToken(request.getUsername(), authorities);
 
+
         tokenService.save(TokenEntity.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
 
         return TokenResponse.builder()
+                .id(user.getId())
                 .username(user.getUsername())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .role(authorities)
                 .build();
     }
 
@@ -108,6 +113,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         tokenService.save(TokenEntity.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
 
         return TokenResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
@@ -122,7 +129,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public String removeToken(HttpServletRequest request) {
         log.info("---------- removeToken ----------");
 
-        final String token = request.getHeader("Authorization"); // ✅ đổi header
+        final String token = request.getHeader("Authorization"); // đổi header
         if (StringUtils.isBlank(token)) {
             throw new InvalidDataException("Token must not be blank");
         }

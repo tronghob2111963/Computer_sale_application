@@ -1,15 +1,12 @@
 package com.trong.Computer_sell.controller;
 
 
-import com.trong.Computer_sell.DTO.request.UserCreationRequestDTO;
-import com.trong.Computer_sell.DTO.request.UserPasswordRequest;
-import com.trong.Computer_sell.DTO.request.UserRequestDTO;
-import com.trong.Computer_sell.DTO.request.UserUpdateRequestDTO;
-import com.trong.Computer_sell.DTO.response.ResponseData;
-import com.trong.Computer_sell.DTO.response.ResponseError;
-import com.trong.Computer_sell.DTO.response.UserResponseDTO;
-import com.trong.Computer_sell.exception.ErrorResponse;
-import com.trong.Computer_sell.exception.ResourceNotFoundException;
+import com.trong.Computer_sell.DTO.request.user.UserCreationRequestDTO;
+import com.trong.Computer_sell.DTO.request.user.UserPasswordRequest;
+import com.trong.Computer_sell.DTO.request.user.UserRequestDTO;
+import com.trong.Computer_sell.DTO.request.user.UserUpdateRequestDTO;
+import com.trong.Computer_sell.DTO.response.common.ResponseData;
+import com.trong.Computer_sell.DTO.response.common.ResponseError;
 import com.trong.Computer_sell.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +16,6 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -146,8 +142,8 @@ public class UserController {
     public ResponseData<Object> saveUser(@RequestBody UserRequestDTO user){
         try {
             log.info("Save user with user name", user);
-            userService.saveUser(user);
-            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User saved successfully");
+
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User saved successfully",userService.saveUser(user));
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }

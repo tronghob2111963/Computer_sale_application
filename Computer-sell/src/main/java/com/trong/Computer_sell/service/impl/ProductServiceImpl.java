@@ -1,11 +1,12 @@
 package com.trong.Computer_sell.service.impl;
 
 
-import com.trong.Computer_sell.DTO.request.ProductRequestDTO;
-import com.trong.Computer_sell.DTO.request.ProductUpdateRequestDTO;
-import com.trong.Computer_sell.DTO.response.PageResponse;
-import com.trong.Computer_sell.DTO.response.ProductDetailResponse;
-import com.trong.Computer_sell.DTO.response.ProductResponseDTO;
+
+import com.trong.Computer_sell.DTO.request.product.ProductRequestDTO;
+import com.trong.Computer_sell.DTO.request.product.ProductUpdateRequestDTO;
+import com.trong.Computer_sell.DTO.response.common.PageResponse;
+import com.trong.Computer_sell.DTO.response.product.ProductDetailResponseDTO;
+import com.trong.Computer_sell.DTO.response.product.ProductResponseDTO;
 import com.trong.Computer_sell.model.*;
 import com.trong.Computer_sell.repository.*;
 import com.trong.Computer_sell.service.LocalImageService;
@@ -93,39 +94,49 @@ public class ProductServiceImpl implements ProductService {
 
         return productEntity.getId();
     }
-
     @Override
     public UUID updateProduct(ProductUpdateRequestDTO dto) {
 
         UUID id = dto.getId();
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Product với ID: " + id));
+
+        // Gán category
         if (dto.getCategoryId() != null) {
             CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy Category với ID: " + dto.getCategoryId()));
             productEntity.setCategory(category);
         }
 
-        //gan brand
+        // Gán brand
         if (dto.getBrandId() != null) {
             BrandEntity brand = brandRepository.findBrandById(dto.getBrandId());
             productEntity.setBrandId(brand);
         }
-        //gan product_type
+
+        // Gán product type
         if (dto.getProductTypeId() != null) {
             ProductTypeEntity productType = productTypeRepository.findById(dto.getProductTypeId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy ProductType với ID: " + dto.getProductTypeId()));
             productEntity.setProductTypeId(productType);
         }
+
+        //  Cộng thêm số lượng mới vào kho
+        if (dto.getStock() != 0) {
+            int updatedStock = productEntity.getStock() + dto.getStock();
+            productEntity.setStock(updatedStock);
+        }
+
+        // Cập nhật các thuộc tính khác
         productEntity.setName(dto.getName());
         productEntity.setPrice(dto.getPrice());
-        productEntity.setStock(dto.getStock());
         productEntity.setWarrantyPeriod(dto.getWarrantyPeriod());
         productEntity.setDescription(dto.getDescription());
+
         ProductEntity saved = productRepository.save(productEntity);
 
+        // Lưu ảnh nếu có
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
-
             List<ProductImageEntity> imageEntities = new ArrayList<>();
             dto.getImage().forEach(file -> {
                 try {
@@ -141,8 +152,10 @@ public class ProductServiceImpl implements ProductService {
             productImageRepository.saveAll(imageEntities);
             saved.setImages(imageEntities);
         }
+
         return saved.getId();
     }
+
 
     @Override
     public UUID deleteProduct(UUID id) {
@@ -161,17 +174,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDetailResponse getProductById(UUID id) {
+    public ProductDetailResponseDTO getProductById(UUID id) {
         log.info("Product detail");
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Product với ID: " + id));
 
-        return ProductDetailResponse.builder()
+        return ProductDetailResponseDTO.builder()
+                .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
                 .description(product.getDescription())
                 .brandName(product.getBrandId().getName())
                 .categoryName(product.getCategory().getName())
+                .stock(product.getStock())
                 .productType(productTypeRepository.findProductTypeById(product.getProductTypeId().getId()))
                 .warrantyPeriod(product.getWarrantyPeriod())
                 .image(product.getImages().stream().map(image -> image.getImageUrl()).collect(Collectors.toList()))
@@ -205,21 +220,24 @@ public class ProductServiceImpl implements ProductService {
 
         }else{
             productPage = productRepository.findAll(pageable);
+            log.info("product", productPage);
         }
 
 
 
         List<ProductResponseDTO> products = productPage.stream().map(product -> {
             return ProductResponseDTO.builder()
+                    .id(product.getId())
                     .name(product.getName())
                     .price(product.getPrice())
-                    .brandName(brandRepository.findBrandById(product.getBrandId().getId()).getName())
-                    .categoryName(categoryRepository.findCategoryNameById(product.getCategory().getId()))
-                    .productType(productTypeRepository.findProductTypeById(product.getProductTypeId().getId()))
-                    .image(productImageRepository.findProductImageByProductId(product.getId()))
+                    .brandName(product.getBrandId().getName())
+                    .categoryName(product.getCategory().getName())
+                    .productType(product.getProductTypeId().getName())
+                    .image(product.getImages().stream().map(image -> image.getImageUrl()).collect(Collectors.toList()))
                     .warrantyPeriod(product.getWarrantyPeriod())
+                    .stock(product.getStock())
                     .build();
-        }).collect(Collectors.toList());
+        }).toList();
 
         return PageResponse.builder()
                 .pageNo(productPage.getNumber() + 1)
@@ -323,4 +341,68 @@ public class ProductServiceImpl implements ProductService {
                 .items(products)
                 .build();
     }
+
+    @Override
+    public PageResponse<?> getAllProductByProductTypeId(UUID productTypeId, String keyword, int pageNo, int pageSize, String sortBy) {
+        log.info("Get all products by product type");
+
+        int p = pageNo > 0 ? pageNo - 1 : 0;
+        List<Sort.Order> sorts = new ArrayList<>();
+
+        // Xử lý sort
+        if (StringUtils.hasLength(sortBy)) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
+            Matcher matcher = pattern.matcher(sortBy);
+            if (matcher.find()) {
+                if (matcher.group(3).equalsIgnoreCase("asc")) {
+                    sorts.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
+                } else {
+                    sorts.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
+                }
+            }
+        }
+
+        Pageable pageable = PageRequest.of(p, pageSize, Sort.by(sorts));
+        Page<ProductEntity> productPage;
+
+        // Tìm kiếm theo keyword và productTypeId
+        if (StringUtils.hasLength(keyword)) {
+            productPage = productRepository.searchProductByTypeAndKeyword(productTypeId, keyword.trim().toLowerCase(), pageable);
+        } else {
+            productPage = productRepository.searchProductByProductTypeId(productTypeId, pageable);
+        }
+
+        // Map sang DTO, có kiểm tra null
+        List<ProductResponseDTO> products = productPage.stream().map(product -> {
+            String brandName = (product.getBrandId() != null)
+                    ? brandRepository.findBrandById(product.getBrandId().getId()).getName()
+                    : null;
+
+            String categoryName = (product.getCategory() != null)
+                    ? categoryRepository.findCategoryNameById(product.getCategory().getId())
+                    : null;
+
+            List<String> images = productImageRepository.findProductImageByProductId(product.getId());
+
+            return ProductResponseDTO.builder()
+                    .id(product.getId())
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .brandName(brandName)
+                    .categoryName(categoryName)
+                    .productType(product.getProductTypeId().getName())
+                    .image(images)
+                    .warrantyPeriod(product.getWarrantyPeriod())
+                    .build();
+        }).collect(Collectors.toList());
+
+        return PageResponse.builder()
+                .pageNo(productPage.getNumber() + 1)
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .items(products)
+                .build();
+    }
+
 }

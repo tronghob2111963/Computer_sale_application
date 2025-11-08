@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+/* Use plain CSS to avoid Tailwind @apply in SCSS */
+.btn {
+  background-color: #f3f4f6; /* gray-100 */
+  padding: 0.25rem 0.75rem; /* py-1 px-3 */
+  border-radius: 0.25rem; /* rounded */
+  transition: background-color 0.15s ease;
+}
+.btn:hover {
+  background-color: #e5e7eb; /* gray-200 */
+}
+
+.qty {
+  width: 2rem; /* w-8 */
+  height: 2rem; /* h-8 */
+  border-radius: 9999px; /* rounded-full */
+  background-color: #f3f4f6; /* gray-100 */
+  display: inline-flex; /* flex */
+  align-items: center; /* items-center */
+  justify-content: center; /* justify-center */
+  font-size: 1.125rem; /* text-lg */
+  line-height: 1; /* leading-none */
+  transition: background-color 0.15s ease;
+}
+.qty:hover { background-color: #e5e7eb; /* gray-200 */ }

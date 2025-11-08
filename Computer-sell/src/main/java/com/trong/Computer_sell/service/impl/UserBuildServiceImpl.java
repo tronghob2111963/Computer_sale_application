@@ -1,8 +1,8 @@
 package com.trong.Computer_sell.service.impl;
 
-import com.trong.Computer_sell.DTO.response.PageResponse;
-import com.trong.Computer_sell.DTO.response.UserBuildDetailResponse;
-import com.trong.Computer_sell.DTO.response.UserBuildResponse;
+import com.trong.Computer_sell.DTO.response.common.PageResponse;
+import com.trong.Computer_sell.DTO.response.User.UserBuildDetailResponse;
+import com.trong.Computer_sell.DTO.response.User.UserBuildResponse;
 import com.trong.Computer_sell.model.ProductEntity;
 import com.trong.Computer_sell.model.UserBuildDetailEntity;
 import com.trong.Computer_sell.model.UserBuildEntity;

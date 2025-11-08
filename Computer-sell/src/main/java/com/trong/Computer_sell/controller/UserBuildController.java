@@ -1,9 +1,9 @@
 package com.trong.Computer_sell.controller;
 
 
-import com.trong.Computer_sell.DTO.request.UserBuildRequestDTO;
-import com.trong.Computer_sell.DTO.response.ResponseData;
-import com.trong.Computer_sell.DTO.response.ResponseError;
+import com.trong.Computer_sell.DTO.request.user.UserBuildRequestDTO;
+import com.trong.Computer_sell.DTO.response.common.ResponseData;
+import com.trong.Computer_sell.DTO.response.common.ResponseError;
 import com.trong.Computer_sell.service.UserBuildService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,0 +1,84 @@
+<section class="product-page" *ngIf="!loading && product; else loadingTpl">
+  <nav class="breadcrumb">
+    <a routerLink="/">Trang chủ</a>
+    <span>/</span>
+    <a routerLink="/">Sản phẩm</a>
+    <span>/</span>
+    <span class="current">{{ product?.name }}</span>
+  </nav>
+
+  <div class="product-main">
+    <div class="gallery">
+      <div class="image-wrap">
+        <img class="main" [src]="product?.images?.[0] || '/placeholder/product.png'" [alt]="product?.name" />
+        <div class="badge sale" *ngIf="discountPercent as d">-{{ d }}% OFF</div>
+      </div>
+      <div class="thumbs">
+        <img *ngFor="let img of product?.images" [src]="img" [alt]="product?.name" (click)="selectImage(img)" [class.active]="img===product?.images?.[0]" />
+      </div>
+    </div>
+
+    <div class="info">
+      <h1 class="title">{{ product?.name }}</h1>
+      <div class="meta">
+        <div class="status"><span class="dot" [class.ok]="(product?.stock ?? 0) > 0"></span>Tình trạng: {{ inStockLabel }}</div>
+        <div class="brand">Thương hiệu: <b>{{ product?.brandName || 'Đang cập nhật' }}</b></div>
+      </div>
+
+      <div class="price-row">
+        <div class="price">{{ product?.price | number:'1.0-0' }} ₫</div>
+        <div class="original" *ngIf="product?.originalPrice && product?.originalPrice > product?.price">{{ product?.originalPrice | number:'1.0-0' }} ₫</div>
+        <div class="discount" *ngIf="discountPercent as d">-{{ d }}%</div>
+      </div>
+
+      <div class="qty-row">
+        <div class="stepper">
+          <button (click)="decQty()">-</button>
+          <input type="number" min="1" [(ngModel)]="qty"/>
+          <button (click)="incQty()">+</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-outline" (click)="addToCart()">Thêm vào giỏ</button>
+        <button class="btn btn-primary" (click)="addToCart()">Mua ngay</button>
+      </div>
+
+      <div class="share">
+        <span>Chia sẻ:</span>
+        <a aria-label="Facebook">f</a>
+        <a aria-label="Messenger">m</a>
+        <a aria-label="Pinterest">p</a>
+        <a aria-label="Link">🔗</a>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="policy-card">
+        <h4>Chính sách bán hàng</h4>
+        <ul>
+          <li>Cam kết 100% chính hãng</li>
+          <li>Hỗ trợ 24/7</li>
+        </ul>
+        <h4>Thông tin thêm</h4>
+        <ul>
+          <li>Hoàn tiền 111% nếu hàng giả</li>
+          <li>Mở hộp kiểm tra nhận hàng</li>
+          <li>Đổi trả trong 7 ngày</li>
+        </ul>
+      </div>
+      <img class="banner" src="/banners/slide_2.jpg" alt="Khuyến mãi" onerror="this.style.display='none'" />
+    </aside>
+  </div>
+
+  <section class="description">
+    <h3>Mô tả sản phẩm</h3>
+    <div class="content">{{ product?.description || 'Đang cập nhật...' }}</div>
+  </section>
+</section>
+
+<ng-template #loadingTpl>
+  <div class="state">Đang tải chi tiết...</div>
+  <div *ngIf="error" class="state error">{{ error }}</div>
+</ng-template>
+

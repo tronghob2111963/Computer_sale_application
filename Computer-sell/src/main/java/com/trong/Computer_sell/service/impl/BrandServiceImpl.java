@@ -1,8 +1,8 @@
 package com.trong.Computer_sell.service.impl;
 
-import com.trong.Computer_sell.DTO.request.BrandRequestDTO;
-import com.trong.Computer_sell.DTO.response.BrandResponseDTO;
-import com.trong.Computer_sell.DTO.response.PageResponse;
+import com.trong.Computer_sell.DTO.request.product.BrandRequestDTO;
+import com.trong.Computer_sell.DTO.response.brand.BrandResponseDTO;
+import com.trong.Computer_sell.DTO.response.common.PageResponse;
 import com.trong.Computer_sell.model.BrandEntity;
 import com.trong.Computer_sell.repository.BrandRepository;
 import com.trong.Computer_sell.service.BrandService;
@@ -93,6 +93,7 @@ public class BrandServiceImpl implements BrandService {
             brandPage = brandRepository.findAll(pageable);
         }
         List<BrandResponseDTO> brandResponseDTOList = brandPage.getContent().stream().map(brand -> BrandResponseDTO.builder()
+                .id(brand.getId())
                 .name(brand.getName())
                 .country(brand.getCountry())
                 .description(brand.getDescription())

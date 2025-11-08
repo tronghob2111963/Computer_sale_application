@@ -1,8 +1,8 @@
 package com.trong.Computer_sell.service.impl;
 
-import com.trong.Computer_sell.DTO.request.BrandRequestDTO;
-import com.trong.Computer_sell.DTO.response.CategoryResponseDTO;
-import com.trong.Computer_sell.DTO.response.PageResponse;
+import com.trong.Computer_sell.DTO.request.product.BrandRequestDTO;
+import com.trong.Computer_sell.DTO.response.category.CategoryResponseDTO;
+import com.trong.Computer_sell.DTO.response.common.PageResponse;
 import com.trong.Computer_sell.model.CategoryEntity;
 import com.trong.Computer_sell.repository.CategoryRepository;
 import com.trong.Computer_sell.service.CategoryService;
@@ -76,6 +76,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         List<CategoryResponseDTO> categories = categoriesPage.stream().map(category -> {
             return CategoryResponseDTO.builder()
+                    .id(category.getId())
                     .name(category.getName())
                     .build();
         }).collect(Collectors.toList());

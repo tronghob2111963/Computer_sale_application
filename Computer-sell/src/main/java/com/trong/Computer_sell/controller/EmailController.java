@@ -1,8 +1,8 @@
 package com.trong.Computer_sell.controller;
 
 
-import com.trong.Computer_sell.DTO.response.ResponseData;
-import com.trong.Computer_sell.DTO.response.ResponseError;
+import com.trong.Computer_sell.DTO.response.common.ResponseData;
+import com.trong.Computer_sell.DTO.response.common.ResponseError;
 import com.trong.Computer_sell.service.EmailService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

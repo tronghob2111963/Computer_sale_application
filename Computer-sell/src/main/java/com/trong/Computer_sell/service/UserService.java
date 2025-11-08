@@ -1,11 +1,11 @@
 package com.trong.Computer_sell.service;
 
-import com.trong.Computer_sell.DTO.request.UserCreationRequestDTO;
-import com.trong.Computer_sell.DTO.request.UserPasswordRequest;
-import com.trong.Computer_sell.DTO.request.UserRequestDTO;
-import com.trong.Computer_sell.DTO.request.UserUpdateRequestDTO;
-import com.trong.Computer_sell.DTO.response.PageResponse;
-import com.trong.Computer_sell.DTO.response.UserResponseDTO;
+import com.trong.Computer_sell.DTO.request.user.UserCreationRequestDTO;
+import com.trong.Computer_sell.DTO.request.user.UserPasswordRequest;
+import com.trong.Computer_sell.DTO.request.user.UserRequestDTO;
+import com.trong.Computer_sell.DTO.request.user.UserUpdateRequestDTO;
+import com.trong.Computer_sell.DTO.response.common.PageResponse;
+import com.trong.Computer_sell.DTO.response.User.UserResponseDTO;
 
 import java.util.UUID;
 
@@ -20,6 +20,7 @@ public interface UserService {
     void delete(UUID id);
     void changePassword(UserPasswordRequest req);
     UUID saveUser(UserRequestDTO req);
+    PageResponse<?> findAllCustomerUser(String keyword, int pageNo, int pageSize, String sortBy);
 
 
 }

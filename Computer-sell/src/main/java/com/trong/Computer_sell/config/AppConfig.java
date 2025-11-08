@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -32,7 +33,7 @@ public class AppConfig {
     @Value("${spring.sendgrid.api-key}")
     private String apiKey;
     //khoi tao spring web security
-    private String[] WHITE_LIST = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/auth/**", "user/register", "/user/save", "/product/**","/category/**"};
+    private String[] WHITE_LIST = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/auth/**", "user/register", "/user/save", "/product/**","/category/**", "/brand/**", "/product-types/**"};
 
     private final CustomizeRequestFilter requestFilter;
     private final UserServiceDetail userServiceDetail;
@@ -40,11 +41,13 @@ public class AppConfig {
 
     @Bean
     public SecurityFilterChain configure(@NonNull HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.cors(c -> c.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
 
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(WHITE_LIST).permitAll() /// cho phép truy cập vào các đường dẫn này mà không cần xác thực
+                                .requestMatchers(WHITE_LIST).permitAll()
+                                .requestMatchers("/uploads/**").permitAll()/// cho phép truy cập vào các đường dẫn này mà không cần xác thực
                                 .anyRequest().authenticated()) //Tất cả các yêu cầu khác cần xác thực
                 .sessionManagement(
                         management ->
@@ -70,20 +73,6 @@ public class AppConfig {
         return authProvider;
     }
 
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(@NonNull CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:4200") // FE
-                        .allowedMethods("GET", "POST", "PUT", "DELETE") // Allowed HTTP methods
-                        .allowedHeaders("*") // Allowed request headers
-                        .allowCredentials(false)
-                        .maxAge(3600);
-            }
-        };
-    }
 
     @Bean
     AuthenticationManager authenticationManager(AuthenticationConfiguration config)  {
@@ -107,6 +96,18 @@ public class AppConfig {
     @Bean
     public SendGrid sendEmail(){
         return new SendGrid(apiKey);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        var config = new org.springframework.web.cors.CorsConfiguration();
+        config.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
+        config.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
+        config.setAllowedHeaders(java.util.List.of("Authorization","Content-Type","X-Requested-With","Accept","Origin"));
+        config.setAllowCredentials(true); // nếu không dùng cookie có thể để false
+        var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
 }

@@ -1,0 +1,65 @@
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4">Chi tiết đơn hàng</h1>
+
+  <div *ngIf="loading" class="animate-pulse space-y-3">
+    <div class="h-24 bg-gray-100 rounded"></div>
+  </div>
+  <div *ngIf="error" class="text-red-600">{{ error }}</div>
+
+  <div *ngIf="order" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 bg-white shadow rounded overflow-hidden">
+      <div class="px-4 py-3 bg-gray-50 text-sm text-gray-600 flex justify-between items-center">
+        <div>
+          <div class="font-semibold">Mã đơn: {{ order.id }}</div>
+          <div class="text-xs text-gray-500">Ngày đặt: {{ order.orderDate || order.createdAt | date:'short' }}</div>
+        </div>
+        <div class="flex gap-2 items-center">
+          <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">{{ status }}</span>
+          <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">{{ paymentStatus }}</span>
+          <button *ngIf="status==='PENDING'" (click)="openCancel()" [disabled]="canceling"
+                  class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded disabled:opacity-60">Hủy đơn</button>
+        </div>
+      </div>
+
+      <div *ngFor="let it of items" class="grid grid-cols-12 items-center px-4 py-4 border-t">
+        <div class="col-span-12 md:col-span-7">
+          <div class="font-medium">{{ it.productName || it.product?.name }}</div>
+          <div class="text-sm text-gray-600">x{{ it.quantity }} • {{ (it.unitPrice || it.price) | number }} ₫</div>
+        </div>
+        <div class="col-span-12 md:col-span-5 text-right font-semibold">{{ (it.subtotal || (it.quantity * (it.unitPrice || it.price))) | number }} ₫</div>
+      </div>
+    </div>
+
+    <div class="bg-white shadow rounded p-4 h-fit">
+      <div class="text-lg font-semibold mb-3">Tóm tắt</div>
+      <div class="flex justify-between py-1 text-gray-700">
+        <span>Phương thức</span>
+        <span>{{ paymentMethod }}</span>
+      </div>
+      <div class="flex justify-between py-1 text-gray-700">
+        <span>Trạng thái thanh toán</span>
+        <span>{{ paymentStatus }}</span>
+      </div>
+      <div class="border-t my-3"></div>
+      <div class="flex justify-between text-xl font-bold">
+        <span>Tổng cộng</span>
+        <span class="text-blue-700">{{ total | number }} ₫</span>
+      </div>
+      <a routerLink="/orders" class="block text-center text-sm text-gray-600 mt-3 hover:underline">Về danh sách đơn hàng</a>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel modal -->
+<div *ngIf="cancelModal.show" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-5">
+    <div class="text-lg font-semibold mb-2">Gửi yêu cầu hủy đơn</div>
+    <p class="text-sm text-gray-600 mb-3">Đơn sẽ chuyển sang trạng thái chờ duyệt hủy. Vui lòng cung cấp lý do:</p>
+    <textarea [(ngModel)]="cancelModal.reason" rows="4" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring"
+              placeholder="Ví dụ: Đặt nhầm sản phẩm, thay đổi kế hoạch..."></textarea>
+    <div class="flex justify-end gap-2 mt-4">
+      <button class="px-4 py-2 border rounded hover:bg-gray-50" (click)="closeCancel()">Đóng</button>
+      <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded" (click)="submitCancel()">Gửi yêu cầu</button>
+    </div>
+  </div>
+</div>

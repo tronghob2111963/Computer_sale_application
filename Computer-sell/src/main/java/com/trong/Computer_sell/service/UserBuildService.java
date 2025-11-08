@@ -1,9 +1,6 @@
 package com.trong.Computer_sell.service;
 
-import com.trong.Computer_sell.DTO.response.PageResponse;
-import com.trong.Computer_sell.DTO.response.UserBuildResponse;
-import com.trong.Computer_sell.model.UserBuildEntity;
-import org.springframework.data.domain.Page;
+import com.trong.Computer_sell.DTO.response.User.UserBuildResponse;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,7 +1,7 @@
 package com.trong.Computer_sell.service.impl;
 
-import com.trong.Computer_sell.DTO.response.CartItemResponse;
-import com.trong.Computer_sell.DTO.response.CartResponse;
+import com.trong.Computer_sell.DTO.response.cart.CartItemResponse;
+import com.trong.Computer_sell.DTO.response.cart.CartResponse;
 import com.trong.Computer_sell.model.CartEntity;
 import com.trong.Computer_sell.model.CartItemEntity;
 import com.trong.Computer_sell.model.ProductEntity;
@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.trong.Computer_sell.DTO.response.CartResponse.*;
+import static com.trong.Computer_sell.DTO.response.cart.CartResponse.*;
 
 @Service
 @RequiredArgsConstructor

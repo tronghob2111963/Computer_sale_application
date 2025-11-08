@@ -1,0 +1,48 @@
+.header-logo svg {
+    width: 120px;
+    height: auto;
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+}
+
+.group-header .group-navigation {
+    display: flex;
+    column-gap: 2rem;
+}
+
+.search-input:focus {
+    box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2);
+}
+
+.icon-hover {
+ transition: all 0.3s ease;
+}
+
+.icon-hover:hover {
+    transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fallback container if Tailwind is unavailable */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: 16px;
+    padding-right: 16px;
+}

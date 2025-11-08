@@ -1,0 +1,90 @@
+<div class="p-6 space-y-4">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Quản lý khuyến mãi</h1>
+    <button class="px-4 py-2 bg-blue-600 text-white rounded" (click)="openCreate()">+ Thêm khuyến mãi</button>
+  </div>
+
+  <div *ngIf="error" class="text-red-600">{{ error }}</div>
+  <div *ngIf="success" class="text-green-600">{{ success }}</div>
+
+  <div class="overflow-x-auto bg-white rounded border">
+    <table class="min-w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left">Mã KM</th>
+          <th class="px-4 py-2 text-left">Mô tả</th>
+          <th class="px-4 py-2 text-left">Giảm (%)</th>
+          <th class="px-4 py-2 text-left">Bắt đầu</th>
+          <th class="px-4 py-2 text-left">Kết thúc</th>
+          <th class="px-4 py-2 text-left">Trạng thái</th>
+          <th class="px-4 py-2 text-right">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="!loading; else loadingTmpl">
+        <tr *ngFor="let p of promotions" class="border-t">
+          <td class="px-4 py-2 font-semibold">{{ p.promoCode }}</td>
+          <td class="px-4 py-2">{{ p.description }}</td>
+          <td class="px-4 py-2">{{ p.discountPercent }}%</td>
+          <td class="px-4 py-2">{{ p.startDate | date:'yyyy-MM-dd' }}</td>
+          <td class="px-4 py-2">{{ p.endDate | date:'yyyy-MM-dd' }}</td>
+          <td class="px-4 py-2">
+            <span [class]="p.isActive ? 'text-green-600' : 'text-gray-500'">{{ p.isActive ? 'Hoạt động' : 'Ngưng' }}</span>
+          </td>
+          <td class="px-4 py-2 text-right space-x-2">
+            <button class="px-3 py-1 border rounded" (click)="openEdit(p)">Sửa</button>
+            <button class="px-3 py-1 border rounded text-red-600" (click)="remove(p)">Xóa</button>
+          </td>
+        </tr>
+        <tr *ngIf="!promotions.length">
+          <td colspan="7" class="px-4 py-10 text-center text-gray-500">Chưa có khuyến mãi</td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #loadingTmpl>
+      <div class="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>
+    </ng-template>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40" (click)="showModal=false"></div>
+    <div class="relative bg-white w-full max-w-2xl rounded shadow">
+      <div class="px-4 py-3 border-b font-semibold">{{ isEditing ? 'Cập nhật khuyến mãi' : 'Thêm khuyến mãi' }}</div>
+      <div class="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm">Mã khuyến mãi</label>
+            <input [(ngModel)]="form.promoCode" class="w-full border rounded px-3 py-2" [readonly]="isEditing" />
+          </div>
+          <div>
+            <label class="block text-sm">Giảm (%)</label>
+            <input type="number" [(ngModel)]="form.discountPercent" class="w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-sm">Ngày bắt đầu</label>
+            <input type="date" [(ngModel)]="form.startDate" class="w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-sm">Ngày kết thúc</label>
+            <input type="date" [(ngModel)]="form.endDate" class="w-full border rounded px-3 py-2" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm">Mô tả</label>
+            <textarea rows="3" [(ngModel)]="form.description" class="w-full border rounded px-3 py-2"></textarea>
+          </div>
+          <div class="md:col-span-2">
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" [(ngModel)]="form.isActive" /> Hoạt động
+            </label>
+          </div>
+        </div>
+        <div *ngIf="error" class="text-red-600">{{ error }}</div>
+      </div>
+      <div class="px-4 py-3 border-t flex justify-end space-x-2">
+        <button class="px-4 py-2 border rounded" (click)="showModal=false">Hủy</button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded" (click)="submit()" [disabled]="loading">{{ isEditing ? 'Cập nhật' : 'Tạo mới' }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+

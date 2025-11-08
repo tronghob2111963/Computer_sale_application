@@ -1,0 +1,181 @@
+<div class="p-6 space-y-4">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Quản lý sản phẩm</h1>
+    <button (click)="openCreate()" class="px-4 py-2 bg-blue-600 text-white rounded">Thêm sản phẩm</button>
+  </div>
+
+  <!-- Tìm kiếm + Sắp xếp + Page size -->
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+    <input class="md:col-span-5 border rounded px-3 py-2" [(ngModel)]="keyword" (keyup.enter)="onSearch()" placeholder="Tìm kiếm..." />
+    <select class="md:col-span-4 border rounded px-3 py-2" [(ngModel)]="sortBy" (change)="onSortChange()">
+      <option value="name:asc">Tên: A → Z</option>
+      <option value="name:desc">Tên: Z → A</option>
+      <option value="price:asc">Giá: Thấp → Cao</option>
+      <option value="price:desc">Giá: Cao → Thấp</option>
+      <option value="warrantyPeriod:asc">Bảo hành: Tăng dần</option>
+      <option value="warrantyPeriod:desc">Bảo hành: Giảm dần</option>
+    </select>
+    <select class="md:col-span-3 border rounded px-3 py-2" [(ngModel)]="size" (change)="changePageSize()">
+      <option [ngValue]="5">5 / trang</option>
+      <option [ngValue]="10">10 / trang</option>
+      <option [ngValue]="20">20 / trang</option>
+      <option [ngValue]="50">50 / trang</option>
+    </select>
+  </div>
+
+  <!-- Bộ lọc: Hãng + Danh mục + Loại -->
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+    <select class="md:col-span-4 border rounded px-3 py-2" [(ngModel)]="filterBrandId" (change)="onFilterBrand()">
+      <option value="">Tất cả Hãng</option>
+      <option *ngFor="let b of brandOptions" [ngValue]="b.id">{{ b.name }}</option>
+    </select>
+    <select class="md:col-span-4 border rounded px-3 py-2" [(ngModel)]="filterCategoryId" (change)="onFilterCategory()">
+      <option value="">Tất cả Danh mục</option>
+      <option *ngFor="let c of categoryOptions" [ngValue]="c.id">{{ c.name }}</option>
+    </select>
+    <select class="md:col-span-3 border rounded px-3 py-2" [(ngModel)]="filterProductTypeId" (change)="onFilterProductType()">
+      <option value="">Tất cả Loại</option>
+      <option *ngFor="let t of productTypeOptions" [ngValue]="t.id">{{ t.name }}</option>
+    </select>
+    <button class="md:col-span-1 border rounded px-3 py-2" (click)="clearFilters()">Xóa</button>
+  </div>
+
+  <div *ngIf="error" class="text-red-600">{{ error }}</div>
+
+  <!-- Bảng -->
+  <div class="overflow-x-auto bg-white rounded border">
+    <table class="min-w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left">Hình ảnh</th>
+          <th class="px-4 py-2 text-left">Thông tin</th>
+          <th class="px-4 py-2 text-left">Giá</th>
+          <th class="px-4 py-2 text-left">Thương hiệu</th>
+          <th class="px-4 py-2 text-left">Danh mục</th>
+          <th class="px-4 py-2 text-left">Loại</th>
+          <th class="px-4 py-2 text-right">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="!loading; else loadingTmpl">
+        <tr *ngFor="let p of products" class="border-t">
+          <td class="px-4 py-2">
+            <img *ngIf="p?.image?.length" [src]="p.image[0]" class="w-16 h-16 object-cover rounded border" />
+          </td>
+          <td class="px-4 py-2">
+            <div class="font-semibold">{{ p.name }}</div>
+            <div class="text-sm text-gray-600 line-clamp-2 max-w-xs">{{ p.description }}</div>
+            <button class="text-blue-600 text-sm underline" (click)="openDetail(p)">Chi tiết</button>
+          </td>
+          <td class="px-4 py-2">{{ p.price | number:'1.0-0' }} ₫</td>
+          <td class="px-4 py-2">{{ p.brandName }}</td>
+          <td class="px-4 py-2">{{ p.categoryName }}</td>
+          <td class="px-4 py-2">{{ p.productType }}</td>
+          <td class="px-4 py-2 text-right space-x-2">
+            <button class="px-3 py-1 border rounded" (click)="openEdit(p)">Sửa</button>
+            <button class="px-3 py-1 border rounded text-red-600" (click)="delete(p)">Xóa</button>
+          </td>
+        </tr>
+        <tr *ngIf="!products.length">
+          <td colspan="7" class="px-4 py-10 text-center text-gray-500">Không có sản phẩm nào</td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #loadingTmpl>
+      <div class="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>
+    </ng-template>
+  </div>
+
+  <!-- Phân trang -->
+  <div class="flex items-center justify-between text-sm text-gray-600">
+    <div>Trang <b>{{ pageNo }}</b> / {{ totalPages }} · Tổng: <b>{{ totalElements }}</b></div>
+    <div class="space-x-2">
+      <button class="px-3 py-1 border rounded" (click)="changePage(-1)" [disabled]="page === 0">Trước</button>
+      <button class="px-3 py-1 border rounded" (click)="changePage(1)" [disabled]="page + 1 >= totalPages">Sau</button>
+    </div>
+  </div>
+
+  <!-- Modal Tạo/Sửa -->
+  <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="relative bg-white w-full max-w-3xl rounded shadow">
+      <div class="px-4 py-3 border-b font-semibold">{{ isEditing ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm mới' }}</div>
+      <div class="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+        <label class="block text-sm">Tên sản phẩm</label>
+        <input [(ngModel)]="formModel.name" class="w-full border rounded px-3 py-2" />
+
+        <label class="block text-sm">Giá</label>
+        <input type="number" [(ngModel)]="formModel.price" class="w-full border rounded px-3 py-2" />
+
+        <label class="block text-sm">Số lượng tồn</label>
+        <input type="number" [(ngModel)]="formModel.stock" class="w-full border rounded px-3 py-2" />
+
+        <label class="block text-sm">Bảo hành (tháng)</label>
+        <input type="number" [(ngModel)]="formModel.warrantyPeriod" class="w-full border rounded px-3 py-2" />
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-sm">Thương hiệu</label>
+            <select [(ngModel)]="formModel.brandId" class="w-full border rounded px-3 py-2">
+              <option [ngValue]="''">Chọn thương hiệu</option>
+              <option *ngFor="let b of brandOptions" [ngValue]="b.id">{{ b.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm">Danh mục</label>
+            <select [(ngModel)]="formModel.categoryId" class="w-full border rounded px-3 py-2">
+              <option [ngValue]="''">Chọn danh mục</option>
+              <option *ngFor="let c of categoryOptions" [ngValue]="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm">Loại sản phẩm</label>
+            <select [(ngModel)]="formModel.productTypeId" class="w-full border rounded px-3 py-2">
+              <option [ngValue]="''">Chọn loại</option>
+              <option *ngFor="let t of productTypeOptions" [ngValue]="t.id">{{ t.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="block text-sm">Mô tả</label>
+        <textarea rows="3" [(ngModel)]="formModel.description" class="w-full border rounded px-3 py-2"></textarea>
+
+        <label class="block text-sm">Hình ảnh</label>
+        <input type="file" multiple accept="image/*" (change)="onFileChange($event)" />
+      </div>
+      <div class="px-4 py-3 border-t flex justify-end space-x-2">
+        <button class="px-4 py-2 border rounded" (click)="showModal=false">Hủy</button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded" (click)="submitForm()" [disabled]="loading">{{ isEditing ? 'Cập nhật' : 'Tạo mới' }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Chi tiết -->
+  <div *ngIf="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="relative bg-white w-full max-w-3xl rounded shadow">
+      <div class="px-4 py-3 border-b font-semibold">Chi tiết sản phẩm</div>
+      <div class="p-4 space-y-3 max-h-[70vh] overflow-y-auto" *ngIf="detailModel; else detailLoading">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div><b>Tên:</b> {{ detailModel.name }}</div>
+          <div><b>Giá:</b> {{ detailModel.price | number:'1.0-0' }} ₫</div>
+          <div><b>Tồn:</b> {{ detailModel.stock }}</div>
+          <div><b>Bảo hành:</b> {{ detailModel.warrantyPeriod }} tháng</div>
+          <div class="md:col-span-2"><b>Mô tả:</b> {{ detailModel.description }}</div>
+        </div>
+        <div>
+          <div class="font-semibold mb-2">Hình ảnh</div>
+          <div class="flex flex-wrap gap-2">
+            <img *ngFor="let img of (detailModel.image || [])" [src]="img.startsWith('http') ? img : baseUrl + img" class="w-24 h-24 object-cover rounded border" />
+          </div>
+        </div>
+      </div>
+      <ng-template #detailLoading>
+        <div class="p-8 text-center text-gray-500">Đang tải chi tiết...</div>
+      </ng-template>
+      <div class="px-4 py-3 border-t flex justify-end"><button class="px-4 py-2 border rounded" (click)="closeDetail()">Đóng</button></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div *ngIf="toastMessage" class="fixed right-4 bottom-4 text-white px-4 py-2 rounded" [ngClass]="toastMessage.type==='success' ? 'bg-green-600' : 'bg-red-600'">{{ toastMessage.text }}</div>
+</div>

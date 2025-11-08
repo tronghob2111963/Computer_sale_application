@@ -1,9 +1,9 @@
 package com.trong.Computer_sell.controller;
 
 
-import com.trong.Computer_sell.DTO.request.BrandRequestDTO;
-import com.trong.Computer_sell.DTO.response.ResponseData;
-import com.trong.Computer_sell.DTO.response.ResponseError;
+import com.trong.Computer_sell.DTO.request.product.BrandRequestDTO;
+import com.trong.Computer_sell.DTO.response.common.ResponseData;
+import com.trong.Computer_sell.DTO.response.common.ResponseError;
 import com.trong.Computer_sell.service.BrandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 

@@ -7,7 +7,7 @@ import java.util.Date;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
-import com.trong.Computer_sell.DTO.response.ResponseData;
+import com.trong.Computer_sell.DTO.response.common.ResponseData;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;

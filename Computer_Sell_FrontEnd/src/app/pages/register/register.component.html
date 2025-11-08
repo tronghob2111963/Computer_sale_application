@@ -1,0 +1,143 @@
+<div class="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-50 to-blue-100">
+    <div class="bg-white shadow-2xl rounded-2xl w-full max-w-lg p-8 space-y-6 relative">
+        <!-- Tiêu đề -->
+        <h2 class="text-2xl font-bold text-center text-blue-700">Đăng ký tài khoản</h2>
+
+        <!-- Form đăng ký -->
+        <form #registerForm="ngForm" (ngSubmit)="onSubmit()" class="space-y-5">
+            <!-- Họ tên -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Họ</label>
+                    <input type="text" name="firstName" [(ngModel)]="user.firstName" required
+                        class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Tên</label>
+                    <input type="text" name="lastName" [(ngModel)]="user.lastName" required
+                        class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+                </div>
+            </div>
+
+            <!-- Username -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Tên đăng nhập</label>
+                <input type="text" name="username" [(ngModel)]="user.username" required
+                    class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+            </div>
+
+            <!-- Mật khẩu -->
+            <div class="relative">
+                <label class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                <input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="user.password" required
+                    class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none pr-10" />
+                <button type="button" (click)="togglePasswordVisibility()"
+                    class="absolute right-3 top-9 transform -translate-y-1/2 text-gray-500 hover:text-blue-600">
+                    <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.746-4.362M9.88 9.88a3 3 0 104.24 4.24M6.1 6.1L17.9 17.9" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Xác nhận mật khẩu -->
+            <div class="relative">
+                <label class="block text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
+                <input [type]="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
+                    [(ngModel)]="confirmPassword" required
+                    class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none pr-10" />
+                <button type="button" (click)="toggleConfirmPasswordVisibility()"
+                    class="absolute right-3 top-9 transform -translate-y-1/2 text-gray-500 hover:text-blue-600">
+                    <svg *ngIf="!showConfirmPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <svg *ngIf="showConfirmPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.746-4.362M9.88 9.88a3 3 0 104.24 4.24M6.1 6.1L17.9 17.9" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" name="email" [(ngModel)]="user.email"
+                    class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+            </div>
+
+            <!-- Số điện thoại -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                <input type="text" name="phoneNumber" [(ngModel)]="user.phoneNumber"
+                    class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+            </div>
+
+            <!-- Địa chỉ -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Số nhà </label>
+                    <input type="text" [(ngModel)]="user.addresses[0].apartmentNumber" name="apartmentNumber"
+                        class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Đường</label>
+                    <input type="text" [(ngModel)]="user.addresses[0].streetNumber" name="streetNumber"
+                        class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Xã/Phường</label>
+                    <input type="text" [(ngModel)]="user.addresses[0].ward" name="ward"
+                        class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Thành phố</label>
+                    <input type="text" [(ngModel)]="user.addresses[0].city" name="city"
+                        class="w-full border-2 rounded-lg py-2 px-3 focus:border-blue-400 outline-none" />
+                </div>
+            </div>
+
+            <!-- Nút đăng ký -->
+            <div class="flex justify-between items-center mt-6">
+                <button type="submit"
+                    class="bg-blue-600 text-white font-semibold rounded-lg py-2 px-6 hover:bg-blue-700 transition">
+                    Đăng ký
+                </button>
+                <a routerLink="/login" class="text-sm text-blue-600 hover:underline">Đã có tài khoản? Đăng nhập</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div *ngIf="toastMessage"
+    class="fixed top-5 right-5 px-5 py-3 rounded-xl shadow-lg text-white flex items-center gap-3 animate-slide-in z-50"
+    [ngClass]="{
+    'bg-green-500': toastType === 'success',
+    'bg-red-500': toastType === 'error'
+  }">
+    <!-- Icon -->
+    <svg *ngIf="toastType === 'success'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    </svg>
+
+    <svg *ngIf="toastType === 'error'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+
+    <span class="font-medium">{{ toastMessage }}</span>
+</div>

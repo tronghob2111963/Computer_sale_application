@@ -1,10 +1,10 @@
 package com.trong.Computer_sell.controller;
 
 
-import com.trong.Computer_sell.DTO.request.ProductRequestDTO;
-import com.trong.Computer_sell.DTO.request.ProductUpdateRequestDTO;
-import com.trong.Computer_sell.DTO.response.ResponseData;
-import com.trong.Computer_sell.DTO.response.ResponseError;
+import com.trong.Computer_sell.DTO.request.product.ProductRequestDTO;
+import com.trong.Computer_sell.DTO.request.product.ProductUpdateRequestDTO;
+import com.trong.Computer_sell.DTO.response.common.ResponseData;
+import com.trong.Computer_sell.DTO.response.common.ResponseError;
 import com.trong.Computer_sell.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -85,6 +85,26 @@ public class ProductController {
         }
     }
 
+
+
+    @Operation(summary = "fillter by productTye", description = "fillter by productTye")
+    @GetMapping("/filter/product-type/{productTypeId}")
+    public ResponseData<Object> filterProductByProductTypeId(
+            @PathVariable UUID productTypeId,
+            @RequestParam(required = false) String keyword ,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sortBy){
+        log.info("Filter product by product type id");
+        try {
+            log.info("Filter product by product type id");
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Product found successfully", productService.getAllProductByProductTypeId(productTypeId, keyword, page, size, sortBy));
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+
     @Operation(summary = "Product List by category id", description = "Product List by category id")
     @GetMapping("/list/category/{categoryId}")
     public ResponseData<Object> listProductByCategoryId(
@@ -146,4 +166,6 @@ public class ProductController {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
     }
+
+
 }
