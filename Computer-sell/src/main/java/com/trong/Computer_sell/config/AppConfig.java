@@ -51,7 +51,7 @@ public class AppConfig {
                                 .anyRequest().authenticated()) //Tất cả các yêu cầu khác cần xác thực
                 .sessionManagement(
                         management ->
-                        management.sessionCreationPolicy(STATELESS))
+                                management.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

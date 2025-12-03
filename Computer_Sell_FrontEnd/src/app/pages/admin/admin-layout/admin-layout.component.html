@@ -43,7 +43,8 @@
                 <span *ngIf="sidebarOpen" class="font-medium">Tài Khoản</span>
             </a>
             <!-- Users -->
-            <a routerLink="/admin/users" routerLinkActive="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+            <a routerLink="/admin/users"
+                routerLinkActive="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 text-gray-700 transition-all duration-200 group">
                 <span class="inline-flex w-6 justify-center group-[.bg-gradient-to-r]:text-white">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,6 +67,19 @@
                     </svg>
                 </span>
                 <span *ngIf="sidebarOpen" class="font-medium">Hóa đơn</span>
+            </a>
+
+            <!-- Payments -->
+            <a routerLink="/admin/payments"
+                routerLinkActive="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 text-gray-700 transition-all duration-200 group">
+                <span class="inline-flex w-6 justify-center group-[.bg-gradient-to-r]:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2"
+                            d="M3 5h18a2 2 0 012 2v3H1V7a2 2 0 012-2zm-2 7h22v5a2 2 0 01-2 2H3a2 2 0 01-2-2v-5zm6 3h4" />
+                    </svg>
+                </span>
+                <span *ngIf="sidebarOpen" class="font-medium">Quản lý thanh toán</span>
             </a>
 
             <!-- Shipping Orders -->
@@ -134,6 +148,18 @@
                 <span *ngIf="sidebarOpen" class="font-medium">Khuyến mãi</span>
             </a>
             <!--Nhân viên-->
+            <!-- Feedback -->
+            <a routerLink="/admin/feedback"
+                routerLinkActive="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 text-gray-700 transition-all duration-200 group">
+                <span class="inline-flex w-6 justify-center group-[.bg-gradient-to-r]:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2"
+                            d="M7 8h10M7 12h6m-9 8l4-4h11a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v14z" />
+                    </svg>
+                </span>
+                <span *ngIf="sidebarOpen" class="font-medium">Danh gia</span>
+            </a>
             <a routerLink="/admin/staffs"
                 routerLinkActive="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 text-gray-700 transition-all duration-200 group">
@@ -145,17 +171,41 @@
                 </span>
                 <span *ngIf="sidebarOpen" class="font-medium">Nhân viên</span>
             </a>
-            <!-- Import Receipts -->
-            <a routerLink="/admin/import-receipts"
-                routerLinkActive="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 text-gray-700 transition-all duration-200 group">
-                <span class="inline-flex w-6 justify-center group-[.bg-gradient-to-r]:text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-width="2" d="M4 7h16M4 12h16M4 17h16" />
+            <!-- Inventory Management Submenu -->
+            <div>
+                <button (click)="toggleInventorySubmenu()"
+                    class="flex items-center justify-between w-full px-4 py-3 text-gray-700 hover:bg-blue-50 rounded-xl transition-all duration-200"
+                    [class.bg-blue-50]="inventorySubmenuOpen">
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex w-6 justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-width="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        </span>
+                        <span *ngIf="sidebarOpen" class="font-medium">Quản lý kho</span>
+                    </div>
+                    <svg *ngIf="sidebarOpen" xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 text-gray-500 transition-transform duration-200"
+                        [class.rotate-90]="inventorySubmenuOpen" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" />
                     </svg>
-                </span>
-                <span *ngIf="sidebarOpen" class="font-medium">Phiếu nhập</span>
-            </a>
+                </button>
+
+                <!-- Inventory Submenu -->
+                <div *ngIf="inventorySubmenuOpen && sidebarOpen"
+                    class="ml-12 mt-2 space-y-1 text-sm border-l-2 border-blue-200 pl-4">
+                    <a routerLink="/admin/import-receipts" routerLinkActive="text-blue-600 font-semibold"
+                        class="block py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        Phiếu nhập kho
+                    </a>
+                    <a routerLink="/admin/stock" routerLinkActive="text-blue-600 font-semibold"
+                        class="block py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        Lịch sử kho
+                    </a>
+                </div>
+            </div>
 
             <!-- Settings -->
             <a routerLink="/admin/settings"

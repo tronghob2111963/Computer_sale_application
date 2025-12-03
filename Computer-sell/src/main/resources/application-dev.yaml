@@ -38,6 +38,20 @@ openapi:
     server: http://localhost:${server.port}
     title: Computer Sales Application
     version: 1.0.0
+seller:
+  name: "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ THComputer"
+  tax: "01234567891"
+  address: "123 3/2 Phường Xuân Khánh, Quận Ninh Kiều, TP. Cần Thơ"
+  phone: "0287123456"
+
+vnpay:
+  tmn-code: "3WKQT5FR"
+  hash-secret: "0UE2G4R0Q2Y5CM0V1I5QJ20UPNIHJMDE"
+  return-url: "http://localhost:5173/payment/vnpay-return"
+  ipn-url: "http://localhost:8080/api/payments/vnpay/ipn"
+  pay-url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+
+
 
 
 jwt:

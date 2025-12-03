@@ -5,6 +5,7 @@ import com.trong.Computer_sell.DTO.request.user.UserBuildRequestDTO;
 import com.trong.Computer_sell.DTO.response.common.ResponseData;
 import com.trong.Computer_sell.DTO.response.common.ResponseError;
 import com.trong.Computer_sell.service.UserBuildService;
+import com.trong.Computer_sell.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @Tag(name = "User Build Controller", description = "User Build Controller")
 public class UserBuildController {
     private final UserBuildService userBuildService;
+    private final ProductService productService;
 
 
     @Operation(summary = "Create Build" , description = "Create a Pc build")
@@ -84,5 +86,50 @@ public class UserBuildController {
     @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff','User')")
     public ResponseEntity<?> getBuildDetails(@PathVariable UUID buildId) {
         return ResponseEntity.ok(userBuildService.getBuild(buildId));
+    }
+    
+    @Operation(summary = "Update product quantity in build", description = "Update product quantity in build")
+    @PutMapping("/{buildId}/update-quantity")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff','User')")
+    public ResponseData<?> updateProductQuantity(@PathVariable UUID buildId,
+                                                   @RequestParam UUID productId,
+                                                   @RequestParam int quantity) {
+        try{
+            log.info("Update product quantity in build with build id: {}", buildId);
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Product quantity updated successfully", 
+                userBuildService.updateProductQuantity(buildId, productId, quantity));
+        }catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+    
+    @Operation(summary = "Delete build", description = "Delete build")
+    @DeleteMapping("/{buildId}")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff','User')")
+    public ResponseData<?> deleteBuild(@PathVariable UUID buildId) {
+        try{
+            log.info("Delete build with build id: {}", buildId);
+            userBuildService.deleteBuild(buildId);
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Build deleted successfully");
+        }catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get products by product type for PC Builder", description = "Get products by product type for PC Builder")
+    @GetMapping("/products/by-type/{productTypeId}")
+    public ResponseData<Object> getProductsByType(
+            @PathVariable UUID productTypeId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sortBy) {
+        log.info("Get products by product type id: {}", productTypeId);
+        try {
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Products found successfully", 
+                productService.getAllProductByProductTypeId(productTypeId, keyword, page, size, sortBy));
+        } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
     }
 }

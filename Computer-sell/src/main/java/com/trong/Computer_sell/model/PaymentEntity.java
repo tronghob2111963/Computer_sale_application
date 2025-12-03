@@ -16,50 +16,46 @@ import java.time.LocalDateTime;
 @Builder
 public class PaymentEntity extends AbstractEntity {
 
-    /**
-     * Mối quan hệ với đơn hàng (Order)
-     * Một đơn hàng có thể có nhiều giao dịch thanh toán
-     * (ví dụ: thanh toán nhiều đợt hoặc trả góp)
-     */
+    // ====== ORDER ======
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
 
-    /**
-     * Mã giao dịch từ cổng thanh toán (nếu là online).
-     * Nếu thanh toán tiền mặt thì để null.
-     */
+    // ====== TRANSACTION INFO ======
     @Column(name = "transaction_id", length = 255)
     private String transactionId;
 
-    /**
-     * Hình thức thanh toán: "CASH", "VNPAY", "MOMO", ...
-     */
     @Column(name = "payment_method", nullable = false, length = 50)
-    private String paymentMethod;
+    private String paymentMethod; // CASH, VNPAY, MOMO, VIETQR,...
 
-    /**
-     * Tổng tiền thanh toán cho giao dịch này.
-     */
+    @Column(name = "provider", length = 50)
+    private String provider;      // "VNPay", "Momo", "VietQR"
+
+    @Column(name = "bank_code", length = 50)
+    private String bankCode;      // BankCode trả về từ VNPay/Momo
+
+    @Column(name = "payment_content", length = 255)
+    private String paymentContent; // Nội dung thanh toán / orderInfo
+
+    // ====== AMOUNT ======
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
 
-    /**
-     * Thời điểm thanh toán.
-     */
+    // ====== DATE ======
     @Column(name = "payment_date", nullable = false)
     private LocalDateTime paymentDate = LocalDateTime.now();
 
-    /**
-     * Trạng thái thanh toán: PENDING, SUCCESS, FAILED, REFUNDED
-     */
+    // ====== STATUS ======
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", length = 20)
     private PaymentStatus paymentStatus;
 
-    /**
-     * Ghi chú thêm cho giao dịch (tùy chọn).
-     */
+    // ====== OPTIONAL ======
     @Column(length = 255)
     private String note;
+
+    // ====== VIETQR PROOF IMAGE ======
+    @Column(name = "proof_image_url", length = 500)
+    private String proofImageUrl;  // URL ảnh xác nhận chuyển khoản (VietQR)
 }
+

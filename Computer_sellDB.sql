@@ -131,11 +131,16 @@ CREATE TABLE "tbl_order_details" (
 
 CREATE TABLE "tbl_payments" (
   id BIGSERIAL PRIMARY KEY,
-  order_id BIGINT,
-  transaction_id varchar,
-  amount decimal(12,2),
-  payment_date timestamp,
-  payment_status varchar,
+  order_id BIGINT NOT NULL,
+  transaction_id varchar(255),
+  payment_method varchar(50) NOT NULL,
+  provider varchar(50),
+  bank_code varchar(50),
+  payment_content varchar(255),
+  amount decimal(12,2) NOT NULL,
+  payment_date timestamp NOT NULL,
+  payment_status varchar(20),
+  note varchar(255),
   created_at timestamp,
   updated_at timestamp
 );

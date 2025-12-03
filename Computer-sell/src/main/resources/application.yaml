@@ -17,3 +17,24 @@ logging:
   level:
     root: INFO
     web: INFO
+
+seller:
+  name: "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ THComputer"
+  tax: "01234567891"
+  address: "123 3/2 Phường Xuân Khánh, Quận Ninh Kiều, TP. Cần Thơ"
+  phone: "0287123456"
+
+vnpay:
+  tmn-code: "3WKQT5FR"
+  hash-secret: "0UE2G4R0Q2Y5CM0V1I5QJ20UPNIHJMDE"
+  return-url: "http://localhost:5173/payment/vnpay-return"
+  ipn-url: "http://localhost:8080/api/payments/vnpay/ipn"
+  pay-url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+
+# VietQR Configuration - Thay đổi thông tin ngân hàng của bạn
+vietqr:
+  bank-id: "970436"                    # Mã ngân hàng (MB Bank: 970422, Vietcombank: 970436, etc.)
+  account-no: "1026162961"             # Số tài khoản ngân hàng
+  account-name: "HO KIM TRONG"  # Tên chủ tài khoản
+  template: "compact2"                 # Template QR (compact, compact2, qr_only, print)
+

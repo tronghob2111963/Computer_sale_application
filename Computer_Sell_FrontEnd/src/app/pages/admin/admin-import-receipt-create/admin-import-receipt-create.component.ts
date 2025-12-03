@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -21,7 +21,7 @@ interface ItemRow {
   templateUrl: './admin-import-receipt-create.component.html',
   styleUrls: ['./admin-import-receipt-create.component.scss']
 })
-export class AdminImportReceiptCreateComponent {
+export class AdminImportReceiptCreateComponent implements OnInit {
   loading = false;
   error: string | null = null;
   success: string | null = null;
@@ -29,7 +29,11 @@ export class AdminImportReceiptCreateComponent {
   employees: EmployeeResponse[] = [];
   productOptions: any[] = [];
 
-  model: { employeeId: string; note: string } = { employeeId: '', note: '' };
+  // employeeId sẽ được tự động lấy từ user đang đăng nhập
+  currentEmployeeId: string | null = null;
+  currentEmployeeName: string | null = null;
+
+  model: { note: string } = { note: '' };
   items: ItemRow[] = [];
 
   keyword = '';
@@ -40,23 +44,52 @@ export class AdminImportReceiptCreateComponent {
     private productSvc: ProductService,
     private router: Router,
     private auth: AuthService
-  ) {
-    this.loadEmployees();
+  ) { }
+
+  ngOnInit(): void {
+    this.loadCurrentEmployee();
     this.loadProductOptions();
     this.addRow();
-    this.prefillEmployeeFromUser();
   }
 
-  prefillEmployeeFromUser(): void {
+  // Tự động lấy employeeId từ user đang đăng nhập
+  loadCurrentEmployee(): void {
+    // Cách 1: Gọi API mới từ ImportReceiptService
+    this.svc.getCurrentEmployeeId().subscribe({
+      next: (res) => {
+        this.currentEmployeeId = res?.data || null;
+        // Lấy thêm thông tin nhân viên để hiển thị tên
+        if (this.currentEmployeeId) {
+          this.empSvc.getEmployeeById(this.currentEmployeeId).subscribe({
+            next: (emp: any) => {
+              this.currentEmployeeName = emp?.data?.username || emp?.username || 'Nhân viên';
+            },
+            error: () => { }
+          });
+        }
+      },
+      error: () => {
+        // Fallback: Thử lấy từ userId
+        this.loadEmployeeFromUserId();
+      }
+    });
+  }
+
+  // Fallback: Lấy employeeId từ userId
+  loadEmployeeFromUserId(): void {
     const userId = this.auth.getUserIdSafe();
-    if (!userId) return;
+    if (!userId) {
+      this.error = 'Không thể xác định nhân viên. Vui lòng đăng nhập lại.';
+      return;
+    }
     this.empSvc.getEmployeeIdByUserId(userId).subscribe({
       next: (empId) => {
-        // ResponseType 'text' returns raw string; trim quotes if any
         const id = String(empId).replace(/^"|"$/g, '');
-        this.model.employeeId = id;
+        this.currentEmployeeId = id;
       },
-      error: () => { /* ignore; admin can still pick employee manually */ }
+      error: () => {
+        this.error = 'Tài khoản của bạn chưa được liên kết với nhân viên. Vui lòng liên hệ Admin.';
+      }
     });
   }
 
@@ -67,7 +100,7 @@ export class AdminImportReceiptCreateComponent {
         const items = Array.isArray(res?.items) ? res.items : res?.data?.items;
         this.employees = Array.isArray(items) ? items : [];
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -77,7 +110,7 @@ export class AdminImportReceiptCreateComponent {
         const data: any = (res as any)?.data ?? {};
         this.productOptions = Array.isArray(data?.items) ? data.items : [];
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -109,8 +142,8 @@ export class AdminImportReceiptCreateComponent {
     this.error = null;
     this.success = null;
 
-    if (!this.model.employeeId) {
-      this.error = 'Vui lòng chọn nhân viên';
+    if (!this.currentEmployeeId) {
+      this.error = 'Không thể xác định nhân viên. Vui lòng đăng nhập lại hoặc liên hệ Admin.';
       return;
     }
 
@@ -123,8 +156,9 @@ export class AdminImportReceiptCreateComponent {
       return;
     }
 
+    // Gửi request với employeeId tự động lấy từ user đang đăng nhập
     const payload: ImportReceiptRequest = {
-      employeeId: this.model.employeeId,
+      employeeId: this.currentEmployeeId,
       note: this.model.note,
       items: validItems
     };

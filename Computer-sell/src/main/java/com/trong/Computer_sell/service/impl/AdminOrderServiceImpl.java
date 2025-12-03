@@ -5,14 +5,17 @@ import com.trong.Computer_sell.common.AddressType;
 import com.trong.Computer_sell.common.OrderStatus;
 import com.trong.Computer_sell.common.PaymentStatus;
 import com.trong.Computer_sell.model.AddressEntity;
+import com.trong.Computer_sell.model.OrderDetailEntity;
 import com.trong.Computer_sell.model.OrderEntity;
 import com.trong.Computer_sell.model.ShippingOrderEntity;
 import com.trong.Computer_sell.repository.OrderRepository;
 import com.trong.Computer_sell.repository.ShippingOrderRepository;
 import com.trong.Computer_sell.service.AdminOrderService;
+import com.trong.Computer_sell.service.StockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,10 +24,12 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminOrderServiceImpl implements AdminOrderService {
 
     private final OrderRepository orderRepository;
     private final ShippingOrderRepository shippingOrderRepository;
+    private final StockService stockService;
 
     // ================================
     // 1. Lấy toàn bộ đơn hàng
@@ -71,6 +76,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             throw new RuntimeException("Invalid status transition from " + currentStatus + " to " + newStatus);
         }
 
+        // XỬ LÝ KHO HÀNG
+        handleStockOnStatusChange(order, currentStatus, newStatus);
+
         // Cập nhật trạng thái
         order.setStatus(newStatus);
         orderRepository.save(order);
@@ -80,6 +88,56 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         if (newStatus == OrderStatus.SHIPPING) {
             createShippingOrder(order);
         }
+    }
+
+    /**
+     * Xử lý kho hàng khi thay đổi trạng thái đơn hàng
+     */
+    private void handleStockOnStatusChange(OrderEntity order, OrderStatus oldStatus, OrderStatus newStatus) {
+        String orderId = order.getId().toString();
+        String adminUser = "ADMIN"; // Có thể lấy từ SecurityContext
+
+        // Trừ kho khi xác nhận đơn hàng (PENDING → CONFIRMED)
+        if (oldStatus == OrderStatus.PENDING && newStatus == OrderStatus.CONFIRMED) {
+            log.info("Admin confirming order {} - Deducting stock", orderId);
+            for (OrderDetailEntity detail : order.getOrderDetails()) {
+                stockService.exportStock(
+                        detail.getProduct().getId(),
+                        detail.getQuantity(),
+                        detail.getUnitPrice(),
+                        orderId,
+                        "ORDER",
+                        "Xuất kho cho đơn hàng " + orderId + " (Admin xác nhận)",
+                        adminUser
+                );
+            }
+        }
+
+        // Hoàn kho khi hủy đơn (chỉ hoàn nếu đã trừ kho)
+        if (newStatus == OrderStatus.CANCELED && isStockDeducted(oldStatus)) {
+            log.info("Admin canceling order {} - Returning stock", orderId);
+            for (OrderDetailEntity detail : order.getOrderDetails()) {
+                stockService.returnStock(
+                        detail.getProduct().getId(),
+                        detail.getQuantity(),
+                        detail.getUnitPrice(),
+                        orderId,
+                        "ORDER_CANCEL",
+                        "Hoàn kho do Admin hủy đơn hàng " + orderId,
+                        adminUser
+                );
+            }
+        }
+    }
+
+    /**
+     * Kiểm tra đơn hàng đã trừ kho chưa
+     */
+    private boolean isStockDeducted(OrderStatus status) {
+        return status == OrderStatus.CONFIRMED ||
+               status == OrderStatus.PROCESSING ||
+               status == OrderStatus.SHIPPING ||
+               status == OrderStatus.CANCEL_REQUEST;
     }
 
     // ================================
@@ -94,20 +152,35 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             throw new RuntimeException("Order is not in cancel request state");
         }
 
+        String adminUser = "ADMIN";
+
         // Duyệt hoặc từ chối yêu cầu hủy
         if (approve) {
+            // Hoàn kho khi duyệt hủy đơn (vì đơn đã CONFIRMED nên đã trừ kho)
+            log.info("Approving cancel request for order {} - Returning stock", orderId);
+            for (OrderDetailEntity detail : order.getOrderDetails()) {
+                stockService.returnStock(
+                        detail.getProduct().getId(),
+                        detail.getQuantity(),
+                        detail.getUnitPrice(),
+                        orderId.toString(),
+                        "ORDER_CANCEL",
+                        "Hoàn kho do duyệt yêu cầu hủy đơn " + orderId,
+                        adminUser
+                );
+            }
             order.setStatus(OrderStatus.CANCELED);
-            log.info("🟥 Order {} cancel request APPROVED", orderId);
+            log.info("Order {} cancel request APPROVED - Stock returned", orderId);
         } else {
             order.setStatus(OrderStatus.CONFIRMED);
-            log.info("🟩 Order {} cancel request REJECTED → set CONFIRMED", orderId);
+            log.info("Order {} cancel request REJECTED → set CONFIRMED", orderId);
         }
 
         orderRepository.save(order);
     }
 
     // ================================
-    // 🔹 5. Hàm hỗ trợ tạo phiếu vận chuyển khi giao hàng
+    //  5. Hàm hỗ trợ tạo phiếu vận chuyển khi giao hàng
     // ================================
     private void createShippingOrder(OrderEntity order) {
         var user = order.getUser();
@@ -150,11 +223,30 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     // ================================
     private boolean isValidTransition(OrderStatus from, OrderStatus to) {
         return switch (from) {
-            case PENDING -> to == OrderStatus.CONFIRMED || to == OrderStatus.CANCELED || to == OrderStatus.CANCEL_REQUEST;
-            case CANCEL_REQUEST -> to == OrderStatus.CANCELED || to == OrderStatus.CONFIRMED;
-            case CONFIRMED -> to == OrderStatus.SHIPPING || to == OrderStatus.CANCELED;
-            case SHIPPING -> to == OrderStatus.COMPLETED;
-            case COMPLETED, CANCELED -> false;
+
+            case PENDING ->
+                    to == OrderStatus.CONFIRMED
+                            || to == OrderStatus.CANCELED
+                            || to == OrderStatus.CANCEL_REQUEST;
+
+            case CONFIRMED ->
+                    to == OrderStatus.PROCESSING
+                            || to == OrderStatus.CANCELED;
+
+            case PROCESSING ->
+                    to == OrderStatus.SHIPPING
+                            || to == OrderStatus.CANCELED;
+
+            case SHIPPING ->
+                    to == OrderStatus.COMPLETED;
+
+            case CANCEL_REQUEST ->
+                    to == OrderStatus.CANCELED
+                            || to == OrderStatus.CONFIRMED;
+
+            case COMPLETED, CANCELED ->
+                    false;
         };
     }
+
 }

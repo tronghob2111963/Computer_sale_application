@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +24,7 @@ public class PaymentAdminServiceImpl implements PaymentAdminService {
     private final PaymentRepository paymentRepository;
 
     @Override
-    public PageResponse<PaymentSearchResponse> searchPayments(
+    public PageResponse<List<PaymentSearchResponse>> searchPayments(
             String keyword,
             PaymentStatus status,
             LocalDateTime startDate,
@@ -35,7 +36,11 @@ public class PaymentAdminServiceImpl implements PaymentAdminService {
         Pageable pageable = PageRequest.of(pageNo > 0 ? pageNo - 1 : 0, pageSize,
                 Sort.by(Sort.Direction.DESC, sortBy != null ? sortBy : "paymentDate"));
 
-        Page<PaymentEntity> page = paymentRepository.searchPayments(keyword, status, startDate, endDate, pageable);
+        String keywordPattern = (keyword == null || keyword.trim().isEmpty())
+                ? null
+                : "%" + keyword.trim().toLowerCase() + "%";
+
+        Page<PaymentEntity> page = paymentRepository.searchPayments(keywordPattern, status, startDate, endDate, pageable);
 
         return new PageResponse<>(
                 page.getContent().stream().map(PaymentSearchResponse::fromEntity).collect(Collectors.toList()),

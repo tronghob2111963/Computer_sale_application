@@ -15,18 +15,45 @@ export interface UserDTO {
   email?: string;
 }
 
+export interface AddressDTO {
+  id: string;
+  apartmentNumber?: string;
+  streetNumber?: string;
+  ward?: string;
+  city?: string;
+  addressType?: string;
+}
+
+export interface UserDetailDTO {
+  id: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  phoneNumber?: string;
+  email?: string;
+  userType?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  addresses?: AddressDTO[];
+  roles?: string[];
+}
+
 export interface UserListParams {
   keyword?: string;
   page?: number;
   size?: number;
   sortBy?: string;
+  roleId?: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class UserAdminService {
   private readonly API = `${environment.apiUrl}/user`;
 
-  constructor(private http: HttpClient, private cookies: CookieService) {}
+  constructor(private http: HttpClient, private cookies: CookieService) { }
 
   listUsers(params: UserListParams = {}): Observable<any> {
     const httpParams = this.buildParams(params);
@@ -35,7 +62,11 @@ export class UserAdminService {
 
   findById(id: string): Observable<any> {
     return this.http.get<any>(`${this.API}/find/${id}`, { headers: this.authHeaders() });
-    }
+  }
+
+  findDetailById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.API}/detail/${id}`, { headers: this.authHeaders() });
+  }
 
   createUser(payload: any): Observable<any> {
     // Use /save to create Admin/Staff/Customer based on userType
@@ -56,6 +87,7 @@ export class UserAdminService {
     if (p.page != null) params = params.set('page', String(p.page));
     if (p.size != null) params = params.set('size', String(p.size));
     if (p.sortBy) params = params.set('sortBy', p.sortBy);
+    if (p.roleId != null && p.roleId > 0) params = params.set('roleId', String(p.roleId));
     return params;
   }
 

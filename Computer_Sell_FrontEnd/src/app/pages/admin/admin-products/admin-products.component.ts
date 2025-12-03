@@ -1,6 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { ProductService, ResponseEnvelope } from '../../../services/product.service';
 import { BrandService, BrandDTO } from '../../../services/brand.service';
 import { ProductTypeService, ProductTypeDTO } from '../../../services/product-type.service';
@@ -12,7 +13,7 @@ const environment = { apiBaseUrl: 'http://localhost:8080' };
 @Component({
   standalone: true,
   selector: 'app-admin-products',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin-products.component.html',
   styleUrls: ['./admin-products.component.scss']
 })
@@ -66,7 +67,7 @@ export class AdminProductsComponent implements OnInit {
     private brandService: BrandService,
     private productTypeService: ProductTypeService,
     private categoryService: CategoryService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -202,10 +203,11 @@ export class AdminProductsComponent implements OnInit {
   }
 
   submitForm(): void {
+    // KHÔNG gửi stock - stock chỉ được thay đổi qua phiếu nhập kho
     const payload: any = {
       name: this.formModel.name,
       price: this.formModel.price,
-      stock: this.formModel.stock,
+      // stock: KHÔNG GỬI - quản lý qua phiếu nhập kho
       warrantyPeriod: this.formModel.warrantyPeriod,
       description: this.formModel.description,
       categoryId: this.formModel.categoryId || undefined,
@@ -237,25 +239,104 @@ export class AdminProductsComponent implements OnInit {
 
   delete(item: any): void {
     if (!item?.id) {
-      this.error = 'Kh�ng th? x�a: thi?u product id trong danh s�ch';
+      this.error = 'Không thể xóa: thiếu product id trong danh sách';
       this.showToast('error', this.error);
       return;
     }
-    if (!confirm('B?n c� ch?c mu?n x�a s?n ph?m n�y?')) return;
+    if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
     this.loading = true;
     this.productService.deleteProduct(item.id).subscribe({
       next: () => {
         this.loading = false;
         this.loadProducts();
-        this.showToast('success', '�� x�a s?n ph?m th�nh c�ng!');
+        this.showToast('success', 'Đã xóa sản phẩm thành công!');
       },
       error: (err) => {
         this.loading = false;
-        const msg = err?.error?.message || 'X�a s?n ph?m th?t b?i';
+        const msg = err?.error?.message || 'Xóa sản phẩm thất bại';
         this.error = msg;
         this.showToast('error', msg);
       }
     });
+  }
+
+  // Soft delete - chuyển trạng thái sang DELETED
+  softDelete(item: any): void {
+    if (!item?.id) {
+      this.showToast('error', 'Không thể xóa: thiếu product id');
+      return;
+    }
+    if (!confirm('Bạn có chắc muốn ngưng bán sản phẩm này? (Sản phẩm sẽ được ẩn đi)')) return;
+    this.loading = true;
+    this.productService.softDeleteProduct(item.id).subscribe({
+      next: () => {
+        this.loading = false;
+        this.loadProducts();
+        this.showToast('success', 'Đã ngưng bán sản phẩm!');
+      },
+      error: (err) => {
+        this.loading = false;
+        this.showToast('error', err?.error?.message || 'Thao tác thất bại');
+      }
+    });
+  }
+
+  // Khôi phục sản phẩm đã xóa mềm
+  restoreProduct(item: any): void {
+    if (!item?.id) {
+      this.showToast('error', 'Không thể khôi phục: thiếu product id');
+      return;
+    }
+    this.loading = true;
+    this.productService.restoreProduct(item.id).subscribe({
+      next: () => {
+        this.loading = false;
+        this.loadProducts();
+        this.showToast('success', 'Đã khôi phục sản phẩm!');
+      },
+      error: (err) => {
+        this.loading = false;
+        this.showToast('error', err?.error?.message || 'Khôi phục thất bại');
+      }
+    });
+  }
+
+  // Cập nhật trạng thái sản phẩm
+  updateStatus(item: any, status: 'ACTIVE' | 'INACTIVE' | 'DELETED'): void {
+    if (!item?.id) {
+      this.showToast('error', 'Không thể cập nhật: thiếu product id');
+      return;
+    }
+    this.loading = true;
+    this.productService.updateProductStatus(item.id, status).subscribe({
+      next: () => {
+        this.loading = false;
+        this.loadProducts();
+        this.showToast('success', `Đã cập nhật trạng thái thành ${status}!`);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.showToast('error', err?.error?.message || 'Cập nhật thất bại');
+      }
+    });
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'bg-green-100 text-green-800';
+      case 'INACTIVE': return 'bg-yellow-100 text-yellow-800';
+      case 'DELETED': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  getStatusText(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'Đang bán';
+      case 'INACTIVE': return 'Tạm ngưng';
+      case 'DELETED': return 'Đã xóa';
+      default: return status || 'Đang bán';
+    }
   }
 
 

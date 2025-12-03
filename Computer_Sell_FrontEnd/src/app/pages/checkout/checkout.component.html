@@ -41,18 +41,24 @@
           <input type="radio" name="pm" [(ngModel)]="paymentMethod" value="VNPAY" />
           <span>Thanh toán VNPay</span>
         </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="pm" [(ngModel)]="paymentMethod" value="VIETQR" />
+          <span>Thanh toán chuyển khoản (VietQR)</span>
+        </label>
       </div>
 
       <label class="block text-sm text-gray-700 mb-1">Mã khuyến mãi</label>
       <div class="flex gap-2 mb-2">
         <input [(ngModel)]="promoCode" placeholder="Nhập mã giảm giá (nếu có)"
-               class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring" />
-        <button (click)="applyPromo()" class="px-4 py-2 border rounded hover:bg-gray-50" [disabled]="promoChecking">Áp dụng</button>
+          class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring" />
+        <button (click)="applyPromo()" class="px-4 py-2 border rounded hover:bg-gray-50" [disabled]="promoChecking">Áp
+          dụng</button>
       </div>
       <div *ngIf="promoInfo" class="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2 mb-2">
         Đã áp dụng <b>{{ promoInfo.promoCode }}</b>: Giảm {{ promoInfo.discountPercent }}%
       </div>
-      <div *ngIf="promoError" class="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mb-2">{{ promoError }}</div>
+      <div *ngIf="promoError" class="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mb-2">{{
+        promoError }}</div>
 
       <div class="border-t my-3"></div>
       <div class="space-y-1">
@@ -70,19 +76,84 @@
         </div>
       </div>
       <button (click)="placeOrder()" [disabled]="submitting"
-              class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded disabled:opacity-60">
+        class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded disabled:opacity-60">
         {{ submitting ? 'Đang xử lý...' : 'Đặt hàng' }}
       </button>
       <a routerLink="/cart" class="block text-center text-sm text-gray-600 mt-3 hover:underline">Quay lại giỏ hàng</a>
     </div>
   </div>
 
+  <!-- VietQR Modal -->
+  <div *ngIf="showVietQRModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-4 border-b flex justify-between items-center">
+        <h3 class="text-lg font-semibold">Thanh toán chuyển khoản VietQR</h3>
+        <button (click)="closeVietQRModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+
+      <div class="p-4">
+        <!-- QR Code -->
+        <div *ngIf="vietQRData" class="text-center mb-4">
+          <p class="text-sm text-gray-600 mb-2">Quét mã QR để chuyển khoản</p>
+          <img [src]="vietQRData.qrCodeUrl" alt="VietQR Code" class="mx-auto border rounded-lg shadow"
+            style="max-width: 280px;" />
+          <div class="mt-3 text-left bg-gray-50 p-3 rounded text-sm">
+            <p><strong>Số tiền:</strong> <span class="text-blue-600 font-bold">{{ vietQRData.amount | number }} ₫</span>
+            </p>
+            <p><strong>Nội dung CK:</strong> <span class="text-red-600 font-mono">{{ vietQRData.transactionId }}</span>
+            </p>
+            <p class="text-xs text-gray-500 mt-1">* Vui lòng ghi đúng nội dung chuyển khoản</p>
+          </div>
+        </div>
+
+        <!-- Upload Proof -->
+        <div class="border-t pt-4">
+          <p class="text-sm font-medium mb-2">Sau khi chuyển khoản, vui lòng gửi ảnh xác nhận:</p>
+
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+            <input type="file" #proofInput accept="image/*" (change)="onProofFileSelected($event)" class="hidden" />
+
+            <div *ngIf="!proofPreview" (click)="proofInput.click()" class="cursor-pointer">
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <p class="mt-2 text-sm text-gray-600">Nhấn để chọn ảnh hóa đơn</p>
+            </div>
+
+            <div *ngIf="proofPreview" class="relative">
+              <img [src]="proofPreview" alt="Preview" class="max-h-40 mx-auto rounded" />
+              <button (click)="removeProofImage(); proofInput.value = ''"
+                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">&times;</button>
+            </div>
+          </div>
+
+          <button (click)="uploadProofImage()" [disabled]="!proofFile || uploadingProof"
+            class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed">
+            {{ uploadingProof ? 'Đang gửi...' : 'Gửi ảnh xác nhận' }}
+          </button>
+
+          <p *ngIf="proofUploaded" class="text-green-600 text-sm mt-2 text-center">
+            ✓ Đã gửi ảnh xác nhận. Vui lòng chờ admin xác nhận thanh toán.
+          </p>
+        </div>
+
+        <div class="mt-4 pt-4 border-t">
+          <button (click)="goToOrderDetail()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded">
+            Xem chi tiết đơn hàng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- toast -->
   <div *ngIf="toast.show" class="fixed right-4 bottom-4 z-50">
     <div class="px-4 py-3 rounded shadow text-white"
-         [ngClass]="{ 'bg-green-600': toast.type==='success', 'bg-red-600': toast.type==='error' }">
+      [ngClass]="{ 'bg-green-600': toast.type==='success', 'bg-red-600': toast.type==='error' }">
       {{ toast.message }}
     </div>
   </div>
 </div>
-

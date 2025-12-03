@@ -1,0 +1,133 @@
+<div class="pc-builder-wrapper">
+  <div class="header-panel">
+    <h1>Tu Build Cau Hinh</h1>
+    <p>Chon linh kien de xay dung cau hinh PC cua ban</p>
+  </div>
+
+  <div class="build-list">
+    @for (category of buildCategories; track category.id) {
+    <div class="build-item">
+      <div class="slot-info">
+        <div class="slot-thumb">
+          <img [src]="category.icon" [alt]="category.name" />
+        </div>
+        <div class="slot-text">
+          <div class="slot-title">{{ category.name }}</div>
+
+          @if (category.selectedProduct) {
+          <div class="selected-product">
+            <div class="product-name">{{ category.selectedProduct.name }}</div>
+            <div class="product-price">{{ formatPrice(category.selectedProduct.price) }}</div>
+          </div>
+          } @else {
+          <div class="placeholder">Chua chon</div>
+          }
+        </div>
+      </div>
+
+      <div class="slot-actions">
+        @if (category.selectedProduct) {
+        <div class="qty-group">
+          <label>So luong</label>
+          <input type="number" min="1" max="10" [(ngModel)]="category.quantity" (change)="updateQuantity(category)" />
+        </div>
+        }
+
+        <div class="action-buttons">
+          <button class="btn ghost" (click)="openProductSelector(category)">
+            {{ category.selectedProduct ? 'Chon lai' : 'Chon ' + category.name }}
+          </button>
+          @if (category.selectedProduct) {
+          <button class="btn danger" (click)="removeProduct(category)">Xoa</button>
+          }
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-header">
+      <h3>Tom tat cau hinh</h3>
+    </div>
+
+    @if (selectedItems.length === 0) {
+    <div class="empty-summary">Chua co san pham duoc chon.</div>
+    } @else {
+    <div class="summary-table-wrapper">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Hinh anh</th>
+            <th>Ten san pham</th>
+            <th>So luong</th>
+            <th>Don gia (VND)</th>
+            <th>Tong cong (VND)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of selectedItems; track item.id) {
+          <tr>
+            <td>
+              <img class="table-thumb" [src]="getProductImage(item.selectedProduct)" [alt]="item.selectedProduct.name" />
+            </td>
+            <td class="product-cell">
+              <div class="product-name">{{ item.selectedProduct.name }}</div>
+            </td>
+            <td class="center">{{ item.quantity }}</td>
+            <td class="right">{{ formatPrice(item.selectedProduct.price) }}</td>
+            <td class="right">{{ formatPrice(item.selectedProduct.price * item.quantity) }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      <div class="summary-footer">
+        <span>Tong:</span>
+        <strong>{{ formatPrice(totalPrice) }}</strong>
+      </div>
+    </div>
+
+    <div class="summary-actions">
+      <button class="btn outline" type="button">Xoa tat ca</button>
+      <button class="btn primary" type="button">Them tat ca vao gio</button>
+      <button class="btn ghost" type="button" (click)="printQuote()">In bao gia</button>
+    </div>
+    }
+  </div>
+</div>
+
+@if (showProductModal && selectedCategory) {
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Chon {{ selectedCategory.name }}</h2>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      @if (isLoading) {
+      <div class="loading">Dang tai san pham...</div>
+      } @else if (availableProducts.length === 0) {
+      <div class="no-products">Khong co san pham nao</div>
+      } @else {
+      <div class="product-grid">
+        @for (product of availableProducts; track product.id) {
+        <div class="product-card" (click)="selectProduct(product)">
+          <img [src]="getProductImage(product)" [alt]="product.name" class="product-image" />
+          <div class="product-info">
+            <h4>{{ product.name }}</h4>
+            <p class="price">{{ formatPrice(product.price) }}</p>
+            @if (product.stock > 0) {
+            <span class="stock in-stock">Con hang</span>
+            } @else {
+            <span class="stock out-of-stock">Het hang</span>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>
+}

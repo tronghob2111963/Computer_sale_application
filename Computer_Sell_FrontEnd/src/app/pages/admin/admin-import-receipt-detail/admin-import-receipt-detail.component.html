@@ -1,17 +1,28 @@
 <div class="p-6 space-y-4" *ngIf="!loading; else loadingTmpl">
   <div class="flex items-center justify-between">
     <h1 class="text-2xl font-bold">Chi tiết phiếu nhập</h1>
-    <a routerLink="/admin/import-receipts" class="px-4 py-2 border rounded">Quay lại</a>
+    <div class="flex gap-2">
+      <button (click)="exportPdf()"
+        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+          </path>
+        </svg>
+        Xuất PDF
+      </button>
+      <a routerLink="/admin/import-receipts" class="px-4 py-2 border rounded hover:bg-gray-100">Quay lại</a>
+    </div>
   </div>
 
   <div *ngIf="error" class="text-red-600">{{ error }}</div>
   <ng-container *ngIf="data">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded border">
-      <div><b>Mã phiếu:</b> {{ data.receiptCode || data.code || data.id }}</div>
+      <div><b>Mã phiếu:</b> {{ data.receiptCode || data.receiptId }}</div>
       <div><b>Trạng thái:</b> {{ data.status }}</div>
-      <div><b>Nhân viên:</b> {{ data.employee?.username || data.employeeName || (data.employeeId?.slice(0,8)+'...') }}</div>
-      <div><b>Ngày nhập:</b> {{ data.receiptDate | date:'short' }}</div>
-      <div class="md:col-span-2"><b>Ghi chú:</b> {{ data.note }}</div>
+      <div><b>Nhân viên:</b> {{ data.employeeName || data.employeeId }}</div>
+      <div><b>Ngày nhập:</b> {{ data.receiptDate | date:'dd/MM/yyyy HH:mm' }}</div>
+      <div class="md:col-span-2"><b>Ghi chú:</b> {{ data.note || 'Không có' }}</div>
     </div>
 
     <div class="overflow-x-auto bg-white rounded border">
@@ -44,6 +55,5 @@
 <ng-template #loadingTmpl>
   <div class="p-8 text-center text-gray-500">Đang tải chi tiết...</div>
   <a routerLink="/admin/import-receipts" class="block mt-4 text-center underline">Quay lại danh sách</a>
-  
-</ng-template>
 
+</ng-template>

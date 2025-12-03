@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/payments")
@@ -26,7 +27,7 @@ public class PaymentAdminSearchController {
 
     @Operation(summary = "Tìm kiếm / lọc danh sách thanh toán (cho admin)")
     @GetMapping("/search")
-    public ResponseData<PageResponse<PaymentSearchResponse>> searchPayments(
+    public ResponseData<PageResponse<List<PaymentSearchResponse>>> searchPayments(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) PaymentStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,

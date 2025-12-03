@@ -1,6 +1,300 @@
-<div class="p-4">
-    <h1 class="text-2xl font-bold text-blue-700 mb-4">💳 Quản lý thanh toán</h1>
-    <div class="bg-white rounded-lg shadow p-4">
-        <p>Kiểm tra giao dịch, trạng thái thanh toán VNPay tại đây.</p>
+<div class="payment-dashboard">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Quản trị • Thanh toán</p>
+      <h1>Trung tâm quản lý thanh toán</h1>
+      <p>
+        Ghi nhận đầy đủ giao dịch tiền mặt, VNPay và ví điện tử để tối ưu trải nghiệm thanh toán đồng thời đáp ứng yêu
+        cầu SEO
+        cho từ khóa “quản lý thanh toán cửa hàng máy tính”.
+      </p>
     </div>
+    <div class="header-controls">
+      <label>
+        Năm thống kê
+        <select [(ngModel)]="selectedYear" (change)="loadMonthly(selectedYear)">
+          <option *ngFor="let year of yearOptions" [value]="year">{{ year }}</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <section class="stats-grid" aria-live="polite">
+    <ng-container *ngIf="!loading.stats; else statsSkeleton">
+      <article class="stat-card primary">
+        <p class="label">Tổng doanh thu</p>
+        <h2>{{ overview?.totalRevenue | number:'1.0-0' }} ₫</h2>
+        <small>Giá trị đã ghi nhận qua mọi phương thức thanh toán.</small>
+      </article>
+      <article class="stat-card">
+        <p class="label">Số giao dịch</p>
+        <h2>{{ overview?.totalTransactions || 0 }}</h2>
+        <small>Lũy kế giao dịch hợp lệ.</small>
+      </article>
+      <article class="stat-card" *ngFor="let entry of revenueEntries()">
+        <p class="label">{{ entry.method }}</p>
+        <h2>{{ entry.amount | number:'1.0-0' }} ₫</h2>
+        <small>Đóng góp doanh thu theo phương thức.</small>
+      </article>
+      <article class="stat-card" *ngIf="revenueEntries().length === 0">
+        <p class="label">Chưa có dữ liệu</p>
+        <h2>0 ₫</h2>
+        <small>Chờ giao dịch mới.</small>
+      </article>
+    </ng-container>
+  </section>
+
+  <section class="analytics-grid">
+    <article class="card monthly">
+      <header>
+        <div>
+          <h3>Doanh thu theo tháng</h3>
+          <small>Quan sát tín hiệu tăng trưởng từng tháng.</small>
+        </div>
+        <span class="year-pill">{{ monthly?.year || selectedYear }}</span>
+      </header>
+
+      <div *ngIf="monthly; else monthlySkeleton" class="chart">
+        <div class="bar" *ngFor="let value of monthly?.monthlyRevenue; let i = index">
+          <span class="value">{{ value | number:'1.0-0' }}</span>
+          <div class="bar-fill" [style.height]="monthlyBarHeight(value)"></div>
+          <span class="label">{{ monthLabels[i] }}</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="card daily">
+      <header>
+        <div>
+          <h3>Doanh thu theo ngày</h3>
+          <small>Quan sát tín hiệu tăng trubby ngày.</small>
+        </div>
+      </header>
+    </article>
+  </section>
+
+  <section class="card filters">
+    <form (ngSubmit)="applyFilters()" class="filter-form">
+      <div>
+        <label for="keyword">Từ khóa</label>
+        <input id="keyword" type="text" name="keyword" [(ngModel)]="keyword"
+          placeholder="Mã giao dịch, khách hàng, mã đơn" />
+      </div>
+      <div>
+        <label for="status">Trạng thái</label>
+        <select id="status" name="status" [(ngModel)]="status">
+          <option [ngValue]="null">Tất cả trạng thái</option>
+          <option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+      <div>
+        <label for="startDate">Từ ngày</label>
+        <input id="startDate" type="datetime-local" name="startDate" [(ngModel)]="startDate" />
+      </div>
+      <div>
+        <label for="endDate">Đến ngày</label>
+        <input id="endDate" type="datetime-local" name="endDate" [(ngModel)]="endDate" />
+      </div>
+      <div>
+        <label for="sortBy">Sắp xếp</label>
+        <select id="sortBy" name="sortBy" [(ngModel)]="sortBy">
+          <option value="paymentDate">Mới nhất</option>
+          <option value="amount">Số tiền</option>
+        </select>
+      </div>
+      <div>
+        <label for="pageSize">Kích thước trang</label>
+        <select id="pageSize" name="pageSize" [(ngModel)]="pageSize" (ngModelChange)="handlePageSizeChange($event)">
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary">Áp dụng bộ lọc</button>
+        <button type="button" class="ghost" (click)="resetFilters()">Xóa lọc</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card table-card">
+    <header>
+      <div>
+        <p class="eyebrow">Danh sách giao dịch</p>
+        <h2>Thanh toán mới nhất</h2>
+        <small>
+          Dữ liệu realtime giúp đội vận hành phản hồi nhanh hơn, đáp ứng tiêu chí UX + SEO (nội dung text rõ ràng, có
+          ngữ cảnh).
+        </small>
+      </div>
+      <div class="meta">
+        <span>Tổng bản ghi: {{ totalElements }}</span>
+        <span>Trang {{ pageNo }}/{{ totalPages }}</span>
+      </div>
+    </header>
+
+    <div *ngIf="tableError" class="error-banner" role="alert">
+      {{ tableError }}
+    </div>
+
+    <div *ngIf="loading.table" class="table-skeleton">
+      <div *ngFor="let i of [0,1,2,3,4]" class="row"></div>
+    </div>
+
+    <div *ngIf="!loading.table && payments.length === 0" class="empty-state">
+      <p>Chưa có giao dịch phù hợp. Hãy điều chỉnh bộ lọc hoặc kiểm tra lại mốc thời gian.</p>
+    </div>
+
+    <div *ngIf="!loading.table && payments.length > 0" class="table-wrapper" aria-live="polite">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã giao dịch</th>
+            <th>Khách hàng</th>
+            <th>Phương thức</th>
+            <th>Trạng thái</th>
+            <th>Số tiền</th>
+            <th>Ngày thanh toán</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let payment of payments; trackBy: trackByPayment">
+            <td>
+              <div class="code">{{ payment.transactionId || payment.id }}</div>
+              <span class="muted">{{ payment.id }}</span>
+            </td>
+            <td>{{ payment.customerName || 'Khách hàng nặc danh' }}</td>
+            <td>{{ payment.paymentMethod }}</td>
+            <td><span [class]="statusClass(payment.paymentStatus)">{{ payment.paymentStatus }}</span></td>
+            <td>{{ payment.amount | number:'1.0-0' }} ₫</td>
+            <td>{{ payment.paymentDate | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <div class="actions-cell">
+                <button type="button" class="ghost" (click)="openDetail(payment)">Chi tiết</button>
+                <button *ngIf="canConfirm(payment)" type="button" class="primary" [disabled]="confirming[payment.id]"
+                  (click)="confirmPayment(payment)">
+                  {{ confirming[payment.id] ? 'Đang xử lý...' : 'Xác nhận' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button type="button" (click)="changePage(-1)" [disabled]="pageNo === 1">Trang trước</button>
+      <span>Trang {{ pageNo }} / {{ totalPages }}</span>
+      <button type="button" (click)="changePage(1)" [disabled]="pageNo === totalPages">Trang sau</button>
+    </div>
+  </section>
+</div>
+
+<aside class="detail-panel" [class.open]="detailPanel.open">
+  <div class="panel-header">
+    <div>
+      <p class="eyebrow">Chi tiết giao dịch</p>
+      <h3>{{ detailPanel.data?.transactionId || detailPanel.data?.id || 'Đang tải...' }}</h3>
+    </div>
+    <button type="button" (click)="closeDetail()" aria-label="Đóng">&times;</button>
+  </div>
+
+  <div class="panel-body" *ngIf="detailPanel.loading">
+    <p>Đang tải thông tin...</p>
+  </div>
+
+  <div class="panel-body" *ngIf="!detailPanel.loading && detailPanel.data as detail">
+    <dl>
+      <div>
+        <dt>Khách hàng</dt>
+        <dd>{{ detail.customerName || 'Không xác định' }}</dd>
+      </div>
+      <div>
+        <dt>Mã đơn hàng</dt>
+        <dd><a [routerLink]="['/order', detail.orderId]" class="link">#{{ detail.orderId }}</a></dd>
+      </div>
+      <div>
+        <dt>Phương thức</dt>
+        <dd>{{ detail.paymentMethod }}</dd>
+      </div>
+      <div>
+        <dt>Trạng thái</dt>
+        <dd><span [class]="statusClass(detail.paymentStatus)">{{ detail.paymentStatus }}</span></dd>
+      </div>
+      <div>
+        <dt>Số tiền</dt>
+        <dd>{{ detail.amount | number:'1.0-0' }} ₫</dd>
+      </div>
+      <div>
+        <dt>Thời gian thanh toán</dt>
+        <dd>{{ detail.paymentDate | date:'full' }}</dd>
+      </div>
+    </dl>
+
+    <!-- VietQR Proof Image Section -->
+    <div *ngIf="detail.paymentMethod === 'VIETQR'" class="vietqr-proof-section">
+      <h4>Ảnh xác nhận chuyển khoản</h4>
+      <div *ngIf="detail.proofImageUrl" class="proof-image-container">
+        <img [src]="getFullImageUrl(detail.proofImageUrl)" alt="Ảnh xác nhận" class="proof-image"
+          (click)="openProofImageModal(detail.proofImageUrl)" />
+        <p class="proof-hint">Nhấn vào ảnh để xem lớn hơn</p>
+      </div>
+      <div *ngIf="!detail.proofImageUrl" class="no-proof">
+        <p>Khách hàng chưa gửi ảnh xác nhận</p>
+      </div>
+
+      <!-- VietQR Action Buttons -->
+      <div *ngIf="canConfirmVietQR(detail)" class="vietqr-actions">
+        <button type="button" class="btn-confirm-vietqr" [disabled]="vietqrProcessing[detail.id]"
+          (click)="confirmVietQRPayment(detail)">
+          {{ vietqrProcessing[detail.id] ? 'Đang xử lý...' : '✓ Xác nhận thanh toán' }}
+        </button>
+        <button type="button" class="btn-reject-vietqr" [disabled]="vietqrProcessing[detail.id]"
+          (click)="openRejectModal(detail)">
+          ✗ Từ chối
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Proof Image Modal -->
+<div *ngIf="proofImageModal.open" class="proof-modal-overlay" (click)="closeProofImageModal()">
+  <div class="proof-modal-content" (click)="$event.stopPropagation()">
+    <button class="proof-modal-close" (click)="closeProofImageModal()">&times;</button>
+    <img [src]="proofImageModal.url" alt="Ảnh xác nhận" />
+  </div>
+</div>
+
+<!-- Reject Reason Modal -->
+<div *ngIf="rejectModal.open" class="reject-modal-overlay">
+  <div class="reject-modal-content">
+    <h4>Từ chối thanh toán VietQR</h4>
+    <p>Vui lòng nhập lý do từ chối:</p>
+    <textarea [(ngModel)]="rejectModal.reason" placeholder="Lý do từ chối (không bắt buộc)"></textarea>
+    <div class="reject-modal-actions">
+      <button type="button" class="btn-cancel" (click)="closeRejectModal()">Hủy</button>
+      <button type="button" class="btn-reject" [disabled]="vietqrProcessing[rejectModal.paymentId || '']"
+        (click)="submitRejectVietQR()">
+        Xác nhận từ chối
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #statsSkeleton>
+  <div class="stat-skeleton" *ngFor="let i of [0,1,2]"></div>
+</ng-template>
+
+<ng-template #monthlySkeleton>
+  <div class="chart-skeleton">
+    <div class="bar" *ngFor="let i of monthLabels">
+      <div class="bar-fill"></div>
+    </div>
+  </div>
+</ng-template>
+
+<div class="toast" *ngIf="toast.show" [class.error]="toast.type === 'error'">
+  {{ toast.message }}
 </div>

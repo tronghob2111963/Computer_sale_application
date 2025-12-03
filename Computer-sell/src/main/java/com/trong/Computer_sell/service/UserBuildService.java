@@ -14,4 +14,5 @@ public interface UserBuildService {
     void deleteBuild(UUID buildId);
     List<UserBuildResponse> getUserBuilds(UUID userId);
     UserBuildResponse getBuild(UUID buildId);
+    UserBuildResponse updateProductQuantity(UUID buildId, UUID productId, int quantity);
 }

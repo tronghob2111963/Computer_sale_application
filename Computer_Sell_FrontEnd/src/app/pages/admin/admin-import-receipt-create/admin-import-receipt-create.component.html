@@ -9,29 +9,31 @@
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
-      <label class="block text-sm">Nhân viên nhập</label>
-      <div class="flex items-center gap-2">
-        <input [(ngModel)]="model.employeeId" class="w-full border rounded px-3 py-2" placeholder="Employee ID" [readonly]="true" />
-        <details class="relative">
-          <summary class="px-3 py-2 border rounded cursor-pointer select-none">Đổi</summary>
-          <div class="absolute z-10 bg-white border rounded shadow p-2 mt-1 w-72 max-h-60 overflow-y-auto">
-            <div class="text-xs text-gray-500 mb-1">Chọn nhân viên khác</div>
-            <div *ngFor="let e of employees" class="px-2 py-1 hover:bg-gray-50 cursor-pointer" (click)="model.employeeId = e.id">
-              {{ e.username }} - {{ e.position }}
-            </div>
-          </div>
-        </details>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Nhân viên nhập</label>
+      <div class="p-3 bg-gray-100 border rounded">
+        <div *ngIf="currentEmployeeId; else loadingEmployee" class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+          <span class="font-medium">{{ currentEmployeeName || 'Đang tải...' }}</span>
+          <span class="text-xs text-gray-500">(Tự động từ tài khoản đăng nhập)</span>
+        </div>
+        <ng-template #loadingEmployee>
+          <div class="text-gray-500">Đang xác định nhân viên...</div>
+        </ng-template>
       </div>
     </div>
     <div>
-      <label class="block text-sm">Ghi chú</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
       <input [(ngModel)]="model.note" class="w-full border rounded px-3 py-2" placeholder="Ghi chú (không bắt buộc)" />
     </div>
   </div>
 
   <div class="border rounded bg-white">
     <div class="p-3 border-b flex items-center gap-2">
-      <input [(ngModel)]="keyword" (keyup.enter)="onSearchProducts()" class="border rounded px-3 py-2 flex-1" placeholder="Tìm sản phẩm..." />
+      <input [(ngModel)]="keyword" (keyup.enter)="onSearchProducts()" class="border rounded px-3 py-2 flex-1"
+        placeholder="Tìm sản phẩm..." />
       <button (click)="onSearchProducts()" class="px-3 py-2 border rounded">Tìm</button>
       <button (click)="addRow()" class="px-3 py-2 bg-blue-600 text-white rounded">Thêm dòng</button>
     </div>

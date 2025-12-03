@@ -1,0 +1,39 @@
+.reviews-admin { padding: 16px; display: grid; gap: 14px; }
+.reviews-admin header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.reviews-admin h1 { margin: 4px 0; }
+.eyebrow { text-transform: uppercase; letter-spacing: 1px; color: #6b7280; font-size: 12px; margin: 0; }
+.meta { display: grid; gap: 4px; color: #6b7280; text-align: right; }
+.tabs { display: flex; gap: 8px; margin-top: 8px; }
+.tabs button { padding: 8px 12px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; font-weight: 600; }
+.tabs button.active { background: #2563eb; color: #fff; border-color: #2563eb; box-shadow: 0 10px 24px #2563eb33; }
+
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; background: #fff; padding: 12px; border-radius: 12px; box-shadow: 0 6px 16px #0f172a12; }
+.filters label { display: block; font-weight: 600; margin-bottom: 4px; }
+.filters input, .filters select { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+.filters .actions { display: flex; align-items: flex-end; }
+.primary { background: #2563eb; color: #fff; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+
+.error-banner { background: #fee2e2; color: #b91c1c; padding: 10px 12px; border-radius: 10px; }
+.loading { color: #2563eb; }
+.empty { color: #6b7280; }
+
+.table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 8px 24px #0f172a12; overflow: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+th { background: #f8fafc; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+.text { max-width: 380px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge { padding: 4px 8px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+.badge.approved { background: #ecfdf5; color: #047857; }
+.badge.pending { background: #fff7ed; color: #c2410c; }
+.badge.rejected { background: #fee2e2; color: #b91c1c; }
+.actions { display: flex; gap: 6px; }
+.ghost { border: 1px solid #e5e7eb; padding: 6px 10px; border-radius: 8px; cursor: pointer; background: #fff; }
+.ghost.danger { color: #b91c1c; border-color: #fecdd3; }
+
+.pagination { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.pagination button { padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; cursor: pointer; background: #fff; }
+
+@media (max-width: 768px) {
+  .reviews-admin header { flex-direction: column; }
+  .meta { text-align: left; }
+}

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { environment } from '../enviroment';
@@ -22,6 +22,66 @@ export interface ResponseEnvelope<T = any> {
   data: T;
 }
 
+export interface DashboardProfile {
+  fullName: string;
+  avatarText: string;
+  phoneMasked: string;
+  membershipLevel: string;
+  membershipMessage: string;
+  memberSince: string;
+  nextReviewDate: string;
+  badges: string[];
+}
+
+export interface DashboardStats {
+  totalOrders: number;
+  totalSpent: number;
+  pendingCount: number;
+  cancelRequestedCount: number;
+  completedCount: number;
+  periodLabel: string;
+}
+
+export interface DashboardNavItem {
+  key: string;
+  label: string;
+  icon: string;
+  pinned: boolean;
+  description?: string;
+}
+
+export interface DashboardOrderCard {
+  id: string;
+  code: string;
+  orderDate: string;
+  title: string;
+  subtitle: string;
+  itemsCount: number;
+  status: string;
+  statusLabel: string;
+  statusTone: 'success' | 'warning' | 'info' | 'danger';
+  totalAmount: number;
+  cancellable: boolean;
+}
+
+export interface DashboardOffer {
+  id: string;
+  title: string;
+  code: string;
+  description?: string;
+  discountPercent?: number;
+  endDate?: string;
+  highlight: string;
+}
+
+export interface OrderDashboardResponse {
+  profile: DashboardProfile;
+  stats: DashboardStats;
+  sections: DashboardNavItem[];
+  recentOrders: DashboardOrderCard[];
+  offers: DashboardOffer[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private readonly API = `${environment.apiUrl}/api/orders`;
@@ -38,7 +98,19 @@ export class OrderService {
   }
 
   getOrdersByUser(userId: string): Observable<ResponseEnvelope<any[]>> {
-    return this.http.get<ResponseEnvelope<any[]>>(`${this.API}/user/${userId}`, { headers: this.authHeaders() });
+    const params = new HttpParams().set('userId', userId);
+    return this.http.get<ResponseEnvelope<any[]>>(this.USER_API_V1, {
+      params,
+      headers: this.authHeaders()
+    });
+  }
+
+  getDashboard(userId: string): Observable<ResponseEnvelope<OrderDashboardResponse>> {
+    const params = new HttpParams().set('userId', userId);
+    return this.http.get<ResponseEnvelope<OrderDashboardResponse>>(`${this.USER_API_V1}/dashboard`, {
+      params,
+      headers: this.authHeaders()
+    });
   }
 
   cancelOrder(id: string): Observable<ResponseEnvelope<null>> {

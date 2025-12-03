@@ -26,7 +26,7 @@ export class LoginComponent {
   toastType: 'success' | 'error' | '' = '';
   showToast = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) { }
 
   /**
    * Đăng nhập
@@ -49,20 +49,44 @@ export class LoginComponent {
     this.authService.login(payload).subscribe({
       next: (res) => {
         this.isLoading = false;
-        this.authService.saveTokens(res);
+        console.log('Login response:', res); // Debug: Check backend response
+
+        // Handle both wrapped and unwrapped responses
+        const tokenData = res.data || res;
+        console.log('Token data:', tokenData); // Debug
+        console.log('Username:', tokenData.username); // Debug: Check username field
+
+        this.authService.saveTokens(tokenData);
 
         this.showNotification('Đăng nhập thành công 🎉', 'success');
 
-        // Điều hướng về trang chủ sau 1.5s
-      setTimeout(() => {
-        const role = this.authService.getRole().toUpperCase();
+        // Điều hướng sau khi cookies được lưu
+        setTimeout(() => {
+          // Debug: Check what was saved
+          const savedUsername = this.authService.getUsername();
+          const savedRole = this.authService.getRole();
+          console.log('Saved username:', savedUsername);
+          console.log('Saved role:', savedRole);
+          console.log('Saved role (raw):', tokenData.role);
 
-        if (role.includes('SYSADMIN') || role.includes('ADMIN')) {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/']);
-        }
-      }, 1200);
+          // Normalize role for comparison
+          const roleUpper = savedRole.toUpperCase();
+          console.log('Role uppercase:', roleUpper);
+
+          // Check if user is admin (case-insensitive, multiple variations)
+          const isAdmin = roleUpper.includes('SYSADMIN') ||
+            roleUpper.includes('ADMIN') ||
+            roleUpper.includes('SYS_ADMIN') ||
+            roleUpper.includes('SYSTEMADMIN');
+
+          if (isAdmin) {
+            console.log('✅ Admin detected - Redirecting to /admin');
+            window.location.href = '/admin';
+          } else {
+            console.log('👤 Regular user - Redirecting to /');
+            window.location.href = '/';
+          }
+        }, 1500); // Tăng thời gian chờ lên 1.5s
       },
       error: () => {
         this.isLoading = false;

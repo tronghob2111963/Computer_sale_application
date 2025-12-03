@@ -1,6 +1,5 @@
-package com.trong.Computer_sell.controller;
+package com.trong.Computer_sell.model;
 
-import com.trong.Computer_sell.model.OrderEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

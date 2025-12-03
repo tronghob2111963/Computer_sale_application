@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ImportReceiptService, ResponseEnvelope } from '../../../services/import-receipt.service';
+import { ImportReceiptService, ImportReceiptResponse, ResponseEnvelope } from '../../../services/import-receipt.service';
+import { PdfExportService } from '../../../services/pdf-export.service';
 
 @Component({
   standalone: true,
@@ -13,9 +14,13 @@ import { ImportReceiptService, ResponseEnvelope } from '../../../services/import
 export class AdminImportReceiptDetailComponent implements OnInit {
   loading = false;
   error: string | null = null;
-  data: any = null;
+  data: ImportReceiptResponse | null = null;
 
-  constructor(private route: ActivatedRoute, private svc: ImportReceiptService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private svc: ImportReceiptService,
+    private pdfService: PdfExportService
+  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -27,7 +32,7 @@ export class AdminImportReceiptDetailComponent implements OnInit {
   fetch(id: string): void {
     this.loading = true;
     this.svc.getById(id).subscribe({
-      next: (res: ResponseEnvelope<any>) => {
+      next: (res: ResponseEnvelope<ImportReceiptResponse>) => {
         this.data = res?.data ?? null;
         this.loading = false;
       },
@@ -39,8 +44,15 @@ export class AdminImportReceiptDetailComponent implements OnInit {
   }
 
   items(): any[] {
-    const items = this.data?.items || this.data?.details || this.data?.receiptDetails;
+    const items = this.data?.details;
     return Array.isArray(items) ? items : [];
+  }
+
+  // Xuất PDF
+  async exportPdf(): Promise<void> {
+    if (this.data) {
+      await this.pdfService.exportImportReceipt(this.data);
+    }
   }
 }
 

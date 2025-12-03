@@ -48,8 +48,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserHasRoleRepository userHasRoleRepository;
     @Override
-    public PageResponse<?> findAll(String keyword, int pageNo, int pageSize, String sortBy) {
-        log.info("Find all users with keyword: {}", keyword);
+    public PageResponse<?> findAll(String keyword, int pageNo, int pageSize, String sortBy, Integer roleId) {
+        log.info("Find all users with keyword: {}, roleId: {}", keyword, roleId);
         int p = pageNo > 0 ? pageNo - 1 : 0;
         List<Sort.Order> sorts = new ArrayList<>();
         // Sort by ID
@@ -69,12 +69,18 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(p, pageSize, Sort.by(sorts));
         Page<UserEntity> usersPage;
 
-        //search user by keyword
-        if(StringUtils.hasLength(keyword)){
+        //search user by keyword and roleId
+        if(roleId != null && roleId > 0) {
+            if(StringUtils.hasLength(keyword)){
+                keyword = "%" + keyword.toLowerCase() + "%";
+                usersPage = userRepository.searchUserByKeywordAndRole(keyword, roleId, pageable);
+            } else {
+                usersPage = userRepository.findAllByRoleId(roleId, pageable);
+            }
+        } else if(StringUtils.hasLength(keyword)){
             keyword = "%" + keyword.toLowerCase() + "%";
             usersPage = userRepository.searchUserByKeyword(keyword ,pageable);
-
-        }else{
+        } else {
             usersPage = userRepository.findAll(pageable);
         }
 
@@ -95,6 +101,47 @@ public class UserServiceImpl implements UserService {
                 .dateOfBirth(user.getDateOfBirth())
                 .phoneNumber(user.getPhone())
                 .email(user.getEmail())
+                .build();
+    }
+
+    //find user detail by id (including addresses)
+    @Override
+    public com.trong.Computer_sell.DTO.response.User.UserDetailResponseDTO findDetailById(UUID id) {
+        log.info("Find user detail with user id: {}", id);
+        UserEntity user = getUserById(id);
+        
+        // Map addresses
+        List<com.trong.Computer_sell.DTO.response.User.AddressResponseDTO> addressDTOs = user.getAddresses().stream()
+                .map(address -> com.trong.Computer_sell.DTO.response.User.AddressResponseDTO.builder()
+                        .id(address.getId())
+                        .apartmentNumber(address.getApartmentNumber())
+                        .streetNumber(address.getStreetNumber())
+                        .ward(address.getWard())
+                        .city(address.getCity())
+                        .addressType(address.getAddressType())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+        
+        // Get role names
+        List<String> roleNames = user.getRoles().stream()
+                .map(userHasRole -> userHasRole.getRole().getName())
+                .collect(java.util.stream.Collectors.toList());
+        
+        return com.trong.Computer_sell.DTO.response.User.UserDetailResponseDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .gender(user.getGender() != null ? user.getGender().toString() : null)
+                .dateOfBirth(user.getDateOfBirth())
+                .phoneNumber(user.getPhone())
+                .email(user.getEmail())
+                .userType(user.getUserType() != null ? user.getUserType().toString() : null)
+                .status(user.getStatus() != null ? user.getStatus().toString() : null)
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .addresses(addressDTOs)
+                .roles(roleNames)
                 .build();
     }
 

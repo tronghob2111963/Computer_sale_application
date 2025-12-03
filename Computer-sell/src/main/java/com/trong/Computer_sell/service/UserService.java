@@ -11,8 +11,9 @@ import java.util.UUID;
 
 public interface UserService {
 
-    PageResponse<?> findAll(String keyword, int pageNo, int pageSize, String sortBy);
+    PageResponse<?> findAll(String keyword, int pageNo, int pageSize, String sortBy, Integer roleId);
     UserResponseDTO findById(UUID id);
+    com.trong.Computer_sell.DTO.response.User.UserDetailResponseDTO findDetailById(UUID id);
     UserResponseDTO findByUsername(String username);
     UserResponseDTO findByEmail(String email);
     UUID RegisterUser(UserCreationRequestDTO req);

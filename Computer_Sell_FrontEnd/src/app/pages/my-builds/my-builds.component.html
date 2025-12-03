@@ -1,0 +1,54 @@
+<div class="my-builds-container">
+    <div class="header">
+        <h1>Cấu hình của tôi</h1>
+        <button class="btn-create" (click)="createNewBuild()">
+            + Tạo cấu hình mới
+        </button>
+    </div>
+
+    @if (isLoading) {
+    <div class="loading">Đang tải...</div>
+    } @else if (builds.length === 0) {
+    <div class="empty-state">
+        <p>Bạn chưa có cấu hình nào</p>
+        <button class="btn-primary" (click)="createNewBuild()">
+            Tạo cấu hình đầu tiên
+        </button>
+    </div>
+    } @else {
+    <div class="builds-grid">
+        @for (build of builds; track build.id) {
+        <div class="build-card">
+            <div class="build-header">
+                <h3>{{ build.name }}</h3>
+                <span class="build-price">{{ formatPrice(build.totalPrice) }}</span>
+            </div>
+
+            <div class="build-details">
+                <p class="component-count">
+                    {{ build.details.length }} linh kiện
+                </p>
+
+                <div class="component-list">
+                    @for (detail of build.details; track detail.productId) {
+                    <div class="component-item">
+                        <span class="component-name">{{ detail.productName }}</span>
+                        <span class="component-qty">x{{ detail.quantity }}</span>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <div class="build-actions">
+                <button class="btn-view" (click)="viewBuild(build.id)">
+                    Xem chi tiết
+                </button>
+                <button class="btn-delete" (click)="deleteBuild(build.id)">
+                    Xóa
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+    }
+</div>

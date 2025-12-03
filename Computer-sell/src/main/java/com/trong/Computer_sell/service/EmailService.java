@@ -6,6 +6,8 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
+import com.trong.Computer_sell.model.OrderEntity;
+import com.trong.Computer_sell.model.UserEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -117,7 +119,7 @@ public class EmailService {
             log.error("Failed to send email");
         }
 
-
-
     }
+
+
 }

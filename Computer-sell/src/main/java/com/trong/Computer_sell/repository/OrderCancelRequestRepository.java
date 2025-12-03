@@ -1,7 +1,7 @@
 package com.trong.Computer_sell.repository;
 
 
-import com.trong.Computer_sell.controller.OrderCancelRequestEntity;
+import com.trong.Computer_sell.model.OrderCancelRequestEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

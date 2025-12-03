@@ -1,4 +1,6 @@
-<section class="product-page" *ngIf="!loading && product; else loadingTpl">
+﻿<section class="product-page" *ngIf="!loading && product; else loadingTpl">
+
+  <!-- ======================= BREADCRUMB ======================= -->
   <nav class="breadcrumb">
     <a routerLink="/">Trang chủ</a>
     <span>/</span>
@@ -7,78 +9,355 @@
     <span class="current">{{ product?.name }}</span>
   </nav>
 
+  <!-- ======================= MAIN GRID ======================= -->
   <div class="product-main">
+
+    <!-- ======================= GALLERY ======================= -->
     <div class="gallery">
       <div class="image-wrap">
-        <img class="main" [src]="product?.images?.[0] || '/placeholder/product.png'" [alt]="product?.name" />
-        <div class="badge sale" *ngIf="discountPercent as d">-{{ d }}% OFF</div>
+        <img class="main" [class.fading]="imageSwitching" [class.slide-in-right]="imageAnimationDirection === 'next'"
+          [class.slide-in-left]="imageAnimationDirection === 'prev'" [src]="currentImage" [alt]="product?.name"
+          (click)="openLightbox(activeImageIndex)" />
+
+        <button class="gallery-nav prev" type="button" (click)="prevImage()"
+          [disabled]="imageSwitching || !product?.images?.length" aria-label="Prev image">
+          ‹
+        </button>
+        <button class="gallery-nav next" type="button" (click)="nextImage()"
+          [disabled]="imageSwitching || !product?.images?.length" aria-label="Next image">
+          ›
+        </button>
+
+        <div class="badge sale" *ngIf="discountPercent as d">
+          -{{ d }}% OFF
+        </div>
       </div>
+
       <div class="thumbs">
-        <img *ngFor="let img of product?.images" [src]="img" [alt]="product?.name" (click)="selectImage(img)" [class.active]="img===product?.images?.[0]" />
+        <img *ngFor="let img of product?.images; let i = index" [src]="img" [alt]="product?.name"
+          (click)="selectImageByIndex(i)" [class.active]="i === activeImageIndex" />
       </div>
     </div>
 
+    <!-- ======================= PRODUCT INFO ======================= -->
     <div class="info">
       <h1 class="title">{{ product?.name }}</h1>
+
       <div class="meta">
-        <div class="status"><span class="dot" [class.ok]="(product?.stock ?? 0) > 0"></span>Tình trạng: {{ inStockLabel }}</div>
-        <div class="brand">Thương hiệu: <b>{{ product?.brandName || 'Đang cập nhật' }}</b></div>
+        <div class="status">
+          <span class="dot" [class.ok]="(product?.stock ?? 0) > 0"></span>
+          Trạng thái: {{ inStockLabel }}
+        </div>
+
+        <div class="brand">
+          Thương hiệu: <b>{{ product?.brandName || 'Đang cập nhật' }}</b>
+        </div>
       </div>
 
       <div class="price-row">
-        <div class="price">{{ product?.price | number:'1.0-0' }} ₫</div>
-        <div class="original" *ngIf="product?.originalPrice && product?.originalPrice > product?.price">{{ product?.originalPrice | number:'1.0-0' }} ₫</div>
+        <div class="price">{{ product?.price | number:'1.0-0' }} đ</div>
+
+        <div class="original" *ngIf="product?.originalPrice && product?.originalPrice > product?.price">
+          {{ product?.originalPrice | number:'1.0-0' }} đ
+        </div>
+
         <div class="discount" *ngIf="discountPercent as d">-{{ d }}%</div>
       </div>
 
+      <!-- QTY -->
       <div class="qty-row">
         <div class="stepper">
           <button (click)="decQty()">-</button>
-          <input type="number" min="1" [(ngModel)]="qty"/>
+          <input type="number" min="1" [(ngModel)]="qty" />
           <button (click)="incQty()">+</button>
         </div>
       </div>
 
+      <!-- ACTIONS -->
       <div class="actions">
         <button class="btn btn-outline" (click)="addToCart()">Thêm vào giỏ</button>
         <button class="btn btn-primary" (click)="addToCart()">Mua ngay</button>
       </div>
 
+      <!-- SHARE -->
       <div class="share">
         <span>Chia sẻ:</span>
         <a aria-label="Facebook">f</a>
         <a aria-label="Messenger">m</a>
         <a aria-label="Pinterest">p</a>
-        <a aria-label="Link">🔗</a>
+        <a aria-label="Copy link">⟲</a>
       </div>
     </div>
 
+    <!-- ======================= SIDEBAR ======================= -->
     <aside class="sidebar">
       <div class="policy-card">
         <h4>Chính sách bán hàng</h4>
         <ul>
-          <li>Cam kết 100% chính hãng</li>
+          <li>Cam kết chính hãng</li>
           <li>Hỗ trợ 24/7</li>
         </ul>
+
         <h4>Thông tin thêm</h4>
         <ul>
           <li>Hoàn tiền 111% nếu hàng giả</li>
-          <li>Mở hộp kiểm tra nhận hàng</li>
+          <li>Được kiểm tra khi nhận</li>
           <li>Đổi trả trong 7 ngày</li>
         </ul>
       </div>
-      <img class="banner" src="/banners/slide_2.jpg" alt="Khuyến mãi" onerror="this.style.display='none'" />
+
+      <img class="banner" src="/banners/slide_2.jpg" alt="Khuyến mãi" />
     </aside>
+
   </div>
 
+  <!-- ======================= DESCRIPTION ======================= -->
   <section class="description">
-    <h3>Mô tả sản phẩm</h3>
-    <div class="content">{{ product?.description || 'Đang cập nhật...' }}</div>
+    <h3>Mô tả</h3>
+    <div class="content" *ngIf="descriptionLines.length; else rawDescription">
+      <ul class="desc-list">
+        <li *ngFor="let line of descriptionLines">{{ line }}</li>
+      </ul>
+    </div>
+    <ng-template #rawDescription>
+      <div class="content">
+        {{ product?.description || 'Đang cập nhật' }}
+      </div>
+    </ng-template>
   </section>
+
+  <!-- ======================= SIMILAR PRODUCTS ======================= -->
+  <section class="similar" *ngIf="similarLoading || similarProducts.length || similarError">
+    <div class="section-head">
+      <h3>Sản phẩm tương tự</h3>
+      <span class="muted" *ngIf="!similarLoading">{{ similarProducts.length }} gợi ý</span>
+    </div>
+
+    <div class="state" *ngIf="similarLoading">Đang tải sản phẩm tương tự...</div>
+    <div class="error-banner" *ngIf="similarError">{{ similarError }}</div>
+    <div class="muted" *ngIf="!similarLoading && !similarError && !similarProducts.length">
+      Chua co goi y phu hop.
+    </div>
+
+    <div class="similar-slider" *ngIf="!similarLoading && similarProducts.length">
+      <button class="nav prev" type="button" (click)="scrollSimilar(-1)">‹</button>
+
+      <div class="similar-track" #similarTrack>
+        <a class="similar-card" *ngFor="let sp of similarProducts" [routerLink]="['/product', sp.id]">
+          <div class="thumb">
+            <img [src]="sp.displayImage || '/placeholder/product.png'" [alt]="sp.name" />
+          </div>
+          <div class="name" [title]="sp.name">{{ sp.name }}</div>
+          <div class="price">{{ sp.price | number:'1.0-0' }} đ</div>
+        </a>
+      </div>
+
+      <button class="nav next" type="button" (click)="scrollSimilar(1)">›</button>
+    </div>
+  </section>
+
+
+  <!-- ================================================================================= -->
+  <!-- =============================   APPLE-STYLE REVIEWS   ============================ -->
+  <!-- ================================================================================= -->
+  <section class="reviews">
+
+    <div class="reviews__header">
+      <h3>Đánh giá sản phẩm</h3>
+      <span class="muted" *ngIf="reviewSummary">
+        {{ reviewSummary.totalReviews }} đánh giá
+      </span>
+    </div>
+
+    <!-- ======================= REVIEW SUMMARY ======================= -->
+    <div class="apple-score" *ngIf="reviewSummary">
+      <div class="avg-box">
+        <div class="avg-value">
+          {{ reviewSummary.averageRating | number:'1.1-1' }}
+        </div>
+
+        <!-- Apple Rounded Stars -->
+        <div class="stars">
+          <span *ngFor="let s of [1,2,3,4,5]">
+            <svg viewBox="0 0 24 24" class="apple-star" [class.active]="s <= reviewSummary.averageRating">
+              <path d="M12 2.8l2.6 5.3 5.8.8-4.2 4.1 1 5.7-5.2-2.8-5.2 2.8 1-5.7-4.2-4.1 5.8-.8z" />
+            </svg>
+          </span>
+        </div>
+
+        <div class="total">Trung bình từ {{ reviewSummary.totalReviews }} đánh giá</div>
+      </div>
+
+      <!-- Rating bars -->
+        <div class="bars">
+          <div class="bar-row" *ngFor="let star of [5,4,3,2,1]">
+          <span class="label">{{ star }} sao <small class="muted">- {{ ratingLabels[star] }}</small></span>
+
+          <div class="bar">
+            <div class="fill" [style.width.%]="ratingPercent(star)"></div>
+          </div>
+
+          <span class="value">{{ starCount(star) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= REVIEW FORM ======================= -->
+    <div class="apple-review-form">
+      <h4>Viết đánh giá</h4>
+
+      <div class="stars-input">
+        <span *ngFor="let s of [1,2,3,4,5]" (click)="newReview.rating = s">
+          <svg viewBox="0 0 24 24" class="apple-star" [class.active]="newReview.rating >= s">
+            <path d="M12 2.8l2.6 5.3 5.8.8-4.2 4.1 1 5.7-5.2-2.8-5.2 2.8 1-5.7-4.2-4.1 5.8-.8z" />
+          </svg>
+        </span>
+        <span class="label muted">{{ ratingLabels[newReview.rating] }}</span>
+      </div>
+
+      <textarea rows="3" [(ngModel)]="newReview.comment" placeholder="Chia sẻ cảm nhận của bạn...">
+      </textarea>
+
+      <button class="apple-btn-primary" (click)="submitReview()" [disabled]="submittingReview">
+        {{ submittingReview ? 'Đang gửi...' : 'Gửi đánh giá' }}
+      </button>
+    </div>
+
+    <!-- ======================= REVIEW LIST ======================= -->
+    <div class="review-list">
+      <article class="apple-review-card" *ngFor="let rv of reviews | slice:0:visibleReviews">
+
+        <div class="head">
+          <div class="user">
+            <div class="avatar">{{ rv.userName?.charAt(0) || 'U' }}</div>
+            <strong>{{ rv.userName || 'Khách hàng' }}</strong>
+
+        <div class="stars small">
+          <span *ngFor="let s of [1,2,3,4,5]">
+            <svg viewBox="0 0 24 24" class="apple-star small" [class.active]="rv.rating >= s">
+              <path d="M12 2.8l2.6 5.3 5.8.8-4.2 4.1 1 5.7-5.2-2.8-5.2 2.8 1-5.7-4.2-4.1 5.8-.8z" />
+            </svg>
+          </span>
+
+          <span class="value">{{ rv.rating }}/5</span>
+          <span class="muted value">{{ ratingLabels[rv.rating] }}</span>
+        </div>
+          </div>
+
+          <small class="muted">{{ rv.createdAt | date:'dd/MM/yyyy' }}</small>
+        </div>
+
+        <p>{{ rv.comment || 'Không có nội dung' }}</p>
+      </article>
+
+      <button class="load-more-btn" *ngIf="reviews.length > visibleReviews" (click)="loadMoreReviews()">
+        Xem thêm đánh giá
+      </button>
+    </div>
+  </section>
+
+  <!-- ================================================================================= -->
+  <!-- ============================= APPLE-STYLE COMMENTS ============================= -->
+  <!-- ================================================================================= -->
+
+  <section class="comments">
+
+    <div class="reviews__header">
+      <h3>Bình luận</h3>
+      <span class="muted">{{ comments.length }} bình luận</span>
+    </div>
+
+    <!-- COMMENT FORM -->
+    <div class="comment-form apple-comment-form">
+      <textarea rows="3" [(ngModel)]="newComment.content" placeholder="Chia sẻ thắc mắc hoặc nhận xét...">
+      </textarea>
+
+      <button class="apple-btn-primary" (click)="submitComment()" [disabled]="submittingComment">
+        {{ submittingComment ? 'Đang gửi...' : 'Gửi bình luận' }}
+      </button>
+    </div>
+
+    <!-- COMMENT LIST -->
+    <div class="comment-list">
+      <article class="apple-comment-card" *ngFor="let cm of comments | slice:0:visibleComments">
+
+        <div class="head">
+          <div class="user-info">
+            <div class="avatar">{{ cm.userName?.charAt(0) || 'U' }}</div>
+
+            <div>
+              <strong>{{ cm.userName || 'Người dùng' }}</strong>
+              <div class="muted text-xs">
+                {{ cm.createdAt | date:'dd/MM/yyyy HH:mm' }}
+              </div>
+            </div>
+          </div>
+
+          <button class="reply-btn" *ngIf="canReplyAsStaff" (click)="startReply(cm.id)">
+            Trả lời
+          </button>
+        </div>
+
+        <p class="comment-text">{{ cm.content }}</p>
+
+        <!-- REPLIES -->
+        <div class="replies" *ngIf="cm.replies?.length">
+          <article class="reply" *ngFor="let rep of cm.replies">
+
+            <div class="user-info">
+              <div class="avatar staff">Q</div>
+
+              <div>
+                <strong>{{ 'Quản trị viên hệ thống' }}</strong>
+                <div class="muted text-xs">
+                  {{ rep.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+              </div>
+            </div>
+
+            <p class="reply-text">{{ rep.content }}</p>
+          </article>
+        </div>
+
+        <!-- REPLY BOX -->
+        <div class="reply-box" *ngIf="replyingTo === cm.id && canReplyAsStaff">
+          <textarea rows="2" [(ngModel)]="replyInputs[cm.id]" placeholder="Nhập phản hồi...">
+          </textarea>
+
+          <div class="reply-actions">
+            <button class="apple-btn-primary" (click)="submitReply(cm.id)" [disabled]="submittingComment">
+              {{ submittingComment ? 'Đang gửi...' : 'Gửi trả lời' }}
+            </button>
+
+            <button class="btn btn-outline" (click)="cancelReply()">
+              Hủy
+            </button>
+          </div>
+        </div>
+
+      </article>
+
+      <!-- LOAD MORE -->
+      <button class="load-more-btn" *ngIf="comments.length > visibleComments" (click)="loadMoreComments()">
+        Xem thêm bình luận
+      </button>
+    </div>
+  </section>
+
+  <!-- ======================= LIGHTBOX ======================= -->
+  <div class="lightbox" *ngIf="lightboxOpen" (click)="closeLightbox()">
+    <div class="lightbox-inner" (click)="$event.stopPropagation()">
+      <button class="lightbox-close" type="button" (click)="closeLightbox()">&times;</button>
+      <button class="lightbox-nav prev" type="button" (click)="prevImage()">&lsaquo;</button>
+      <img [src]="currentImage" [alt]="product?.name" [class.fading]="imageSwitching" />
+      <button class="lightbox-nav next" type="button" (click)="nextImage()">&rsaquo;</button>
+    </div>
+  </div>
+
 </section>
 
+<!-- LOADING -->
 <ng-template #loadingTpl>
   <div class="state">Đang tải chi tiết...</div>
   <div *ngIf="error" class="state error">{{ error }}</div>
 </ng-template>
-

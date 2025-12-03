@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink,RouterLinkActive, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -12,6 +12,7 @@ import { RouterLink,RouterLinkActive, RouterOutlet } from '@angular/router';
 export class AdminLayoutComponent {
   sidebarOpen = true;
   submenuOpen = false;
+  inventorySubmenuOpen = false;
   mobileSidebar = false;
   isMobile = false;
 
@@ -25,6 +26,10 @@ export class AdminLayoutComponent {
 
   toggleSubmenu() {
     this.submenuOpen = !this.submenuOpen;
+  }
+
+  toggleInventorySubmenu() {
+    this.inventorySubmenuOpen = !this.inventorySubmenuOpen;
   }
 
   toggleMobileSidebar() {

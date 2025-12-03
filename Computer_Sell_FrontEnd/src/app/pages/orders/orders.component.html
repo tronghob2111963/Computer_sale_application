@@ -1,56 +1,394 @@
-<div class="container mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-4">Đơn hàng của tôi</h1>
+<div class="min-h-screen bg-slate-50 py-10">
+  <div class="max-w-6xl mx-auto px-4 space-y-8">
+    <div *ngIf="dashboardLoading" class="grid gap-4 animate-pulse">
+      <div class="h-40 rounded-3xl bg-white/60"></div>
+      <div class="h-32 rounded-3xl bg-white/60"></div>
+      <div class="h-64 rounded-3xl bg-white/60"></div>
+    </div>
 
-  <div *ngIf="loading" class="animate-pulse space-y-3">
-    <div class="h-24 bg-gray-100 rounded"></div>
-    <div class="h-24 bg-gray-100 rounded"></div>
-  </div>
-  <div *ngIf="error" class="text-red-600">{{ error }}</div>
+    <div
+      *ngIf="error"
+      class="bg-rose-50 border border-rose-100 text-rose-700 px-4 py-3 rounded-2xl flex items-center justify-between gap-4">
+      <span>{{ error }}</span>
+      <button type="button" class="text-sm font-semibold hover:text-rose-900" (click)="reloadData()">Thử lại</button>
+    </div>
 
-  <div *ngIf="!loading && orders.length === 0" class="text-gray-600 flex flex-col items-center py-10">
-    <img src="/empty-cart.svg" alt="empty" class="w-40 h-40 opacity-80 mb-4" onerror="this.style.display='none'"/>
-    <div class="mb-2">Chưa có đơn hàng nào.</div>
-    <a routerLink="/" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Mua sắm ngay</a>
-  </div>
-  <div class="grid gap-4" *ngIf="orders.length > 0">
-    <div class="bg-white shadow rounded p-4" *ngFor="let o of orders">
-      <div class="flex justify-between items-center">
-        <div>
-          <div class="font-semibold">Mã đơn: {{ o.id }}</div>
-          <div class="text-sm text-gray-500">Ngày đặt: {{ o.orderDate || o.createdAt | date:'short' }}</div>
+    <div class="grid lg:grid-cols-[280px,1fr] gap-6 items-start" *ngIf="!dashboardLoading">
+      <aside class="space-y-6" *ngIf="dashboard?.profile as profile">
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex gap-4">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-400 text-white font-semibold text-xl flex items-center justify-center">
+            {{ profile.avatarText }}
+          </div>
+          <div class="space-y-1">
+            <div class="text-lg font-semibold text-slate-900">{{ profile.fullName }}</div>
+            <div class="text-sm text-slate-500">{{ profile.phoneMasked }}</div>
+            <div class="flex flex-wrap gap-2 pt-2">
+              <span
+                class="px-2.5 py-1 bg-rose-50 text-rose-600 text-xs font-medium rounded-full"
+                *ngFor="let badge of profile.badges">
+                {{ badge }}
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">{{ o.status }}</span>
-          <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">{{ o.paymentStatus }}</span>
-        </div>
-      </div>
 
-      <div class="mt-3 text-gray-700 flex justify-between">
-        <div>Phương thức: <span class="font-medium">{{ o.paymentMethod }}</span></div>
-        <div class="font-bold text-blue-700">{{ (o.totalAmount || 0) | number }} ₫</div>
-      </div>
+        <nav class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-1" *ngIf="sidebarItems.length">
+          <button
+            class="w-full flex gap-3 items-center px-3 py-3 rounded-xl text-left transition hover:bg-slate-50"
+            *ngFor="let item of sidebarItems"
+            [class.bg-slate-100]="activeSection === item.key"
+            (click)="scrollTo(item.key)">
+            <div class="text-lg">{{ item.icon }}</div>
+            <div>
+              <div class="font-semibold text-slate-900">{{ item.label }}</div>
+              <div class="text-xs text-slate-500">{{ item.description }}</div>
+            </div>
+          </button>
+        </nav>
+      </aside>
 
-      <div class="mt-3 flex gap-2 justify-end">
-        <a [routerLink]="['/order', o.id]" class="px-3 py-1 border rounded hover:bg-gray-50">Chi tiết</a>
-        <button *ngIf="o.status === 'PENDING'" (click)="openCancelModal(o.id)" [disabled]="canceling[o.id]"
-                class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded disabled:opacity-60">
-          {{ canceling[o.id] ? 'Đang hủy...' : 'Hủy đơn' }}
-        </button>
-      </div>
+      <main class="space-y-8">
+        <section id="overview" class="w-full" *ngIf="dashboard as data">
+          <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <p class="text-sm text-white/70">Xin chào, {{ data.profile.fullName }}</p>
+                <h1 class="text-3xl font-semibold">Trung tâm khách hàng</h1>
+                <p class="text-white/70 mt-1">{{ data.profile.membershipMessage }}</p>
+                <p class="text-xs text-white/60 mt-2">
+                  Gia nhập từ {{ data.profile.memberSince | date:'dd/MM/yyyy' }}
+                </p>
+              </div>
+              <div class="bg-white/10 rounded-2xl px-4 py-3 text-sm text-white/80">
+                <div>Đánh giá tiếp theo</div>
+                <div class="text-lg font-semibold">{{ data.profile.nextReviewDate | date:'dd/MM/yyyy' }}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6" *ngIf="data.stats as stats">
+              <div class="bg-white/5 rounded-2xl p-4">
+                <div class="text-sm text-white/70">Tổng đơn</div>
+                <div class="text-2xl font-semibold">{{ stats.totalOrders }}</div>
+              </div>
+              <div class="bg-white/5 rounded-2xl p-4">
+                <div class="text-sm text-white/70">{{ stats.periodLabel }}</div>
+                <div class="text-2xl font-semibold">{{ stats.totalSpent | number:'1.0-0' }} ₫</div>
+              </div>
+              <div class="bg-white/5 rounded-2xl p-4">
+                <div class="text-sm text-white/70">Đang chờ</div>
+                <div class="text-2xl font-semibold">{{ stats.pendingCount }}</div>
+              </div>
+              <div class="bg-white/5 rounded-2xl p-4">
+                <div class="text-sm text-white/70">Yêu cầu hủy</div>
+                <div class="text-2xl font-semibold">{{ stats.cancelRequestedCount }}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section *ngIf="shortcutItems.length" class="flex flex-wrap gap-3">
+          <button
+            type="button"
+            class="px-4 py-2 rounded-full bg-white text-slate-700 border border-slate-200 hover:border-slate-400 flex items-center gap-2"
+            *ngFor="let item of shortcutItems"
+            (click)="scrollTo(item.key)">
+            <span>{{ item.icon }}</span>
+            <span class="text-sm font-medium">{{ item.label }}</span>
+          </button>
+        </section>
+
+        <section id="flow" class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Flow backend mới</p>
+              <h3 class="text-xl font-semibold text-slate-900">Đặt hàng & thanh toán</h3>
+            </div>
+            <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full">Flowchart TD</span>
+          </div>
+          <div class="space-y-4">
+            <div *ngFor="let stage of flowStages; let idx = index" class="flex gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-xl">
+                  {{ stage.icon }}
+                </div>
+                <div class="w-px flex-1 bg-slate-200" *ngIf="idx < flowStages.length - 1"></div>
+              </div>
+              <div class="flex-1 bg-slate-50 rounded-2xl border border-slate-100 p-4">
+                <div class="flex items-center justify-between gap-2">
+                  <h4 class="text-base font-semibold text-slate-900">{{ stage.title }}</h4>
+                  <span class="text-xs font-medium text-slate-500">{{ stage.highlight }}</span>
+                </div>
+                <p class="text-sm text-slate-600 mt-1">{{ stage.description }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="payments" class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Thanh toán</p>
+              <h3 class="text-xl font-semibold text-slate-900">Đơn hàng cần xử lý</h3>
+            </div>
+            <span class="text-xs text-slate-500">{{ pendingOrders.length }} đơn đang chờ</span>
+          </div>
+
+          <div *ngIf="pendingOrders.length === 0" class="text-sm text-slate-500 text-center py-8">
+            Tất cả các đơn hàng của bạn đã được thanh toán. Tiếp tục mua sắm để nhận thêm ưu đãi nhé!
+          </div>
+
+          <div class="space-y-6" *ngIf="pendingOrders.length">
+            <article class="border border-slate-100 rounded-2xl p-4 bg-slate-50" *ngFor="let order of pendingOrders">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs uppercase text-slate-500 tracking-wide">Đơn {{ order.code }}</p>
+                  <p class="text-base font-semibold text-slate-900">{{ order.detailsPreview }}</p>
+                  <p class="text-sm text-slate-500">
+                    {{ order.itemsCount }} sản phẩm · {{ order.totalAmount | number:'1.0-0' }} ₫
+                  </p>
+                  <p class="text-xs text-slate-400" *ngIf="order.orderDate">
+                    Đặt ngày: {{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}
+                  </p>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                  <span class="text-xs px-3 py-1 rounded-full font-medium" [ngClass]="toneClasses[order.paymentStatusTone]">
+                    {{ order.paymentStatusLabel }}
+                  </span>
+                  <span
+                    *ngIf="order.promoCode"
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">
+                    Promo: {{ order.promoCode }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  (click)="payCash(order.id)"
+                  [disabled]="paying[order.id]"
+                  class="px-4 py-2 text-sm font-semibold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60">
+                  {{ paying[order.id] ? 'Đang xử lý...' : 'Xác nhận tiền mặt' }}
+                </button>
+                <button
+                  type="button"
+                  *ngFor="let option of onlineOptions"
+                  (click)="startOnlinePayment(order.id, option.key)"
+                  class="px-4 py-2 text-sm font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-400"
+                  [title]="option.helper">
+                  {{ option.label }}
+                </button>
+                <button
+                  type="button"
+                  *ngIf="order.cancellable"
+                  (click)="openCancelModal(order.id)"
+                  class="px-4 py-2 text-sm font-semibold rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50">
+                  Yêu cầu hủy
+                </button>
+              </div>
+
+              <div class="mt-4 border-t border-slate-200 pt-4">
+                <div class="text-xs uppercase text-slate-500 tracking-wide mb-2">Bản ghi thanh toán</div>
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    class="px-3 py-1 text-xs rounded-full font-medium"
+                    *ngFor="let payment of order.payments"
+                    [ngClass]="toneSoftClasses[payment.tone]">
+                    {{ payment.methodLabel }} · {{ payment.statusLabel }}
+                  </span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="orders" class="grid lg:grid-cols-2 gap-6" *ngIf="dashboard as data">
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Đơn gần đây</p>
+                <h3 class="text-xl font-semibold text-slate-900">Hoạt động mới nhất</h3>
+              </div>
+              <a routerLink="/cart" class="text-sm font-semibold text-sky-600 hover:text-sky-700">Giỏ hàng</a>
+            </div>
+            <div *ngIf="!data.recentOrders?.length" class="text-sm text-slate-500 text-center py-8">
+              Chưa có đơn hàng nào. Mua sắm ngay để nhận ưu đãi nhé!
+            </div>
+            <div class="space-y-4" *ngIf="data.recentOrders?.length">
+              <article class="border border-slate-100 rounded-2xl p-4 hover:border-slate-200 transition" *ngFor="let card of data.recentOrders">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">{{ card.code }}</p>
+                    <p class="text-xs text-slate-500">{{ card.orderDate | date:'dd/MM/yyyy HH:mm' }}</p>
+                  </div>
+                  <span class="text-xs px-3 py-1 rounded-full font-medium" [ngClass]="toneClasses[card.statusTone || 'info']">
+                    {{ card.statusLabel }}
+                  </span>
+                </div>
+                <p class="text-sm text-slate-600 mt-2">{{ card.title }}</p>
+                <p class="text-xs text-slate-500">{{ card.subtitle }}</p>
+                <div class="flex items-center justify-between mt-4">
+                  <div class="text-base font-semibold text-slate-900">{{ card.totalAmount | number:'1.0-0' }} ₫</div>
+                  <div class="flex items-center gap-3 text-sm font-semibold">
+                    <a [routerLink]="['/order', card.id]" class="text-sky-600 hover:text-sky-700">Chi tiết</a>
+                    <button
+                      *ngIf="card.cancellable"
+                      type="button"
+                      (click)="openCancelModal(card.id)"
+                      class="text-rose-500 hover:text-rose-600">
+                      Hủy
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Ưu đãi</p>
+                <h3 class="text-xl font-semibold text-slate-900">Mã giảm giá của bạn</h3>
+              </div>
+              <a routerLink="/" class="text-sm font-semibold text-sky-600 hover:text-sky-700">Khám phá</a>
+            </div>
+            <div *ngIf="!data.offers?.length" class="text-sm text-slate-500 text-center py-8">
+              Chưa có ưu đãi khả dụng. Theo dõi thêm khuyến mãi tại trang chủ nhé!
+            </div>
+            <div class="space-y-4" *ngIf="data.offers?.length">
+              <article class="border border-slate-100 rounded-2xl p-4 flex items-center justify-between gap-4" *ngFor="let offer of data.offers">
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">{{ offer.title }}</p>
+                  <p class="text-xs text-slate-500">{{ offer.highlight }}</p>
+                  <p class="text-xs text-slate-400" *ngIf="offer.endDate">
+                    HSD: {{ offer.endDate | date:'dd/MM/yyyy' }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-violet-700 bg-violet-50 px-3 py-1 rounded-full inline-flex items-center gap-2">
+                    {{ offer.code }}
+                    <span class="text-[10px] uppercase text-violet-500">Sao chép</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-1">{{ offer.description || 'Áp dụng tại bước thanh toán' }}</p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="orders-list" class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Lịch sử</p>
+              <h3 class="text-xl font-semibold text-slate-900">Toàn bộ đơn hàng</h3>
+            </div>
+          </div>
+
+          <div *ngIf="ordersLoading" class="space-y-3">
+            <div class="h-16 rounded-2xl bg-slate-100 animate-pulse" *ngFor="let i of [0,1,2]"></div>
+          </div>
+
+          <div *ngIf="!ordersLoading && !orderCards.length" class="text-center text-slate-500 py-8">
+            <p>Chưa có đơn hàng nào.</p>
+            <a
+              routerLink="/"
+              class="inline-flex items-center justify-center px-5 py-2 mt-4 rounded-full bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700">
+              Mua sắm ngay
+            </a>
+          </div>
+
+          <div *ngIf="!ordersLoading && orderCards.length" class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="text-xs uppercase text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th class="py-3 pr-4 text-left font-semibold">Đơn hàng</th>
+                  <th class="py-3 px-4 text-left font-semibold">Trạng thái</th>
+                  <th class="py-3 px-4 text-left font-semibold">Thanh toán</th>
+                  <th class="py-3 px-4 text-right font-semibold">Giá trị</th>
+                  <th class="py-3 pl-4 text-right font-semibold">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let order of orderCards">
+                  <td class="py-4 pr-4 align-top">
+                    <div class="font-semibold text-slate-900">{{ order.code }}</div>
+                    <div class="text-xs text-slate-500" *ngIf="order.orderDate">
+                      {{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                    <div class="text-xs text-slate-400">{{ order.detailsPreview }}</div>
+                    <div class="text-xs text-violet-600" *ngIf="order.promoCode">Mã giảm: {{ order.promoCode }}</div>
+                  </td>
+                  <td class="py-4 px-4 align-top">
+                    <span class="text-xs px-3 py-1 rounded-full font-medium" [ngClass]="toneClasses[order.statusTone]">
+                      {{ order.statusLabel }}
+                    </span>
+                  </td>
+                  <td class="py-4 px-4 align-top space-y-2">
+                    <span class="text-xs px-3 py-1 rounded-full font-medium" [ngClass]="toneClasses[order.paymentStatusTone]">
+                      {{ order.paymentStatusLabel }}
+                    </span>
+                    <div class="flex flex-wrap gap-1">
+                      <span
+                        class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
+                        *ngFor="let payment of order.payments">
+                        {{ payment.methodLabel }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4 text-right align-top font-semibold text-slate-900">
+                    {{ order.totalAmount | number:'1.0-0' }} ₫
+                  </td>
+                  <td class="py-4 pl-4 text-right align-top">
+                    <div class="flex flex-wrap justify-end gap-2">
+                      <a
+                        [routerLink]="['/order', order.id]"
+                        class="px-3 py-1.5 text-sm font-semibold text-sky-600 hover:text-sky-700">
+                        Chi tiết
+                      </a>
+                      <button
+                        type="button"
+                        *ngIf="order.cancellable"
+                        (click)="openCancelModal(order.id)"
+                        class="px-3 py-1.5 text-sm font-semibold text-rose-500 hover:text-rose-600">
+                        Hủy đơn
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
     </div>
   </div>
 </div>
 
-<!-- Cancel modal -->
-<div *ngIf="cancelModal.show" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-5">
-    <div class="text-lg font-semibold mb-2">Gửi yêu cầu hủy đơn</div>
-    <p class="text-sm text-gray-600 mb-3">Đơn sẽ chuyển sang trạng thái chờ duyệt hủy. Vui lòng cung cấp lý do:</p>
-    <textarea [(ngModel)]="cancelModal.reason" rows="4" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring"
-              placeholder="Ví dụ: Đặt nhầm sản phẩm, thay đổi kế hoạch..."></textarea>
-    <div class="flex justify-end gap-2 mt-4">
-      <button class="px-4 py-2 border rounded hover:bg-gray-50" (click)="closeCancel()">Đóng</button>
-      <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded" (click)="submitCancel()">Gửi yêu cầu</button>
+<div *ngIf="cancelModal.show" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+  <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 class="text-xl font-semibold text-slate-900">Gửi yêu cầu hủy đơn</h3>
+      <button class="text-slate-400 hover:text-slate-600" (click)="closeCancel()">✕</button>
     </div>
+    <p class="text-sm text-slate-600">
+      Đơn hàng sẽ chuyển sang trạng thái chờ duyệt hủy. Vui lòng nêu lý do để chúng tôi hỗ trợ nhanh hơn.
+    </p>
+    <textarea
+      rows="4"
+      [(ngModel)]="cancelModal.reason"
+      class="w-full border border-slate-200 rounded-2xl p-3 focus:outline-none focus:ring-2 focus:ring-sky-200"
+      placeholder="Ví dụ: Đặt nhầm sản phẩm, thay đổi kế hoạch..."></textarea>
+    <div class="flex justify-end gap-3 pt-2">
+      <button type="button" class="px-4 py-2 rounded-xl border border-slate-200" (click)="closeCancel()">Đóng</button>
+      <button type="button" class="px-4 py-2 rounded-xl bg-rose-600 text-white font-semibold" (click)="submitCancel()">
+        Gửi yêu cầu
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="toast.show" class="fixed bottom-6 right-6 z-50">
+  <div class="px-4 py-3 rounded-2xl shadow-2xl text-sm font-semibold" [ngClass]="toastToneClasses[toast.tone]">
+    {{ toast.message }}
   </div>
 </div>

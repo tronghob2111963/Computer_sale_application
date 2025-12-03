@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -74,4 +75,21 @@ public class PaymentController {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
     }
+
+    @Operation(summary = "Tạo thanh toán VNPay")
+    @PostMapping("/vnpay/{orderId}")
+    public ResponseData<PaymentResponse> createVNPayPayment(@PathVariable UUID orderId) {
+        try {
+            return new ResponseData<>(200, "Tạo thanh toán VNPay thành công",
+                    paymentService.createVNPayPayment(orderId));
+        } catch (Exception e) {
+            return new ResponseError(400, e.getMessage());
+        }
+    }
+
+    @GetMapping("/vnpay/ipn")
+    public String vnpayIPN(@RequestParam Map<String, String> params) {
+        return paymentService.handleVNPayIPN(params);
+    }
+
 }

@@ -17,11 +17,13 @@ public class PaymentResponse {
     private UUID id;
     private UUID orderId;
     private String transactionId;       // Mã giao dịch (nếu online)
-    private String paymentMethod;       // CASH / VNPAY / MOMO
+    private String paymentMethod;       // CASH / VNPAY / MOMO / VIETQR
     private BigDecimal amount;          // Tổng số tiền thanh toán
     private String paymentStatus;       // PENDING / SUCCESS / FAILED
     private LocalDateTime paymentDate;  // Thời điểm thanh toán
     private String customerName;        // (optional) Dễ xem trong admin
+    private String proofImageUrl;       // URL ảnh xác nhận chuyển khoản (VietQR)
+    private String qrCodeUrl;           // URL mã QR VietQR (generated)
 
     // Convert từ Entity sang DTO
     public static PaymentResponse fromEntity(PaymentEntity entity) {
@@ -36,6 +38,7 @@ public class PaymentResponse {
                 .customerName(entity.getOrder().getUser() != null
                         ? entity.getOrder().getUser().getFirstName() + " " + entity.getOrder().getUser().getLastName()
                         : null)
+                .proofImageUrl(entity.getProofImageUrl())
                 .build();
     }
 }

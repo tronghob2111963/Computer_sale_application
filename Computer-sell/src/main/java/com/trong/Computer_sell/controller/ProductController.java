@@ -5,6 +5,7 @@ import com.trong.Computer_sell.DTO.request.product.ProductRequestDTO;
 import com.trong.Computer_sell.DTO.request.product.ProductUpdateRequestDTO;
 import com.trong.Computer_sell.DTO.response.common.ResponseData;
 import com.trong.Computer_sell.DTO.response.common.ResponseError;
+import com.trong.Computer_sell.common.ProductStatus;
 import com.trong.Computer_sell.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -155,8 +157,9 @@ public class ProductController {
         }
     }
 
-    @Operation(summary = "Delete Product",description = "Delete Product")
+    @Operation(summary = "Delete Product (Hard Delete)", description = "Xóa cứng sản phẩm - Không khuyến khích sử dụng")
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin')")
     public ResponseData<Object> deleteProduct(@PathVariable UUID id){
         log.info("Delete product with product id", id);
         try{
@@ -167,5 +170,46 @@ public class ProductController {
         }
     }
 
+    // ==================== SOFT DELETE & STATUS MANAGEMENT ====================
 
+    @Operation(summary = "Soft Delete Product", description = "Xóa mềm sản phẩm - Chuyển trạng thái sang DELETED")
+    @PutMapping("/soft-delete/{id}")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin')")
+    public ResponseData<Object> softDeleteProduct(@PathVariable UUID id){
+        log.info("Soft delete product with id: {}", id);
+        try{
+            productService.softDeleteProduct(id);
+            return new ResponseData<>(HttpStatus.OK.value(), "Product soft deleted successfully", null);
+        }catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Restore Product", description = "Khôi phục sản phẩm đã xóa mềm")
+    @PutMapping("/restore/{id}")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin')")
+    public ResponseData<Object> restoreProduct(@PathVariable UUID id){
+        log.info("Restore product with id: {}", id);
+        try{
+            productService.restoreProduct(id);
+            return new ResponseData<>(HttpStatus.OK.value(), "Product restored successfully", null);
+        }catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Update Product Status", description = "Cập nhật trạng thái sản phẩm (ACTIVE/INACTIVE/DELETED)")
+    @PutMapping("/status/{id}")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin')")
+    public ResponseData<Object> updateProductStatus(
+            @PathVariable UUID id,
+            @RequestParam ProductStatus status){
+        log.info("Update product {} status to {}", id, status);
+        try{
+            productService.updateProductStatus(id, status);
+            return new ResponseData<>(HttpStatus.OK.value(), "Product status updated successfully", null);
+        }catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
 }

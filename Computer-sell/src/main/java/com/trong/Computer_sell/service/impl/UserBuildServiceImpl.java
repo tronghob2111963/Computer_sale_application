@@ -119,6 +119,28 @@ public class UserBuildServiceImpl implements UserBuildService {
         return toResponse(buildRepository.findById(buildId)
                 .orElseThrow(() -> new RuntimeException("Build not found")));
     }
+    
+    @Override
+    public UserBuildResponse updateProductQuantity(UUID buildId, UUID productId, int quantity) {
+        UserBuildEntity build = buildRepository.findById(buildId)
+                .orElseThrow(() -> new RuntimeException("Build not found"));
+        
+        UserBuildDetailEntity detail = detailRepository.findByBuildIdAndProductId(buildId, productId);
+        if (detail == null) {
+            throw new RuntimeException("Product not found in build");
+        }
+        
+        detail.setQuantity(quantity);
+        detailRepository.save(detail);
+        
+        // Cập nhật tổng giá
+        BigDecimal total = detailRepository.findByBuildId(buildId).stream()
+                .map(d -> d.getProduct().getPrice().multiply(BigDecimal.valueOf(d.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        build.setTotalPrice(total);
+        return toResponse(buildRepository.save(build));
+    }
 
     private UserBuildResponse toResponse(UserBuildEntity build) {
         List<UserBuildDetailResponse> detailResponses = build.getDetails().stream()

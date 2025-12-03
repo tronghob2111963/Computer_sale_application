@@ -1,6 +1,104 @@
-<div class="p-4">
-    <h1 class="text-2xl font-bold text-blue-700 mb-4">💬 Phản hồi khách hàng</h1>
-    <div class="bg-white rounded-lg shadow p-4">
-        <p>Duyệt, trả lời hoặc xóa phản hồi của người dùng.</p>
+<div class="reviews-admin">
+  <header>
+    <div>
+      <p class="eyebrow">Quản lý đánh giá và bình luận</p>
+      <h1>{{ viewMode === 'reviews' ? 'Danh sách đánh giá sản phẩm' : 'Bình luận sản phẩm' }}</h1>
+      <small>Lọc theo trạng thái, từ khóa và duyệt nhanh.</small>
+      <div class="tabs">
+        <button [class.active]="viewMode==='reviews'" (click)="switchView('reviews')">Đánh giá</button>
+        <button [class.active]="viewMode==='comments'" (click)="switchView('comments')">Bình luận</button>
+      </div>
     </div>
+    <div class="meta">
+      <span>Tong ban ghi: {{ currentTotalElements }}</span>
+      <span>Trang {{ currentPage }}/{{ currentTotalPages }}</span>
+    </div>
+  </header>
+
+  <section class="filters">
+    <div>
+      <label>Từ khóa</label>
+      <input type="text" [(ngModel)]="keyword" placeholder="Khách hàng, nội dung..." />
+    </div>
+    <div>
+      <label>Trạng thái</label>
+      <select [(ngModel)]="status">
+        <option *ngFor="let s of statusOptions" [ngValue]="s.value">{{ s.label }}</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="primary" (click)="applyFilters()">Áp dụng</button>
+    </div>
+  </section>
+
+  <div *ngIf="error" class="error-banner">{{ error }}</div>
+  <div *ngIf="loading" class="loading">Dang tai...</div>
+
+  <div class="table-wrap" *ngIf="!loading && viewMode==='reviews' && items.length">
+    <table>
+      <thead>
+        <tr>
+          <th>Khách hàng</th>
+          <th>Sản phẩm</th>
+          <th>Điểm</th>
+          <th>Nội dung</th>
+          <th>Trạng thái</th>
+          <th>Ngày</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of items">
+          <td>{{ r.userName || 'Khach hang' }}</td>
+          <td>{{ r.productName || r.productId }}</td>
+          <td>{{ r.rating }}/5</td>
+          <td class="text">{{ r.comment || 'Khong co noi dung' }}</td>
+          <td><span class="badge" [class.approved]="r.status==='APPROVED'" [class.pending]="r.status==='PENDING'" [class.rejected]="r.status==='REJECTED'">{{ r.status }}</span></td>
+          <td>{{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="actions">
+            <button class="ghost" (click)="goToReviewProduct(r)">Chi tiết sản phẩm</button>
+            <button class="ghost" (click)="changeStatus(r, 'APPROVED')" [disabled]="r.status==='APPROVED'">Duyệt</button>
+            <button class="ghost danger" (click)="changeStatus(r, 'REJECTED')" [disabled]="r.status==='REJECTED'">Từ chối</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap" *ngIf="!loading && viewMode==='comments' && commentItems.length">
+    <table>
+      <thead>
+        <tr>
+          <th>Người viết</th>
+          <th>Sản phẩm</th>
+          <th>Nội dung</th>
+          <th>Trạng thái</th>
+          <th>Ngày</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of commentItems">
+          <td>{{ c.userName || 'Người dùng' }}</td>
+          <td>{{ c.productName || c.productId }}</td>
+          <td class="text">{{ c.content }}</td>
+          <td><span class="badge" [class.approved]="c.status==='APPROVED'" [class.pending]="c.status==='PENDING'" [class.rejected]="c.status==='REJECTED'">{{ c.status }}</span></td>
+          <td>{{ c.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="actions">
+            <button class="ghost" (click)="goToProductDetail(c)">Chi tiết sản phẩm</button>
+            <button class="ghost danger" (click)="changeCommentStatus(c, 'REJECTED')" [disabled]="c.status==='REJECTED'">Tu choi</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && viewMode==='reviews' && !items.length && !error" class="empty">Chưa có đánh giá nào</div>
+  <div *ngIf="!loading && viewMode==='comments' && !commentItems.length && !error" class="empty">Chưa có bình luận nào</div>
+
+  <div class="pagination" *ngIf="currentTotalPages > 1">
+    <button (click)="changePage(-1)" [disabled]="currentPage === 1">Trước</button>
+    <span>Trang {{ currentPage }} / {{ currentTotalPages }}</span>
+    <button (click)="changePage(1)" [disabled]="currentPage === currentTotalPages">Sau</button>
+  </div>
 </div>

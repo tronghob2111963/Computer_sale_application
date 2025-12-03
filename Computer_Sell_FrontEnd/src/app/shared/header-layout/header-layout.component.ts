@@ -32,32 +32,49 @@ export class HeaderLayoutComponent implements OnInit, OnDestroy {
     private categoryService: CategoryService,
     public router: Router,
 
-  ) {}
+  ) { }
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
   ngOnInit(): void {
-    this.username = this.authService.getUsername();
-    this.isLoggedIn = !!this.username;
-    if (this.isLoggedIn) {
-      this.loadCartCount();
-    }
+    // Initial check
+    this.updateAuthState();
+
     // preload categories for dropdown
     this.loadCategories();
 
     // detect admin pages to hide bar
     const checkRoute = () => this.isAdminRoute = this.router.url.startsWith('/admin');
     checkRoute();
-    this.router.events.subscribe(e => { if (e instanceof NavigationEnd) { checkRoute(); } });
+    this.router.events.subscribe(e => {
+      if (e instanceof NavigationEnd) {
+        checkRoute();
+        // Re-check auth state on navigation
+        this.updateAuthState();
+      }
+    });
 
+    // Subscribe to auth state changes
     this.sub = this.authState.username$.subscribe(name => {
-      this.username = name;
-      this.isLoggedIn = !!name;
-      if (this.isLoggedIn) this.loadCartCount();
+      console.log('Auth state changed - username:', name); // Debug log
+      this.username = name || this.authService.getUsername();
+      this.isLoggedIn = !!this.username;
+      if (this.isLoggedIn) {
+        this.loadCartCount();
+      }
     });
 
     // auto-refresh badge when cart changes anywhere
     this.cartSub = this.cartService.cartUpdated$.subscribe(() => this.loadCartCount());
+  }
+
+  private updateAuthState(): void {
+    this.username = this.authService.getUsername();
+    this.isLoggedIn = !!this.username;
+    console.log('Updated auth state - username:', this.username, 'isLoggedIn:', this.isLoggedIn); // Debug log
+    if (this.isLoggedIn) {
+      this.loadCartCount();
+    }
   }
 
   logout(): void {

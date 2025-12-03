@@ -15,9 +15,16 @@ public class PageResponse<T> implements Serializable {
     private int pageSize;
     private long totalElements;
     private int totalPages;
+    private boolean last;
     private T items;
 
-    public <R> PageResponse(R collect, int i, int size, long totalElements, int totalPages, boolean last) {
+    public PageResponse(T items, int pageNo, int pageSize, long totalElements, int totalPages, boolean last) {
+        this.items = items;
+        this.pageNo = pageNo;
+        this.pageSize = pageSize;
+        this.totalElements = totalElements;
+        this.totalPages = totalPages;
+        this.last = last;
     }
 }
 

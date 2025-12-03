@@ -22,7 +22,7 @@ export class CategoryService {
   private readonly API_URL_PRIMARY = `${environment.apiUrl}/category`;
   private readonly API_URL_FALLBACK = `${environment.apiUrl}/category`;
 
-  constructor(private http: HttpClient, private cookies: CookieService) {}
+  constructor(private http: HttpClient, private cookies: CookieService) { }
 
   listCategories(params: CategoryListParams = {}): Observable<ResponseEnvelope<PageResponse<CategoryDTO>>> {
     const headers = this.authHeaders();
@@ -54,6 +54,10 @@ export class CategoryService {
 
   private authHeaders(): HttpHeaders {
     const token = this.cookies.get('accessToken');
-    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+    // Only add Authorization header if token exists and is not empty
+    if (token && token !== 'undefined' && token !== 'null' && token.trim() !== '') {
+      return new HttpHeaders({ Authorization: `Bearer ${token}` });
+    }
+    return new HttpHeaders();
   }
 }

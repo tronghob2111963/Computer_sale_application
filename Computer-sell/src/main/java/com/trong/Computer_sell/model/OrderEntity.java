@@ -53,5 +53,7 @@ public class OrderEntity extends AbstractEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PaymentEntity> payments = new ArrayList<>();
 
+
+
     private String note; // Ghi chú của khách
 }

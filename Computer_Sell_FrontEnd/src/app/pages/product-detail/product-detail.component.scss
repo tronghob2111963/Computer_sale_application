@@ -1,60 +1,895 @@
-.product-page { padding: 16px; }
+/* ================================================================
+   GENERAL
+================================================================ */
+.product-page {
+  padding: 20px;
+  background: #fafafa;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", Roboto, sans-serif;
+}
 
-.breadcrumb { color: #6b7280; font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-.breadcrumb a { color: inherit; text-decoration: none; }
-.breadcrumb .current { color: #111827; font-weight: 500; }
+/* ======================= BREADCRUMB ======================= */
+.breadcrumb {
+  color: #6b7280;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
 
-.product-main { display: grid; grid-template-columns: 1.4fr 1fr 0.7fr; gap: 24px; }
+.breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
 
-.gallery .image-wrap { position: relative; }
-.gallery .main { width: 100%; height: 460px; object-fit: cover; border-radius: 10px; background: #f3f4f6; }
-.badge.sale { position: absolute; top: 12px; left: 12px; background: #ef4444; color: #fff; padding: 4px 8px; font-weight: 700; border-radius: 6px; font-size: 12px; }
-.thumbs { margin-top: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-.thumbs img { width: 100%; height: 72px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; background: #f9fafb; }
-.thumbs img.active { border-color: #ef4444; }
+.breadcrumb .current {
+  color: #111827;
+  font-weight: 600;
+}
 
-.info .title { margin: 0 0 8px; font-size: 22px; line-height: 1.35; font-weight: 700; color: #111827; }
-.info .meta { display: grid; grid-template-columns: 1fr; gap: 6px; color: #6b7280; font-size: 14px; margin-bottom: 10px; }
-.info .status .dot { display: inline-block; width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; margin-right: 6px; }
-.info .status .dot.ok { background: #16a34a; }
+/* ======================= MAIN GRID ======================= */
+.product-main {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.7fr;
+  gap: 28px;
+}
 
-.price-row { display: flex; align-items: center; gap: 12px; margin: 12px 0 16px; }
-.price-row .price { color: #e11d48; font-size: 28px; font-weight: 800; }
-.price-row .original { color: #9ca3af; text-decoration: line-through; font-size: 14px; }
-.price-row .discount { background: #fee2e2; color: #b91c1c; padding: 2px 8px; font-size: 12px; border-radius: 999px; font-weight: 700; }
+/* ================================================================
+   GALLERY — APPLE STYLE
+================================================================ */
+.gallery .image-wrap {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
 
-.qty-row { margin-bottom: 12px; }
-.stepper { display: inline-flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-.stepper button { width: 36px; height: 36px; border: none; background: #f3f4f6; cursor: pointer; font-size: 18px; }
-.stepper input { width: 60px; height: 36px; border: none; text-align: center; outline: none; }
+/* Ảnh chính + animation */
+.gallery .main {
+  width: 100%;
+  height: 480px;
+  object-fit: cover;
+  border-radius: 18px;
+  cursor: zoom-in;
+  transition: opacity 0.26s ease, transform 0.26s ease;
+  will-change: transform, opacity;
+}
 
-.actions { display: flex; gap: 12px; margin: 10px 0 14px; }
-.btn { padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; border: 1px solid transparent; }
-.btn-primary { background: #e11d48; color: #fff; }
-.btn-outline { background: transparent; color: #e11d48; border-color: #e11d48; }
+.gallery .main.fading {
+  opacity: 0.7;
+  transform: scale(0.99);
+}
 
-.share { display: flex; align-items: center; gap: 10px; color: #6b7280; }
-.share a { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #f3f4f6; color: #374151; text-decoration: none; font-weight: 700; }
+.gallery .main.slide-in-right {
+  animation: slideInRight 0.26s ease-out;
+}
 
-.sidebar .policy-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
-.sidebar h4 { margin: 0 0 8px; font-size: 14px; color: #111827; }
-.sidebar ul { list-style: none; padding: 0; margin: 0 0 12px; color: #374151; }
-.sidebar li { padding: 6px 0; border-bottom: 1px dashed #e5e7eb; }
-.sidebar .banner { width: 100%; margin-top: 12px; border-radius: 10px; }
+.gallery .main.slide-in-left {
+  animation: slideInLeft 0.26s ease-out;
+}
 
-.description { margin-top: 22px; border-top: 1px solid #e5e7eb; padding-top: 16px; }
-.description h3 { margin: 0 0 10px; font-size: 18px; }
-.description .content { color: #374151; line-height: 1.6; }
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+  }
 
-.state { padding: 16px; }
-.state.error { color: #dc2626; }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
 
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Nút điều hướng ảnh */
+.gallery .gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.9);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  transition: box-shadow 0.18s ease, transform 0.18s ease, background 0.18s ease;
+  backdrop-filter: blur(8px);
+}
+
+.gallery .gallery-nav:hover:not(:disabled) {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  transform: translateY(-50%) translateY(-1px) scale(1.04);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.gallery .gallery-nav:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.97);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+}
+
+.gallery .gallery-nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.gallery .gallery-nav.prev {
+  left: 12px;
+}
+
+.gallery .gallery-nav.next {
+  right: 12px;
+}
+
+.badge.sale {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #ef4444;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.thumbs {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.thumbs img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.thumbs img:hover {
+  transform: translateY(-2px);
+  border-color: #3b82f6;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.16);
+}
+
+.thumbs img.active {
+  border-color: #e11d48;
+  box-shadow: 0 8px 22px rgba(190, 24, 93, 0.35);
+}
+
+/* ======================= LIGHTBOX ======================= */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.lightbox-inner {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fff;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #111827;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.lightbox-nav {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  font-size: 22px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lightbox-nav.prev {
+  left: -52px;
+}
+
+.lightbox-nav.next {
+  right: -52px;
+}
+
+/* ================================================================
+   PRODUCT INFO — APPLE STYLE
+================================================================ */
+.info .title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.info .meta {
+  display: grid;
+  gap: 6px;
+  color: #6b7280;
+  font-size: 15px;
+  margin-bottom: 14px;
+}
+
+.info .status .dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  background: #9ca3af;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.info .status .dot.ok {
+  background: #22c55e;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0 20px;
+}
+
+.price {
+  color: #e11d48;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.original {
+  color: #9ca3af;
+  text-decoration: line-through;
+  font-size: 15px;
+}
+
+.discount {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* QTY */
+.qty-row {
+  margin-bottom: 14px;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.stepper button {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: #f3f4f6;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.stepper input {
+  width: 64px;
+  height: 38px;
+  border: none;
+  text-align: center;
+}
+
+/* BUTTONS */
+.actions {
+  display: flex;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+
+.btn {
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary {
+  background: #111827;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  background: #000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #111827;
+  border-color: #111827;
+}
+
+.btn-outline:hover {
+  background: #f3f4f6;
+}
+
+/* SHARE */
+.share {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #6b7280;
+}
+
+.share a {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 50%;
+  font-weight: 700;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.share a:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+/* ================================================================
+   SIDEBAR — APPLE STYLE
+================================================================ */
+.sidebar {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+.policy-card {
+  background: #ffffff;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sidebar ul {
+  padding: 0;
+  margin: 0 0 14px;
+  list-style: none;
+}
+
+.sidebar li {
+  padding: 6px 0;
+  border-bottom: 1px dashed #e5e7eb;
+  color: #374151;
+}
+
+.sidebar .banner {
+  margin-top: 14px;
+  width: 100%;
+  border-radius: 16px;
+}
+
+/* ================================================================
+   DESCRIPTION
+================================================================ */
+.description {
+  margin-top: 32px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 18px;
+}
+
+.description h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* ================================================================
+   APPLE STAR — Rounded Premium
+================================================================ */
+.apple-star {
+  width: 26px;
+  height: 26px;
+  fill: #d1d5db;
+  stroke: #cbd5e1;
+  stroke-width: 1.2;
+  transition: fill 0.25s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.apple-star.active {
+  fill: #facc15;
+  stroke: #eab308;
+}
+
+.apple-star.small {
+  width: 20px;
+  height: 20px;
+}
+
+.stars-input .apple-star:hover {
+  transform: scale(1.15);
+}
+
+/* ================================================================
+   APPLE REVIEW SUMMARY
+================================================================ */
+.apple-score {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 24px;
+  gap: 24px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+.avg-box {
+  text-align: center;
+}
+
+.avg-value {
+  font-size: 48px;
+  font-weight: 700;
+}
+
+.avg-box .stars {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.avg-box .total {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Bars */
+.bars {
+  display: grid;
+  gap: 12px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 40px;
+  align-items: center;
+}
+
+.bar {
+  height: 10px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar .fill {
+  height: 100%;
+  background: #facc15;
+  transition: width 0.35s ease;
+}
+
+/* ================================================================
+   APPLE REVIEW FORM
+================================================================ */
+.apple-review-form {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.apple-review-form textarea {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 15px;
+}
+
+/* Apple Button */
+.apple-btn-primary {
+  padding: 12px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apple-btn-primary:hover {
+  background: #000;
+}
+
+/* ================================================================
+   APPLE REVIEW CARD
+================================================================ */
+.apple-review-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+}
+
+.apple-review-card .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.apple-review-card .avatar {
+  width: 42px;
+  height: 42px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-right: 10px;
+}
+
+.apple-review-card .stars.small {
+  display: flex;
+  gap: 2px;
+}
+
+.apple-review-card p {
+  color: #111827;
+  margin: 4px 0 0;
+}
+
+/* ================================================================
+   COMMENTS — APPLE STYLE
+================================================================ */
+.apple-comment-form {
+  background: #fff;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+  display: grid;
+  gap: 12px;
+}
+
+.apple-comment-form textarea {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.apple-comment-card {
+  background: #fff;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  display: grid;
+  gap: 10px;
+}
+
+.apple-comment-card .head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.apple-comment-card .user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.apple-comment-card .avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.apple-comment-card .avatar.staff {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.reply-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.replies {
+  border-left: 3px solid #e5e7eb;
+  padding-left: 16px;
+  margin-top: 10px;
+  display: grid;
+  gap: 12px;
+}
+
+.reply {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.reply-text {
+  color: #111827;
+  margin-top: 4px;
+}
+
+.reply-box textarea {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ================================================================
+   LOAD MORE
+================================================================ */
+.load-more-btn {
+  padding: 10px 18px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 6px auto;
+  display: block;
+  color: #374151;
+  transition: background 0.1s ease;
+}
+
+.load-more-btn:hover {
+  background: #e5e7eb;
+}
+
+/* ================================================================
+   STATE
+================================================================ */
+.state {
+  padding: 20px;
+}
+
+.state.error {
+  color: #dc2626;
+}
+
+.desc-list {
+  list-style: disc;
+  padding-left: 18px;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* ======================= SIMILAR PRODUCTS ======================= */
+.similar {
+  margin-top: 24px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.similar .section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.similar .section-head h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.similar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.similar-card {
+  display: block;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.similar-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.similar-card .thumb {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.similar-card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.similar-card .name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.similar-card .price {
+  font-weight: 700;
+  color: #0ea5e9;
+}
+
+.similar-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.similar-track {
+  overflow: hidden;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 220px;
+  gap: 12px;
+  padding: 4px;
+  scroll-behavior: smooth;
+}
+
+.nav {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #111827;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.nav:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.nav:active {
+  transform: translateY(0);
+}
+
+/* ================================================================
+   RESPONSIVE
+================================================================ */
 @media (max-width: 1100px) {
-  .product-main { grid-template-columns: 1.2fr 1fr; }
-  .sidebar { display: none; }
+  .product-main {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
-  .product-main { grid-template-columns: 1fr; }
-  .gallery .main { height: 360px; }
+  .product-main {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery .main {
+    height: 360px;
+  }
+
+  .apple-score {
+    grid-template-columns: 1fr;
+  }
 }

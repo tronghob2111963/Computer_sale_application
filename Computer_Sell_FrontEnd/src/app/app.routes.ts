@@ -22,6 +22,7 @@ import { AdminEmployeesComponent } from './pages/admin/admin-employees/admin-emp
 import { AdminImportReceiptsComponent } from './pages/admin/admin-import-receipts/admin-import-receipts.component';
 import { AdminImportReceiptCreateComponent } from './pages/admin/admin-import-receipt-create/admin-import-receipt-create.component';
 import { AdminImportReceiptDetailComponent } from './pages/admin/admin-import-receipt-detail/admin-import-receipt-detail.component';
+import { AdminStockComponent } from './pages/admin/admin-stock/admin-stock.component';
 import { HomeComponent } from './pages/home/home.component';
 import { ProductDetailComponent } from './pages/product-detail/product-detail.component';
 import { CartComponent } from './pages/cart/cart.component';
@@ -29,17 +30,23 @@ import { CheckoutComponent } from './pages/checkout/checkout.component';
 import { OrdersComponent } from './pages/orders/orders.component';
 import { OrderDetailComponent } from './pages/order-detail/order-detail.component';
 import { AdminCustommerComponent } from './pages/admin/admin-custommer/admin-custommer.component';
+import { VnpayReturnComponent } from './pages/payment-return/vnpay-return.component';
+import { PcBuilderComponent } from './pages/pc-builder/pc-builder.component';
+import { MyBuildsComponent } from './pages/my-builds/my-builds.component';
 
 export const routes: Routes = [
-     { path: '', component: HomeComponent },
-     { path: 'login', component: LoginComponent },
-     { path: 'register', component: RegisterComponent },
-     { path: 'product/:id', component: ProductDetailComponent },
-     { path: 'cart', component: CartComponent },
-     { path: 'checkout', component: CheckoutComponent },
-     { path: 'orders', component: OrdersComponent },
-     { path: 'order/:id', component: OrderDetailComponent },
-{
+  { path: '', component: HomeComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'product/:id', component: ProductDetailComponent },
+  { path: 'cart', component: CartComponent },
+  { path: 'checkout', component: CheckoutComponent },
+  { path: 'orders', component: OrdersComponent },
+  { path: 'order/:id', component: OrderDetailComponent },
+  { path: 'payment/vnpay-return', component: VnpayReturnComponent },
+  { path: 'pc-builder', component: PcBuilderComponent },
+  { path: 'my-builds', component: MyBuildsComponent },
+  {
     path: 'admin',
     component: AdminLayoutComponent,
     children: [
@@ -56,6 +63,7 @@ export const routes: Routes = [
       { path: 'import-receipts', component: AdminImportReceiptsComponent },
       { path: 'import-receipts/create', component: AdminImportReceiptCreateComponent },
       { path: 'import-receipts/:id', component: AdminImportReceiptDetailComponent },
+      { path: 'stock', component: AdminStockComponent },
       { path: 'payments', component: AdminPaymentsComponent },
       { path: 'promotions', component: AdminPromotionsComponent },
       { path: 'warranty', component: AdminWarrantyComponent },

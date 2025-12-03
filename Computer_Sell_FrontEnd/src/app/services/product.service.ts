@@ -11,6 +11,9 @@ export interface ResponseEnvelope<T = any> {
   data: T;
 }
 
+// Product status enum
+export type ProductStatus = 'ACTIVE' | 'INACTIVE' | 'DELETED';
+
 export interface PageResponse<T = any> {
   pageNo: number;
   pageSize: number;
@@ -47,7 +50,7 @@ export interface UpdateProductPayload extends Partial<CreateProductPayload> {
 export class ProductService {
   private readonly API_URL = `${environment.apiUrl}/product`;
 
-  constructor(private http: HttpClient, private cookies: CookieService) {}
+  constructor(private http: HttpClient, private cookies: CookieService) { }
 
   // Create product (multipart/form-data)
   createProduct(payload: CreateProductPayload): Observable<ResponseEnvelope<string>> {
@@ -66,11 +69,37 @@ export class ProductService {
     });
   }
 
-  // Delete product
+  // Delete product (hard delete - không khuyến khích)
   deleteProduct(id: string): Observable<ResponseEnvelope<null>> {
     return this.http.delete<ResponseEnvelope<null>>(`${this.API_URL}/delete/${id}`, {
       headers: this.authHeaders()
     });
+  }
+
+  // Soft delete product - chuyển trạng thái sang DELETED
+  softDeleteProduct(id: string): Observable<ResponseEnvelope<null>> {
+    return this.http.put<ResponseEnvelope<null>>(`${this.API_URL}/soft-delete/${id}`, null, {
+      headers: this.authHeaders()
+    });
+  }
+
+  // Khôi phục sản phẩm đã xóa mềm
+  restoreProduct(id: string): Observable<ResponseEnvelope<null>> {
+    return this.http.put<ResponseEnvelope<null>>(`${this.API_URL}/restore/${id}`, null, {
+      headers: this.authHeaders()
+    });
+  }
+
+  // Cập nhật trạng thái sản phẩm (ACTIVE/INACTIVE/DELETED)
+  updateProductStatus(id: string, status: ProductStatus): Observable<ResponseEnvelope<null>> {
+    return this.http.put<ResponseEnvelope<null>>(
+      `${this.API_URL}/status/${id}`,
+      null,
+      {
+        headers: this.authHeaders(),
+        params: new HttpParams().set('status', status)
+      }
+    );
   }
 
   // Product detail
@@ -144,6 +173,10 @@ export class ProductService {
 
   private authHeaders(): HttpHeaders {
     const token = this.cookies.get('accessToken');
-    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+    // Only add Authorization header if token exists and is not empty
+    if (token && token !== 'undefined' && token !== 'null' && token.trim() !== '') {
+      return new HttpHeaders({ Authorization: `Bearer ${token}` });
+    }
+    return new HttpHeaders();
   }
 }

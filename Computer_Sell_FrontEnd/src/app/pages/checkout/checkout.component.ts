@@ -7,6 +7,7 @@ import { CartDTO, CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { OrderService } from '../../services/order.service';
 import { PromotionService, PromotionResponse } from '../../services/promotion.service';
+import { PaymentService, VietQRPaymentResponse } from '../../services/payment.service';
 
 @Component({
   selector: 'app-checkout',
@@ -24,32 +25,42 @@ export class CheckoutComponent implements OnInit {
   paymentMethod = 'CASH';
   promoCode = '';
   note = '';
-  toast = { show: false, type: '' as 'success'|'error'|'', message: '' };
+  toast = { show: false, type: '' as 'success' | 'error' | '', message: '' };
   // Promo state
   promoInfo: PromotionResponse | null = null;
   promoChecking = false;
   promoError: string | null = null;
 
+  // VietQR state
+  showVietQRModal = false;
+  vietQRData: VietQRPaymentResponse | null = null;
+  proofFile: File | null = null;
+  proofPreview: string | null = null;
+  uploadingProof = false;
+  proofUploaded = false;
+  currentOrderId: string | null = null;
+
   constructor(
     private cartService: CartService,
     private orderService: OrderService,
     private promoService: PromotionService,
+    private paymentService: PaymentService,
     private auth: AuthService,
     private router: Router,
     private title: Title,
     private meta: Meta,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.title.setTitle('Thanh toán - THComputer');
-    this.meta.updateTag({ name: 'description', content: 'Xem lại giỏ hàng và hoàn tất đặt hàng tại THComputer. Ưu đãi, mã giảm giá và nhiều phương thức thanh toán.' });
+    this.title.setTitle('Thanh toan - THComputer');
+    this.meta.updateTag({ name: 'description', content: 'Xem lai gio hang va hoan tat dat hang tai THComputer. Nhieu uu dai va ma giam gia.' });
 
     const uid = this.auth.getUserIdSafe();
     if (!uid) { this.router.navigate(['/login']); return; }
     this.loading = true;
     this.cartService.viewCart(uid).subscribe({
       next: (c) => { this.cart = c; this.loading = false; },
-      error: () => { this.error = 'Không thể tải giỏ hàng'; this.loading = false; }
+      error: () => { this.error = 'Khong the tai gio hang'; this.loading = false; }
     });
   }
 
@@ -72,7 +83,7 @@ export class CheckoutComponent implements OnInit {
     this.promoChecking = true;
     this.promoService.getByCode(code).subscribe({
       next: (res) => { this.promoInfo = res?.data || null; this.promoError = null; },
-      error: (e) => { this.promoInfo = null; this.promoError = e?.error?.message || 'Mã khuyến mãi không hợp lệ'; }
+      error: (e) => { this.promoInfo = null; this.promoError = e?.error?.message || 'Ma khuyen mai khong hop le'; }
     }).add(() => this.promoChecking = false);
   }
 
@@ -94,16 +105,137 @@ export class CheckoutComponent implements OnInit {
       next: (res) => {
         const order = res?.data || {};
         const id = order.id || order.orderId; // try common keys
-        this.toast = { show: true, type: 'success', message: 'Đặt hàng thành công' };
+
+        if (this.paymentMethod === 'VNPAY') {
+          if (!id) {
+            this.toast = { show: true, type: 'error', message: 'Khong lay duoc ma don hang de thanh toan VNPay' };
+            this.submitting = false;
+            return;
+          }
+          this.toast = { show: true, type: 'success', message: 'Dang chuyen sang VNPay...' };
+          this.startVnpayPayment(String(id));
+          return;
+        }
+
+        if (this.paymentMethod === 'VIETQR') {
+          if (!id) {
+            this.toast = { show: true, type: 'error', message: 'Khong lay duoc ma don hang de thanh toan VietQR' };
+            this.submitting = false;
+            return;
+          }
+          this.currentOrderId = String(id);
+          this.startVietQRPayment(String(id));
+          return;
+        }
+
+        this.toast = { show: true, type: 'success', message: 'Dat hang thanh cong' };
         setTimeout(() => {
           if (id) this.router.navigate(['/order', id]);
           else this.router.navigate(['/orders']);
         }, 600);
+        this.submitting = false;
       },
       error: (e) => {
-        const msg = e?.error?.message || 'Đặt hàng thất bại';
+        const msg = e?.error?.message || 'Dat hang that bai';
+        this.toast = { show: true, type: 'error', message: msg };
+        this.submitting = false;
+      }
+    });
+  }
+
+  private startVnpayPayment(orderId: string): void {
+    this.paymentService.createVnpayPayment(orderId).subscribe({
+      next: (res) => {
+        const redirectUrl = res?.data?.transactionId;
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+          return;
+        }
+        this.toast = { show: true, type: 'error', message: 'Khong nhan duoc URL thanh toan VNPay' };
+        this.router.navigate(['/order', orderId]);
+        this.submitting = false;
+      },
+      error: (e) => {
+        const msg = e?.error?.message || 'Khong tao duoc giao dich VNPay';
+        this.toast = { show: true, type: 'error', message: msg };
+        this.router.navigate(['/order', orderId]);
+        this.submitting = false;
+      }
+    });
+  }
+
+  // VietQR Methods
+  private startVietQRPayment(orderId: string): void {
+    this.paymentService.createVietQRPayment(orderId).subscribe({
+      next: (res) => {
+        this.vietQRData = res?.data || null;
+        if (this.vietQRData) {
+          this.showVietQRModal = true;
+          this.toast = { show: true, type: 'success', message: 'Vui long quet ma QR de chuyen khoan' };
+        } else {
+          this.toast = { show: true, type: 'error', message: 'Khong tao duoc ma QR' };
+          this.router.navigate(['/order', orderId]);
+        }
+        this.submitting = false;
+      },
+      error: (e) => {
+        const msg = e?.error?.message || 'Khong tao duoc giao dich VietQR';
+        this.toast = { show: true, type: 'error', message: msg };
+        this.router.navigate(['/order', orderId]);
+        this.submitting = false;
+      }
+    });
+  }
+
+  onProofFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.proofFile = input.files[0];
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.proofPreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(this.proofFile);
+    }
+  }
+
+  removeProofImage(): void {
+    this.proofFile = null;
+    this.proofPreview = null;
+  }
+
+  uploadProofImage(): void {
+    if (!this.proofFile || !this.vietQRData) return;
+
+    this.uploadingProof = true;
+    this.paymentService.uploadVietQRProof(this.vietQRData.id, this.proofFile).subscribe({
+      next: () => {
+        this.proofUploaded = true;
+        this.uploadingProof = false;
+        this.toast = { show: true, type: 'success', message: 'Da gui anh xac nhan thanh cong!' };
+      },
+      error: (e) => {
+        this.uploadingProof = false;
+        const msg = e?.error?.message || 'Khong the upload anh xac nhan';
         this.toast = { show: true, type: 'error', message: msg };
       }
-    }).add(() => this.submitting = false);
+    });
+  }
+
+  closeVietQRModal(): void {
+    this.showVietQRModal = false;
+    if (this.currentOrderId) {
+      this.router.navigate(['/order', this.currentOrderId]);
+    }
+  }
+
+  goToOrderDetail(): void {
+    this.showVietQRModal = false;
+    if (this.currentOrderId) {
+      this.router.navigate(['/order', this.currentOrderId]);
+    } else {
+      this.router.navigate(['/orders']);
+    }
   }
 }

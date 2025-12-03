@@ -26,6 +26,27 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     """)
     Page<UserEntity> searchUserByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
+    //search user by keyword and roleId
+    @Query("""
+        SELECT DISTINCT u FROM UserEntity u
+        JOIN UserHasRole uhr ON uhr.user.id = u.id
+        WHERE uhr.role.id = :roleId
+        AND (LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(u.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+    """)
+    Page<UserEntity> searchUserByKeywordAndRole(@Param("keyword") String keyword, @Param("roleId") Integer roleId, Pageable pageable);
+
+    //find all users by roleId
+    @Query("""
+        SELECT DISTINCT u FROM UserEntity u
+        JOIN UserHasRole uhr ON uhr.user.id = u.id
+        WHERE uhr.role.id = :roleId
+    """)
+    Page<UserEntity> findAllByRoleId(@Param("roleId") Integer roleId, Pageable pageable);
+
 
     @Query("SELECT u FROM UserEntity u WHERE u.username = :username")
     UserEntity findByUsername(String username);

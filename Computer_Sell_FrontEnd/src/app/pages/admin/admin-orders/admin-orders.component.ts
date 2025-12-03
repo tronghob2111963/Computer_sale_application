@@ -1,224 +1,382 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminOrderService } from '../../../services/admin-order.service';
 
+type OrderStatusType = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCEL_REQUEST' | 'CANCELED';
+type PaymentStatusType = 'UNPAID' | 'PAID' | 'SUCCESS' | 'REFUNDED';
+
+interface TimelineNode {
+  key: OrderStatusType;
+  label: string;
+  state: 'done' | 'active' | 'upcoming';
+}
+
+interface DocStep {
+  title: string;
+  description: string;
+  icon: string;
+  accent: string;
+}
+
+interface GuardRule {
+  rule: string;
+  reason: string;
+}
+
+interface SummaryState {
+  total: number;
+  pending: number;
+  shipping: number;
+  completed: number;
+  cancel: number;
+  awaitingPayment: number;
+}
+
+interface ModalState {
+  show: boolean;
+  message: string;
+  action: (() => void) | null;
+}
+
 @Component({
   standalone: true,
   selector: 'app-admin-orders',
   imports: [CommonModule, FormsModule, RouterModule],
-  template: `
-  <div class="flex items-center justify-between mb-4">
-    <h1 class="text-2xl font-semibold">Quản lý đơn hàng</h1>
-    <div class="text-sm text-gray-600">Tổng: <b>{{ orders.length }}</b> đơn</div>
-  </div>
-
-  <div class="bg-white border rounded-xl p-4 mb-4 shadow-sm">
-    <form class="grid md:grid-cols-5 gap-3 items-end" (ngSubmit)="load()">
-      <div class="md:col-span-2">
-        <label class="block text-sm text-gray-600 mb-1">Trạng thái</label>
-        <div class="flex flex-wrap gap-2">
-          <button type="button" (click)="status = null; load()" [class]="chipClass(!status)">Tất cả</button>
-          <button *ngFor="let s of statuses" type="button" (click)="status = s; load()" [class]="chipClass(status===s)">{{ s }}</button>
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm text-gray-600 mb-1">Từ ngày</label>
-        <input type="datetime-local" [(ngModel)]="start" name="start" class="w-full border rounded px-2 py-1" />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-600 mb-1">Đến ngày</label>
-        <input type="datetime-local" [(ngModel)]="end" name="end" class="w-full border rounded px-2 py-1" />
-      </div>
-      <div>
-        <button class="px-3 py-2 bg-blue-600 text-white rounded w-full">Lọc</button>
-      </div>
-    </form>
-  </div>
-
-  <div class="bg-white border rounded-xl overflow-hidden shadow-sm">
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="text-left px-4 py-2">Mã</th>
-            <th class="text-left px-4 py-2">Ngày</th>
-            <th class="text-left px-4 py-2">Trạng thái</th>
-            <th class="text-left px-4 py-2">Thanh toán</th>
-            <th class="text-right px-4 py-2">Tổng</th>
-            <th class="px-4 py-2">Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let o of orders">
-            <tr class="border-t hover:bg-gray-50/50">
-              <td class="px-4 py-2">
-                <a [routerLink]="['/order', o.id]" class="text-blue-700 hover:underline">{{ o.id }}</a>
-              </td>
-              <td class="px-4 py-2">{{ (o.orderDate || o.createdAt) | date:'short' }}</td>
-              <td class="px-4 py-2">
-                <span [class]="statusClass(o.status)">{{ o.status }}</span>
-              </td>
-              <td class="px-4 py-2">
-                <span [class]="paymentClass(o.paymentStatus)">{{ o.paymentStatus }}</span>
-              </td>
-              <td class="px-4 py-2 text-right font-medium">{{ (o.totalAmount || 0) | number }}</td>
-              <td class="px-4 py-2">
-                <div class="flex gap-2 justify-end">
-                  <button class="px-2 py-1 border rounded hover:bg-gray-50" (click)="toggle(o.id)">{{ expanded[o.id] ? 'Ẩn' : 'Chi tiết' }}</button>
-                  <ng-container [ngSwitch]="o.status">
-                    <button *ngSwitchCase="'PENDING'" (click)="confirmSetStatus(o,'CONFIRMED')" class="px-2 py-1 border rounded hover:bg-gray-50">Xác nhận</button>
-                    <button *ngSwitchCase="'PENDING'" (click)="confirmSetStatus(o,'CANCELED')" class="px-2 py-1 border rounded hover:bg-gray-50">Hủy</button>
-
-                    <ng-container *ngSwitchCase="'CANCEL_REQUEST'">
-                      <button (click)="confirmProcessCancel(o,true)" class="px-2 py-1 border rounded hover:bg-gray-50">Duyệt hủy</button>
-                      <button (click)="confirmProcessCancel(o,false)" class="px-2 py-1 border rounded hover:bg-gray-50">Từ chối</button>
-                    </ng-container>
-
-                    <button *ngSwitchCase="'CONFIRMED'" (click)="confirmSetStatus(o,'SHIPPING')" class="px-2 py-1 border rounded hover:bg-gray-50">Giao hàng</button>
-                    <button *ngSwitchCase="'CONFIRMED'" (click)="confirmSetStatus(o,'CANCELED')" class="px-2 py-1 border rounded hover:bg-gray-50">Hủy</button>
-                    <button *ngSwitchCase="'SHIPPING'" (click)="confirmSetStatus(o,'COMPLETED')" class="px-2 py-1 border rounded hover:bg-gray-50">Hoàn thành</button>
-                  </ng-container>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="expanded[o.id]" class="border-t bg-gray-50/60">
-              <td colspan="6" class="px-4 py-3">
-                <div class="grid md:grid-cols-3 gap-4">
-                  <div class="md:col-span-2">
-                    <div class="font-semibold mb-2">Sản phẩm</div>
-                    <div class="divide-y">
-                      <div *ngFor="let d of (o.details || [])" class="flex items-center justify-between py-2">
-                        <div class="text-gray-700">
-                          <div class="font-medium">{{ d.productName || d.product?.name }}</div>
-                          <div class="text-xs text-gray-500">x{{ d.quantity }} · {{ (d.unitPrice || d.price) | number }} ₫</div>
-                        </div>
-                        <div class="font-medium">{{ (d.subtotal || (d.quantity * (d.unitPrice || d.price))) | number }} ₫</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <div class="font-semibold mb-2">Khuyến mãi</div>
-                    <div *ngIf="(o.promotions || o.orderPromotions || []).length === 0" class="text-sm text-gray-500">Không áp dụng</div>
-                    <div *ngFor="let p of (o.promotions || o.orderPromotions || [])" class="text-sm bg-green-50 text-green-700 border border-green-200 rounded px-2 py-1 mb-1">
-                      {{ p.promoCode || p.promotion?.promoCode }} · Giảm {{ p.discountPercent || p.discountAmount }}
-                    </div>
-                    <div *ngIf="o.status==='SHIPPING'" class="mt-3 text-sm text-blue-700">Phiếu vận chuyển đã/đang được tạo tự động.</div>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
-    </div>
-    <div *ngIf="orders.length === 0" class="text-gray-600 p-6">Không có đơn hàng.</div>
-  </div>
-
-  <!-- Confirm modal -->
-  <div *ngIf="modal.show" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-5">
-      <div class="text-lg font-semibold mb-2">Xác nhận</div>
-      <p class="text-sm text-gray-700 mb-4">{{ modal.message }}</p>
-      <div class="flex justify-end gap-2">
-        <button class="px-4 py-2 border rounded hover:bg-gray-50" (click)="closeModal()">Đóng</button>
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded" (click)="confirmModal()">Đồng ý</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div *ngIf="toast.show" class="fixed right-4 bottom-4 z-50">
-    <div class="px-4 py-3 rounded shadow text-white" [ngClass]="{ 'bg-green-600': toast.type==='success', 'bg-red-600': toast.type==='error' }">
-      {{ toast.message }}
-    </div>
-  </div>
-  `
+  templateUrl: './admin-orders.component.html',
+  styleUrls: ['./admin-orders.component.scss']
 })
-export class AdminOrdersComponent implements OnInit {
+export class AdminOrdersComponent implements OnInit, OnDestroy {
   orders: any[] = [];
   loading = false;
-  statuses = ['PENDING','CANCEL_REQUEST','CONFIRMED','SHIPPING','COMPLETED','CANCELED'];
-  status: string | null = null;
+  statuses: OrderStatusType[] = ['PENDING', 'CANCEL_REQUEST', 'CONFIRMED', 'SHIPPING', 'COMPLETED', 'CANCELED'];
+  status: OrderStatusType | null = null;
   start: string | null = null;
   end: string | null = null;
-  expanded: Record<string, boolean> = {};
-  toast = { show: false, type: '' as 'success'|'error'|'', message: '' };
-  modal: { show: boolean; message: string; action: () => void } = { show: false, message: '', action: () => {} };
+  summary: SummaryState = { total: 0, pending: 0, shipping: 0, completed: 0, cancel: 0, awaitingPayment: 0 };
+  toast = { show: false, type: '' as 'success' | 'error' | '', message: '' };
+  modal: ModalState = { show: false, message: '', action: null };
+
+  readonly lifecycleSteps: DocStep[] = [
+    { title: 'PENDING', description: 'Order was created and waits for stock and customer validation.', icon: '01', accent: 'bg-slate-900 text-white' },
+    { title: 'CONFIRMED', description: 'Inventory checked and order is ready for fulfillment.', icon: '02', accent: 'bg-sky-900 text-white' },
+    { title: 'SHIPPING', description: 'Package handed to carrier and is in transit.', icon: '03', accent: 'bg-indigo-900 text-white' },
+    { title: 'COMPLETED', description: 'Customer received goods. Payment must be synced.', icon: '04', accent: 'bg-emerald-900 text-white' },
+    { title: 'CANCEL_REQUEST', description: 'User asked to cancel while order is still pending flow.', icon: '!', accent: 'bg-amber-100 text-amber-700' },
+    { title: 'CANCELED', description: 'Order closed after cancel request approval.', icon: 'X', accent: 'bg-rose-100 text-rose-700' }
+  ];
+
+  readonly docSteps: DocStep[] = [
+    { title: '1. Validate current status', description: 'Block edits when the order is already COMPLETED or CANCELED.', icon: 'S1', accent: 'bg-slate-100 text-slate-800' },
+    { title: '2. Check transition rule', description: 'Only allow the next status defined by the flow. Reject invalid jumps.', icon: 'S2', accent: 'bg-slate-100 text-slate-800' },
+    { title: '3. Update order status', description: 'Persist the new status once the rule is satisfied.', icon: 'S3', accent: 'bg-slate-100 text-slate-800' },
+    { title: '4. Sync payment', description: 'When COMPLETED, mark order.paymentStatus = PAID and payments = SUCCESS.', icon: 'S4', accent: 'bg-slate-100 text-slate-800' }
+  ];
+
+  readonly guardRules: GuardRule[] = [
+    { rule: 'PENDING → SHIPPING', reason: 'Order must be confirmed before shipping.' },
+    { rule: 'SHIPPING → CONFIRMED', reason: 'Flow only moves forward.' },
+    { rule: 'COMPLETED → SHIPPING / CONFIRMED', reason: 'Completed orders are immutable.' },
+    { rule: 'CANCELED → *', reason: 'Canceled orders cannot be reopened.' },
+    { rule: 'CANCEL_REQUEST → CONFIRMED', reason: 'Cancel requests can only be approved or rejected.' }
+  ];
+
+  readonly paymentNotes: string[] = [
+    'Completing an order automatically marks UNPAID payments as SUCCESS and sets order.paymentStatus = PAID.',
+    'COD (CASH) orders should be completed only after the shipper confirms cash collection.',
+    'Online gateways (VNPay/MoMo) will eventually update the payment record but the admin flow still relies on this lifecycle.'
+  ];
+
+  readonly baseTimeline: OrderStatusType[] = ['PENDING', 'CONFIRMED', 'SHIPPING', 'COMPLETED'];
+  readonly statusLabels: Record<OrderStatusType, string> = {
+    PENDING: 'Pending',
+    CONFIRMED: 'Confirmed',
+    SHIPPING: 'Shipping',
+    COMPLETED: 'Completed',
+    CANCEL_REQUEST: 'Cancel request',
+    CANCELED: 'Canceled'
+  };
+
+  readonly statusDescriptions: Record<OrderStatusType, string> = {
+    PENDING: 'New order, waiting for validation.',
+    CONFIRMED: 'Stock checked, ready to ship.',
+    SHIPPING: 'In transit with the carrier.',
+    COMPLETED: 'Delivered successfully.',
+    CANCEL_REQUEST: 'User asked to cancel.',
+    CANCELED: 'Closed after cancel process.'
+  };
+
+  readonly transitionMap: Record<OrderStatusType, OrderStatusType[]> = {
+    PENDING: ['CONFIRMED'],
+    CONFIRMED: ['SHIPPING'],
+    SHIPPING: ['COMPLETED'],
+    COMPLETED: [],
+    CANCEL_REQUEST: [],
+    CANCELED: []
+  };
+
+  readonly confirmMessages: Partial<Record<OrderStatusType, string>> = {
+    CONFIRMED: 'Confirm this order after you have validated stock and customer information?',
+    SHIPPING: 'Move to SHIPPING when the parcel has been handed over to the carrier?',
+    COMPLETED: 'Mark as COMPLETED? All UNPAID payments will switch to SUCCESS and the order payment status becomes PAID automatically.'
+  };
+
+  readonly statusBadgeClasses: Record<OrderStatusType, string> = {
+    PENDING: 'bg-amber-50 text-amber-700 border border-amber-200',
+    CONFIRMED: 'bg-sky-50 text-sky-700 border border-sky-200',
+    SHIPPING: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
+    COMPLETED: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    CANCEL_REQUEST: 'bg-amber-100 text-amber-800 border border-amber-200',
+    CANCELED: 'bg-rose-50 text-rose-700 border border-rose-200'
+  };
+
+  readonly paymentBadgeClasses: Record<string, string> = {
+    PAID: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+    SUCCESS: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+    UNPAID: 'bg-amber-100 text-amber-800 border border-amber-200',
+    REFUNDED: 'bg-sky-100 text-sky-700 border border-sky-200'
+  };
+
+  readonly paymentStatusLabelMap: Record<PaymentStatusType | string, string> = {
+    PAID: 'Paid',
+    SUCCESS: 'Success',
+    UNPAID: 'Unpaid',
+    REFUNDED: 'Refunded'
+  };
+
+  readonly timelineStateClasses: Record<TimelineNode['state'], string> = {
+    done: 'bg-emerald-600 text-white',
+    active: 'bg-sky-600 text-white',
+    upcoming: 'bg-slate-200 text-slate-500'
+  };
+
+  private toastTimer?: ReturnType<typeof setTimeout>;
 
   constructor(private adminOrders: AdminOrderService) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+  }
+
+  ngOnDestroy(): void {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+  }
 
   load(): void {
     this.loading = true;
-    const filter: any = {};
-    if (this.status) filter.status = this.status;
-    if (this.start) filter.start = new Date(this.start).toISOString();
-    if (this.end) filter.end = new Date(this.end).toISOString();
+    const filter: Record<string, string> = {};
+    if (this.status) {
+      filter['status'] = this.status;
+    }
+    if (this.start) {
+      filter['start'] = new Date(this.start).toISOString();
+    }
+    if (this.end) {
+      filter['end'] = new Date(this.end).toISOString();
+    }
     this.adminOrders.getOrders(filter).subscribe({
-      next: (res: any) => { this.orders = res?.data || res || []; this.loading = false; },
-      error: () => { this.orders = []; this.loading = false; }
+      next: (res: any) => {
+        this.orders = res?.data || res || [];
+        this.loading = false;
+        this.buildSummary();
+      },
+      error: (e) => {
+        this.orders = [];
+        this.loading = false;
+        this.buildSummary();
+        this.showToast(e?.error?.message || 'Cannot load orders', 'error');
+      }
     });
   }
 
+  resetFilters(): void {
+    this.status = null;
+    this.start = null;
+    this.end = null;
+    this.load();
+  }
+
   chipClass(active: boolean): string {
-    return `px-3 py-1 rounded-full border ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-50'}`;
+    return [
+      'px-3 py-1 rounded-full border text-sm font-medium transition',
+      active ? 'bg-slate-900 text-white border-slate-900 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+    ].join(' ');
   }
 
-  statusClass(s: string): string {
-    const map: any = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      CONFIRMED: 'bg-blue-100 text-blue-800',
-      SHIPPING: 'bg-indigo-100 text-indigo-800',
-      COMPLETED: 'bg-green-100 text-green-800',
-      CANCELED: 'bg-red-100 text-red-800',
-      CANCEL_REQUEST: 'bg-orange-100 text-orange-800'
+  statusBadge(status: string): string {
+    const key = this.normalizeStatus(status);
+    return this.statusBadgeClasses[key] || 'bg-slate-100 text-slate-700 border border-slate-200';
+  }
+
+  paymentBadge(status: string): string {
+    const key = this.normalizePaymentStatus(status);
+    return this.paymentBadgeClasses[key] || 'bg-slate-100 text-slate-700 border border-slate-200';
+  }
+
+  statusLabel(status: string): string {
+    const key = this.normalizeStatus(status);
+    return this.statusLabels[key] || status || 'Unknown';
+  }
+
+  paymentStatusLabel(status: string): string {
+    const key = this.normalizePaymentStatus(status);
+    return this.paymentStatusLabelMap[key] || status || 'Unknown';
+  }
+
+  allowedNextStatuses(order: any): OrderStatusType[] {
+    const key = this.normalizeStatus(order?.status);
+    const next = this.transitionMap[key] || [];
+    return [...next];
+  }
+
+  stateGuardMessage(order: any): string {
+    const key = this.normalizeStatus(order?.status);
+    if (key === 'COMPLETED') {
+      return 'Order is completed and cannot change anymore.';
+    }
+    if (key === 'CANCELED') {
+      return 'Order was canceled and stays locked.';
+    }
+    if (key === 'CANCEL_REQUEST') {
+      return 'Approve or reject the cancel request to finish the flow.';
+    }
+    if (!this.allowedNextStatuses(order).length) {
+      return 'No valid transition is available for this status.';
+    }
+    return '';
+  }
+
+  timelineFor(order: any): TimelineNode[] {
+    const key = this.normalizeStatus(order?.status);
+    const currentIndex = this.baseTimeline.indexOf(key);
+    return this.baseTimeline.map((status, index) => {
+      let state: TimelineNode['state'] = 'upcoming';
+      if (currentIndex === -1) {
+        state = 'upcoming';
+      } else if (index < currentIndex) {
+        state = 'done';
+      } else if (index === currentIndex) {
+        state = 'active';
+      }
+      return {
+        key: status,
+        label: this.statusLabels[status],
+        state
+      };
+    });
+  }
+
+  orderCode(order: any): string {
+    if (order?.code) {
+      return order.code;
+    }
+    const id = String(order?.id || '');
+    if (!id) {
+      return '#Order';
+    }
+    const chunk = id.split('-')[0];
+    return `#${chunk?.toUpperCase() || id}`;
+  }
+
+  confirmSetStatus(order: any, status: OrderStatusType): void {
+    const message = this.confirmMessages[status] || `Update order to ${status}?`;
+    this.modal = {
+      show: true,
+      message,
+      action: () => this.setStatus(order.id, status)
     };
-    return `px-2 py-1 rounded ${map[s] || 'bg-gray-100 text-gray-800'}`;
-  }
-
-  paymentClass(s: string): string {
-    const map: any = { PAID: 'bg-green-100 text-green-800', UNPAID: 'bg-gray-100 text-gray-700', REFUNDED: 'bg-purple-100 text-purple-800' };
-    return `px-2 py-1 rounded ${map[s] || 'bg-gray-100 text-gray-800'}`;
-  }
-
-  toggle(id: string): void { this.expanded[id] = !this.expanded[id]; }
-
-  showToast(message: string, type: 'success'|'error'='success'): void {
-    this.toast = { show: true, type, message };
-    setTimeout(() => this.toast.show = false, 1600);
-  }
-
-  confirmSetStatus(order: any, status: string): void {
-    const msg = status === 'SHIPPING' ? 'Chuyển sang SHIPPING? Phiếu vận chuyển sẽ được tạo tự động.' : `Cập nhật trạng thái: ${status}?`;
-    this.modal = { show: true, message: msg, action: () => this.setStatus(order.id, status) };
   }
 
   confirmProcessCancel(order: any, approve: boolean): void {
-    const msg = approve ? 'Duyệt yêu cầu hủy đơn này?' : 'Từ chối yêu cầu hủy?';
-    this.modal = { show: true, message: msg, action: () => this.processCancel(order.id, approve) };
+    const message = approve
+      ? 'Approve this cancel request? Order will become CANCELED and payments remain untouched unless UNPAID.'
+      : 'Reject this cancel request and keep the current flow?';
+    this.modal = {
+      show: true,
+      message,
+      action: () => this.processCancel(order.id, approve)
+    };
   }
 
-  closeModal(): void { this.modal.show = false; }
-  confirmModal(): void { const fn = this.modal.action; this.modal.show = false; fn && fn(); }
+  closeModal(): void {
+    this.modal = { show: false, message: '', action: null };
+  }
 
-  setStatus(id: string, status: string): void {
+  confirmModal(): void {
+    if (this.modal.action) {
+      this.modal.action();
+    }
+    this.closeModal();
+  }
+
+  setStatus(id: string, status: OrderStatusType): void {
     this.adminOrders.updateStatus(id, status).subscribe({
       next: () => {
         this.load();
-        if (status === 'SHIPPING') this.showToast('Đã chuyển SHIPPING. Phiếu VC sẽ tạo tự động.');
-        else this.showToast('Cập nhật trạng thái thành công.');
+        this.showToast(`Order updated to ${status}.`, 'success');
       },
-      error: (e) => this.showToast(e?.error?.message || 'Cập nhật thất bại', 'error')
+      error: (e) => this.showToast(e?.error?.message || 'Update failed', 'error')
     });
   }
 
   processCancel(id: string, approve: boolean): void {
     this.adminOrders.processCancel(id, approve).subscribe({
-      next: () => { this.load(); this.showToast(approve ? 'Đã duyệt hủy đơn.' : 'Đã từ chối hủy.'); },
-      error: (e) => this.showToast(e?.error?.message || 'Xử lý thất bại', 'error')
+      next: () => {
+        this.load();
+        this.showToast(approve ? 'Cancel request approved.' : 'Cancel request rejected.', 'success');
+      },
+      error: (e) => this.showToast(e?.error?.message || 'Processing failed', 'error')
     });
+  }
+
+  paymentSyncMessage(order: any): string {
+    const status = this.normalizeStatus(order?.status);
+    if (status === 'COMPLETED') {
+      return `Payment sync: ${this.paymentStatusLabel(order?.paymentStatus)}.`;
+    }
+    return '';
+  }
+
+  private buildSummary(): void {
+    const summary: SummaryState = {
+      total: this.orders.length,
+      pending: 0,
+      shipping: 0,
+      completed: 0,
+      cancel: 0,
+      awaitingPayment: 0
+    };
+    this.orders.forEach((order) => {
+      const status = this.normalizeStatus(order?.status);
+      if (status === 'PENDING') summary.pending += 1;
+      if (status === 'SHIPPING') summary.shipping += 1;
+      if (status === 'COMPLETED') summary.completed += 1;
+      if (status === 'CANCEL_REQUEST' || status === 'CANCELED') summary.cancel += 1;
+      const paymentStatus = this.normalizePaymentStatus(order?.paymentStatus);
+      if (paymentStatus === 'UNPAID') summary.awaitingPayment += 1;
+    });
+    this.summary = summary;
+  }
+
+  private normalizeStatus(value: any): OrderStatusType {
+    const upper = String(value || '').toUpperCase();
+    return this.statuses.includes(upper as OrderStatusType) ? (upper as OrderStatusType) : 'PENDING';
+  }
+
+  private normalizePaymentStatus(value: any): PaymentStatusType {
+    const upper = String(value || '').toUpperCase();
+    const known: PaymentStatusType[] = ['UNPAID', 'PAID', 'SUCCESS', 'REFUNDED'];
+    return known.includes(upper as PaymentStatusType) ? (upper as PaymentStatusType) : 'UNPAID';
+  }
+
+  private showToast(message: string, type: 'success' | 'error' = 'success'): void {
+    this.toast = { show: true, type, message };
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastTimer = setTimeout(() => (this.toast.show = false), 2600);
   }
 }

@@ -2,6 +2,7 @@ package com.trong.Computer_sell.repository;
 
 
 import com.trong.Computer_sell.common.PaymentStatus;
+import com.trong.Computer_sell.model.OrderEntity;
 import com.trong.Computer_sell.model.PaymentEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,9 +31,9 @@ public interface PaymentRepository extends JpaRepository<PaymentEntity, UUID> {
     @Query("SELECT COUNT(p) FROM PaymentEntity p WHERE p.paymentStatus = 'SUCCESS'")
     Long getTotalTransactions();
 
-    @Query("SELECT FUNCTION('MONTH', p.paymentDate), COALESCE(SUM(p.amount), 0) FROM PaymentEntity p " +
-            "WHERE FUNCTION('YEAR', p.paymentDate) = :year AND p.paymentStatus = 'SUCCESS' " +
-            "GROUP BY FUNCTION('MONTH', p.paymentDate) ORDER BY FUNCTION('MONTH', p.paymentDate)")
+    @Query("SELECT EXTRACT(MONTH FROM p.paymentDate), COALESCE(SUM(p.amount), 0) FROM PaymentEntity p " +
+            "WHERE EXTRACT(YEAR FROM p.paymentDate) = :year AND p.paymentStatus = 'SUCCESS' " +
+            "GROUP BY EXTRACT(MONTH FROM p.paymentDate) ORDER BY EXTRACT(MONTH FROM p.paymentDate)")
     List<Object[]> getMonthlyRevenueByYear(@Param("year") int year);
 
     @Query("SELECT p.paymentMethod, COALESCE(SUM(p.amount), 0) FROM PaymentEntity p WHERE p.paymentStatus = 'SUCCESS' GROUP BY p.paymentMethod")
@@ -42,20 +43,24 @@ public interface PaymentRepository extends JpaRepository<PaymentEntity, UUID> {
         SELECT p FROM PaymentEntity p
         LEFT JOIN p.order o
         LEFT JOIN o.user u
-        WHERE (:keyword IS NULL OR 
-               LOWER(p.paymentMethod) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-               LOWER(p.transactionId) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-               LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-               LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')))
-          AND (:status IS NULL OR p.paymentStatus = :status)
-          AND (:start IS NULL OR p.paymentDate >= :start)
-          AND (:end IS NULL OR p.paymentDate <= :end)
+        WHERE (:keywordPattern IS NULL OR 
+               LOWER(COALESCE(p.paymentMethod, '')) LIKE :keywordPattern OR
+               LOWER(COALESCE(p.transactionId, '')) LIKE :keywordPattern OR
+               LOWER(COALESCE(u.firstName, '')) LIKE :keywordPattern OR
+               LOWER(COALESCE(u.lastName, '')) LIKE :keywordPattern)
+          AND ( :status IS NULL OR p.paymentStatus = :status)
+          AND p.paymentDate >= COALESCE(:start, p.paymentDate)
+          AND p.paymentDate <= COALESCE(:end, p.paymentDate)
         """)
     Page<PaymentEntity> searchPayments(
-            @Param("keyword") String keyword,
+            @Param("keywordPattern") String keywordPattern,
             @Param("status") PaymentStatus status,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
             Pageable pageable
     );
+
+    List<PaymentEntity> findByOrderId(UUID orderId);
+
+    List<PaymentEntity> findByOrder(OrderEntity order);
 }

@@ -42,11 +42,12 @@ public class UserController {
             @RequestParam(required = false) String keyword ,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String sortBy
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) Integer roleId
     ){
         try{
             Map<String, Object> result = new LinkedHashMap<>();
-            result.put("data", userService.findAll(keyword, page, size, sortBy));
+            result.put("data", userService.findAll(keyword, page, size, sortBy, roleId));
             return new ResponseData<>(HttpStatus.OK.value(), "Find all user successfully", result);
         } catch (Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
@@ -116,6 +117,18 @@ public class UserController {
         try{
             log.info("Find user with user id", id);
             return new ResponseData<>(HttpStatus.OK.value(), "User found successfully", userService.findById(id));
+        } catch (RuntimeException e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "find detail by id" , description = "Find user detail by id including addresses")
+    @GetMapping("/detail/{id}")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff')")
+    public ResponseData<Object> findUserDetailById(@PathVariable UUID id){
+        log.info("Find user detail with user id: {}", id);
+        try{
+            return new ResponseData<>(HttpStatus.OK.value(), "User detail found successfully", userService.findDetailById(id));
         } catch (RuntimeException e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }

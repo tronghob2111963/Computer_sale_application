@@ -7,6 +7,7 @@ import com.trong.Computer_sell.DTO.request.product.ProductUpdateRequestDTO;
 import com.trong.Computer_sell.DTO.response.common.PageResponse;
 import com.trong.Computer_sell.DTO.response.product.ProductDetailResponseDTO;
 import com.trong.Computer_sell.DTO.response.product.ProductResponseDTO;
+import com.trong.Computer_sell.common.ProductStatus;
 import com.trong.Computer_sell.model.*;
 import com.trong.Computer_sell.repository.*;
 import com.trong.Computer_sell.service.LocalImageService;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -40,12 +42,15 @@ public class ProductServiceImpl implements ProductService {
     private final LocalImageService localImageService;
     private final ProductTypeRepository productTypeRepository;
     @Override
+    @Transactional
     public UUID createProduct(ProductRequestDTO productRequestDTO) {
         log.info("Creating product: {}", productRequestDTO);
         ProductEntity productEntity = new ProductEntity();
         productEntity.setName(productRequestDTO.getName());
         productEntity.setPrice(productRequestDTO.getPrice());
-        productEntity.setStock(productRequestDTO.getStock());
+        // Sản phẩm mới tạo có stock = 0, phải nhập kho mới có tồn kho
+        productEntity.setStock(0);
+        productEntity.setStatus(ProductStatus.ACTIVE);
         productEntity.setWarrantyPeriod(productRequestDTO.getWarrantyPeriod());
 
 
@@ -121,11 +126,11 @@ public class ProductServiceImpl implements ProductService {
             productEntity.setProductTypeId(productType);
         }
 
-        //  Cộng thêm số lượng mới vào kho
-        if (dto.getStock() != 0) {
-            int updatedStock = productEntity.getStock() + dto.getStock();
-            productEntity.setStock(updatedStock);
-        }
+        // KHÔNG cho phép cập nhật stock trực tiếp - stock chỉ được thay đổi qua:
+        // 1. Phiếu nhập kho (ImportReceipt)
+        // 2. Xác nhận đơn hàng (Order CONFIRMED)
+        // 3. Hủy đơn hàng (Order CANCELED)
+        // 4. Điều chỉnh kho (Stock Adjustment)
 
         // Cập nhật các thuộc tính khác
         productEntity.setName(dto.getName());
@@ -405,4 +410,43 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
+    // ==================== SOFT DELETE & STATUS MANAGEMENT ====================
+
+    @Override
+    @Transactional
+    public void softDeleteProduct(UUID id) {
+        ProductEntity product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+
+        // Chuyển trạng thái sang DELETED thay vì xóa cứng
+        product.setStatus(ProductStatus.DELETED);
+        productRepository.save(product);
+        log.info("Product {} soft deleted (status changed to DELETED)", id);
+    }
+
+    @Override
+    @Transactional
+    public void restoreProduct(UUID id) {
+        ProductEntity product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+
+        if (product.getStatus() != ProductStatus.DELETED) {
+            throw new RuntimeException("Sản phẩm không ở trạng thái DELETED");
+        }
+
+        product.setStatus(ProductStatus.ACTIVE);
+        productRepository.save(product);
+        log.info("Product {} restored (status changed to ACTIVE)", id);
+    }
+
+    @Override
+    @Transactional
+    public void updateProductStatus(UUID id, ProductStatus status) {
+        ProductEntity product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+
+        product.setStatus(status);
+        productRepository.save(product);
+        log.info("Product {} status changed to {}", id, status);
+    }
 }

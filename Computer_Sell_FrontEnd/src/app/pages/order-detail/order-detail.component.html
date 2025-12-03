@@ -1,65 +1,245 @@
-<div class="container mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-4">Chi tiết đơn hàng</h1>
-
-  <div *ngIf="loading" class="animate-pulse space-y-3">
-    <div class="h-24 bg-gray-100 rounded"></div>
+﻿<div class="order-detail-page">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Theo dõi đơn hàng</p>
+      <h1>Chi tiết đơn hàng</h1>
+    </div>
+    <a routerLink="/orders" class="back-link">&larr; Quay lại danh sách đơn</a>
   </div>
-  <div *ngIf="error" class="text-red-600">{{ error }}</div>
 
-  <div *ngIf="order" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 bg-white shadow rounded overflow-hidden">
-      <div class="px-4 py-3 bg-gray-50 text-sm text-gray-600 flex justify-between items-center">
+  <div *ngIf="loading" class="loading-state">
+    <div class="skeleton-card large"></div>
+    <div class="skeleton-card"></div>
+    <div class="skeleton-card"></div>
+  </div>
+
+  <div *ngIf="error" class="error-banner">{{ error }}</div>
+
+  <ng-container *ngIf="order as current">
+    <section class="card overview-card">
+      <div class="overview-header">
         <div>
-          <div class="font-semibold">Mã đơn: {{ order.id }}</div>
-          <div class="text-xs text-gray-500">Ngày đặt: {{ order.orderDate || order.createdAt | date:'short' }}</div>
+          <div class="order-code">Đơn hàng #{{ orderCode }}</div>
+          <div class="muted">Ngày đặt: {{ current.orderDate || current.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
         </div>
-        <div class="flex gap-2 items-center">
-          <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">{{ status }}</span>
-          <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">{{ paymentStatus }}</span>
-          <button *ngIf="status==='PENDING'" (click)="openCancel()" [disabled]="canceling"
-                  class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded disabled:opacity-60">Hủy đơn</button>
+        <div class="status-stack">
+          <span class="status-pill" [ngClass]="statusBadgeTone">{{ statusLabel }}</span>
+          <span class="status-pill soft" [ngClass]="paymentBadgeTone">{{ paymentStatusLabel }}</span>
+          <button *ngIf="status === 'PENDING'" (click)="openCancel()" [disabled]="canceling" class="danger-btn">
+            {{ canceling ? 'Đang hủy...' : 'Hủy đơn' }}
+          </button>
         </div>
       </div>
 
-      <div *ngFor="let it of items" class="grid grid-cols-12 items-center px-4 py-4 border-t">
-        <div class="col-span-12 md:col-span-7">
-          <div class="font-medium">{{ it.productName || it.product?.name }}</div>
-          <div class="text-sm text-gray-600">x{{ it.quantity }} • {{ (it.unitPrice || it.price) | number }} ₫</div>
+      <div class="overview-body">
+        <div class="product-hero" *ngIf="firstItem as hero">
+          <div class="hero-thumb">
+            <img *ngIf="hero.imageUrl || hero.product?.thumbnail" [src]="hero.imageUrl || hero.product?.thumbnail"
+              alt="{{ hero.productName || hero.product?.name || 'Sản phẩm' }}" (error)="hideImage($event)">
+            <span *ngIf="!(hero.imageUrl || hero.product?.thumbnail)">
+              {{ (hero.productName || hero.product?.name || 'SP').slice(0,2).toUpperCase() }}
+            </span>
+          </div>
+          <div>
+            <div class="hero-title">{{ hero.productName || hero.product?.name }}</div>
+            <p class="hero-desc">
+              {{ hero.product?.shortDescription || 'Cảm ơn bạn đã đặt hàng tại THComputer. Dưới đây là thông tin mới
+              nhất về đơn hàng của bạn.' }}
+            </p>
+            <div class="hero-meta">
+              <span>Số lượng: {{ hero.quantity }}</span>
+              <span>Đơn giá: {{ (hero.unitPrice || hero.price) | number:'1.0-0' }} đ</span>
+            </div>
+          </div>
         </div>
-        <div class="col-span-12 md:col-span-5 text-right font-semibold">{{ (it.subtotal || (it.quantity * (it.unitPrice || it.price))) | number }} ₫</div>
+
+        <div class="overview-actions">
+          <div>
+            <small>Tổng tiền hàng</small>
+            <strong>{{ itemsSubtotal | number:'1.0-0' }} đ</strong>
+          </div>
+          <div>
+            <small>Phương thức thanh toán</small>
+            <strong>{{ paymentMethodLabel }}</strong>
+          </div>
+          <a class="accent-btn" routerLink="/cart">Mua lại</a>
+        </div>
       </div>
+    </section>
+
+    <section class="card timeline-card" *ngIf="timelineSteps.length">
+      <div class="card-title">Trạng thái xử lý</div>
+      <div class="timeline">
+        <div class="timeline-step" *ngFor="let step of timelineSteps; let i = index"
+          [class.complete]="i < currentTimelineIndex" [class.active]="i === currentTimelineIndex">
+          <div class="bullet"></div>
+          <div>
+            <div class="label">{{ step.label }}</div>
+            <div class="date" *ngIf="step.date">{{ step.date | date:'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="info-grid">
+      <section class="card info-card">
+        <div class="card-title">Thông tin khách hàng</div>
+        <div class="info-row">
+          <span>Họ và tên</span>
+          <span>{{ customerName }}</span>
+        </div>
+        <div class="info-row">
+          <span>Số điện thoại</span>
+          <span>{{ customerPhone }}</span>
+        </div>
+        <div class="info-row">
+          <span>Địa chỉ</span>
+          <span>{{ customerAddress }}</span>
+        </div>
+        <div class="info-row">
+          <span>Ghi chú</span>
+          <span>{{ customerNote }}</span>
+        </div>
+      </section>
+
+      <section class="card info-card">
+        <div class="card-title">Thông tin thanh toán</div>
+        <div class="info-row">
+          <span>Sản phẩm</span>
+          <span>{{ items.length }} mặt hàng</span>
+        </div>
+        <div class="info-row">
+          <span>Tổng tiền hàng</span>
+          <span>{{ itemsSubtotal | number:'1.0-0' }} đ</span>
+        </div>
+        <div class="info-row" *ngIf="discount">
+          <span>Giảm giá</span>
+          <span class="text-success">-{{ discount | number:'1.0-0' }} đ</span>
+        </div>
+        <div class="info-row">
+          <span>Phí vận chuyển</span>
+          <span>{{ shippingFee ? (shippingFee | number:'1.0-0') + ' đ' : 'Miễn phí' }}</span>
+        </div>
+        <div class="info-row total">
+          <span>Tổng thanh toán</span>
+          <span>{{ finalTotal | number:'1.0-0' }} đ</span>
+        </div>
+
+        <!-- VietQR Payment Section -->
+        <div *ngIf="isVietQRPayment && canUploadVietQRProof" class="vietqr-section">
+          <div class="vietqr-notice">
+            <p>Đơn hàng của bạn đang chờ thanh toán qua VietQR</p>
+            <button class="accent-btn" (click)="openVietQRModal()">Xem mã QR & Gửi xác nhận</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card info-card support-card">
+        <div class="card-title">Thông tin hỗ trợ</div>
+        <p>Liên hệ ngay nếu bạn cần trợ giúp về đơn hàng.</p>
+        <div class="support-row">
+          <div>
+            <strong>Địa chỉ cửa hàng</strong>
+            <div>1393 Trần Hưng Đạo, P.Mỹ Long, Long Xuyên, An Giang</div>
+          </div>
+        </div>
+        <div class="support-row">
+          <div>
+            <strong>Số điện thoại</strong>
+            <div>028 7106 3193</div>
+          </div>
+          <a class="accent-btn ghost" href="tel:02871063193">Liên hệ</a>
+        </div>
+      </section>
     </div>
 
-    <div class="bg-white shadow rounded p-4 h-fit">
-      <div class="text-lg font-semibold mb-3">Tóm tắt</div>
-      <div class="flex justify-between py-1 text-gray-700">
-        <span>Phương thức</span>
-        <span>{{ paymentMethod }}</span>
+    <section class="card product-card">
+      <div class="card-title">Danh sách sản phẩm</div>
+      <div *ngIf="items.length === 0" class="empty-state">Chưa có sản phẩm trong đơn hàng.</div>
+      <div class="product-item" *ngFor="let it of items">
+        <div class="product-info">
+          <div class="thumb">
+            <img *ngIf="it.product?.thumbnail" [src]="it.product?.thumbnail"
+              alt="{{ it.productName || it.product?.name }}" (error)="hideImage($event)">
+            <span *ngIf="!it.product?.thumbnail">{{ (it.productName || 'SP').slice(0,2).toUpperCase() }}</span>
+          </div>
+          <div>
+            <div class="name">{{ it.productName || it.product?.name }}</div>
+            <div class="muted">x{{ it.quantity }} • {{ (it.unitPrice || it.price) | number:'1.0-0' }} đ</div>
+          </div>
+        </div>
+        <div class="price">{{ (it.subtotal || (it.quantity * (it.unitPrice || it.price || 0))) | number:'1.0-0' }} đ
+        </div>
       </div>
-      <div class="flex justify-between py-1 text-gray-700">
-        <span>Trạng thái thanh toán</span>
-        <span>{{ paymentStatus }}</span>
-      </div>
-      <div class="border-t my-3"></div>
-      <div class="flex justify-between text-xl font-bold">
-        <span>Tổng cộng</span>
-        <span class="text-blue-700">{{ total | number }} ₫</span>
-      </div>
-      <a routerLink="/orders" class="block text-center text-sm text-gray-600 mt-3 hover:underline">Về danh sách đơn hàng</a>
+    </section>
+  </ng-container>
+</div>
+
+<!-- Cancel modal -->
+<div *ngIf="cancelModal.show" class="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-title">Gửi yêu cầu hủy đơn</div>
+    <p>Đơn sẽ chuyển sang trạng thái chờ duyệt hủy. Vui lòng cung cấp lý do:</p>
+    <textarea [(ngModel)]="cancelModal.reason" rows="4"
+      placeholder="Ví dụ: Đặt nhầm sản phẩm, thay đổi kế hoạch..."></textarea>
+    <div class="modal-actions">
+      <button class="ghost-btn" (click)="closeCancel()">Đóng</button>
+      <button class="primary-btn" (click)="submitCancel()">Gửi yêu cầu</button>
     </div>
   </div>
 </div>
 
-<!-- Cancel modal -->
-<div *ngIf="cancelModal.show" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-5">
-    <div class="text-lg font-semibold mb-2">Gửi yêu cầu hủy đơn</div>
-    <p class="text-sm text-gray-600 mb-3">Đơn sẽ chuyển sang trạng thái chờ duyệt hủy. Vui lòng cung cấp lý do:</p>
-    <textarea [(ngModel)]="cancelModal.reason" rows="4" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring"
-              placeholder="Ví dụ: Đặt nhầm sản phẩm, thay đổi kế hoạch..."></textarea>
-    <div class="flex justify-end gap-2 mt-4">
-      <button class="px-4 py-2 border rounded hover:bg-gray-50" (click)="closeCancel()">Đóng</button>
-      <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded" (click)="submitCancel()">Gửi yêu cầu</button>
+<!-- VietQR Modal -->
+<div *ngIf="showVietQRModal" class="modal-backdrop">
+  <div class="modal-card vietqr-modal">
+    <div class="modal-header">
+      <div class="modal-title">Thanh toán chuyển khoản VietQR</div>
+      <button class="close-btn" (click)="closeVietQRModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- QR Code -->
+      <div *ngIf="vietQRData" class="qr-section">
+        <p class="qr-hint">Quét mã QR để chuyển khoản</p>
+        <img [src]="vietQRData.qrCodeUrl" alt="VietQR Code" class="qr-image" />
+        <div class="qr-info">
+          <p><strong>Số tiền:</strong> <span class="amount">{{ vietQRData.amount | number:'1.0-0' }} đ</span></p>
+          <p><strong>Nội dung CK:</strong> <span class="transfer-code">{{ vietQRData.transactionId }}</span></p>
+          <p class="note">* Vui lòng ghi đúng nội dung chuyển khoản</p>
+        </div>
+      </div>
+
+      <!-- Upload Proof -->
+      <div class="upload-section">
+        <p class="upload-title">Sau khi chuyển khoản, vui lòng gửi ảnh xác nhận:</p>
+
+        <div class="upload-area" (click)="proofInput.click()">
+          <input type="file" #proofInput accept="image/*" (change)="onProofFileSelected($event)"
+            style="display: none" />
+
+          <div *ngIf="!proofPreview" class="upload-placeholder">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor">
+              <path
+                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <p>Nhấn để chọn ảnh hóa đơn</p>
+          </div>
+
+          <div *ngIf="proofPreview" class="preview-container">
+            <img [src]="proofPreview" alt="Preview" class="preview-image" />
+            <button class="remove-btn" (click)="removeProofImage(); $event.stopPropagation()">&times;</button>
+          </div>
+        </div>
+
+        <button class="upload-btn" (click)="uploadProofImage()" [disabled]="!proofFile || uploadingProof">
+          {{ uploadingProof ? 'Đang gửi...' : 'Gửi ảnh xác nhận' }}
+        </button>
+
+        <p *ngIf="proofUploaded" class="success-msg">
+          ✓ Đã gửi ảnh xác nhận. Vui lòng chờ admin xác nhận thanh toán.
+        </p>
+      </div>
     </div>
   </div>
 </div>
