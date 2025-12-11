@@ -1,0 +1,205 @@
+<div class="chatbot-container">
+    <!-- Chatbot Toggle Button -->
+    <button class="chatbot-toggle" (click)="toggleChat()" [class.open]="isOpen" title="Mở trợ lý AI">
+        <svg *ngIf="!isOpen" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <circle cx="9" cy="10" r="1" fill="currentColor"></circle>
+            <circle cx="12" cy="10" r="1" fill="currentColor"></circle>
+            <circle cx="15" cy="10" r="1" fill="currentColor"></circle>
+        </svg>
+        <svg *ngIf="isOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span class="badge" *ngIf="!isOpen">AI</span>
+    </button>
+
+    <!-- Chatbot Window -->
+    <div class="chatbot-window" *ngIf="isOpen">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="header-content">
+                <div class="avatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                        <circle cx="12" cy="5" r="2"></circle>
+                        <path d="M12 7v4"></path>
+                        <line x1="8" y1="16" x2="8" y2="16"></line>
+                        <line x1="16" y1="16" x2="16" y2="16"></line>
+                    </svg>
+                </div>
+                <div class="header-text">
+                    <h3>Trợ Lý AI - THComputer</h3>
+                    <p class="status">
+                        <span class="status-dot"></span>
+                        Sẵn sàng tư vấn
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="action-btn" (click)="clearChat()" title="Cuộc trò chuyện mới">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                </button>
+                <button class="action-btn close-btn" (click)="toggleChat()" title="Đóng">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" #messagesContainer>
+            <div *ngFor="let message of messages; trackBy: trackByMessageId" class="message"
+                [class.user-message]="message.sender === 'user'" [class.bot-message]="message.sender === 'bot'">
+
+                <!-- Bot Avatar -->
+                <div class="message-avatar" *ngIf="message.sender === 'bot'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                        <circle cx="12" cy="5" r="2"></circle>
+                        <path d="M12 7v4"></path>
+                    </svg>
+                </div>
+
+                <div class="message-wrapper">
+                    <!-- Message Content -->
+                    <div class="message-content" [class.loading]="message.isLoading">
+                        <div *ngIf="message.isMarkdown" [innerHTML]="parseMarkdown(message.text)"></div>
+                        <span *ngIf="!message.isMarkdown">{{ message.text }}</span>
+
+                        <span *ngIf="message.isLoading" class="loading-dots">
+                            <span></span><span></span><span></span>
+                        </span>
+                    </div>
+
+                    <!-- Product Suggestions -->
+                    <div class="products-grid" *ngIf="message.products && message.products.length > 0">
+                        <div class="products-header">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span>Sản phẩm gợi ý</span>
+                        </div>
+
+                        <div class="product-cards">
+                            <div class="product-card"
+                                *ngFor="let product of message.products; trackBy: trackByProductId"
+                                (click)="viewProduct(product.id)">
+                                <div class="product-image">
+                                    <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name">
+                                    <div *ngIf="!product.imageUrl" class="no-image">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="product-info">
+                                    <h4 class="product-name">{{ product.name }}</h4>
+                                    <div class="product-meta">
+                                        <span class="brand" *ngIf="product.brand">{{ product.brand }}</span>
+                                        <span class="category" *ngIf="product.category">{{ product.category }}</span>
+                                    </div>
+                                    <div class="product-price">{{ formatPrice(product.price) }}</div>
+                                    <div class="product-stock" [class.in-stock]="product.stock > 0"
+                                        [class.out-stock]="product.stock <= 0">
+                                        {{ product.stock > 0 ? 'Còn ' + product.stock + ' sản phẩm' : 'Hết hàng' }}
+                                    </div>
+                                </div>
+                                <button class="view-btn">Xem chi tiết →</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="message-time">{{ message.timestamp | date:'HH:mm' }}</span>
+                </div>
+
+                <!-- Message Actions -->
+                <div class="message-actions" *ngIf="message.sender === 'bot' && !message.isLoading && !message.isWelcomeMessage">
+                  <button class="action-btn report-btn" (click)="openReportModal(message)" title="Báo cáo câu trả lời lỗi">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                      <line x1="4" y1="22" x2="4" y2="15"></line>
+                    </svg>
+                    <span>Báo lỗi</span>
+                  </button>
+                </div>
+            </div>
+
+            <!-- Quick Actions (show when no messages or only welcome) -->
+            <div class="quick-actions" *ngIf="messages.length <= 1">
+                <p class="quick-actions-title">Gợi ý câu hỏi:</p>
+                <div class="quick-action-buttons">
+                    <button *ngFor="let action of quickActions" class="quick-action-btn" (click)="sendMessage(action)">
+                        {{ action }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <div class="input-wrapper">
+                <textarea [(ngModel)]="inputMessage" (keypress)="onKeyPress($event)"
+                    placeholder="Nhập câu hỏi của bạn..." class="chat-input" rows="1" [disabled]="isLoading">
+                </textarea>
+                <button (click)="sendMessage()" [disabled]="!inputMessage.trim() || isLoading" class="send-btn"
+                    title="Gửi">
+                    <svg *ngIf="!isLoading" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <div *ngIf="isLoading" class="spinner"></div>
+                </button>
+            </div>
+            <p class="powered-by">Powered by Gemini & RAG</p>
+        </div>
+    </div>
+</div>
+
+<!-- Report Modal -->
+<div class="report-modal-overlay" *ngIf="isReportModalOpen">
+    <div class="report-modal">
+        <div class="report-modal-header">
+            <h3>Báo cáo câu trả lời không chính xác</h3>
+            <button class="close-btn" (click)="closeReportModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="report-modal-body">
+            <p>Cảm ơn bạn đã giúp chúng tôi cải thiện. Vui lòng mô tả vấn đề bạn gặp phải với câu trả lời của AI:</p>
+            <textarea [(ngModel)]="reportDescription" placeholder="Ví dụ: Thông tin sản phẩm sai, câu trả lời không liên quan..."></textarea>
+            <div class="original-message" *ngIf="selectedMessage">
+                <strong>Câu trả lời gốc:</strong>
+                <p>{{ selectedMessage.text }}</p>
+            </div>
+        </div>
+        <div class="report-modal-footer">
+            <button class="cancel-btn" (click)="closeReportModal()">Hủy</button>
+            <button class="submit-btn" (click)="submitReport()" [disabled]="!reportDescription.trim() || isSubmittingReport">
+                <span *ngIf="!isSubmittingReport">Gửi báo cáo</span>
+                <span *ngIf="isSubmittingReport" class="spinner"></span>
+            </button>
+        </div>
+    </div>
+</div>

@@ -31,6 +31,36 @@ export interface BuildListResponse {
     data: UserBuild[];
 }
 
+export interface AiSuggestRequest {
+    useCase: string;
+    resolution: string;
+    budget: number;
+    formFactor?: string;
+    preferQuiet?: boolean;
+}
+
+export interface AiSuggestedPart {
+    productType: string;
+    productId: string;
+    productName: string;
+    brand?: string;
+    price?: number;
+    stock?: number;
+    reason?: string;
+}
+
+export interface AiSuggestResponse {
+    status: number;
+    message: string;
+    data: {
+        profile: string;
+        budgetInput: number;
+        estimatedTotal: number;
+        note?: string;
+        parts: AiSuggestedPart[];
+    };
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -85,5 +115,9 @@ export class UserBuildService {
 
     getProductTypes(): Observable<any> {
         return this.http.get(`${environment.apiUrl}/product-types/list`);
+    }
+
+    aiSuggest(body: AiSuggestRequest): Observable<AiSuggestResponse> {
+        return this.http.post<AiSuggestResponse>(`${this.apiUrl}/ai-suggest`, body);
     }
 }

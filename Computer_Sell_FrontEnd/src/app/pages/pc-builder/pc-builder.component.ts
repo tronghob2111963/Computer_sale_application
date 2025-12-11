@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserBuildService, UserBuild } from '../../services/user-build.service';
+import { UserBuildService, UserBuild, AiSuggestRequest, AiSuggestedPart } from '../../services/user-build.service';
 import { ResponseEnvelope, PageResponse } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { environment } from '../../enviroment';
+import { firstValueFrom } from 'rxjs';
 
 interface BuildCategory {
   id: string;
@@ -42,6 +44,16 @@ export class PcBuilderComponent implements OnInit {
   totalPrice = 0;
   buildName = 'Cau hinh PC cua toi';
   isLoading = false;
+  aiLoading = false;
+  aiError = '';
+  aiNote = '';
+  aiConfig: AiSuggestRequest = {
+    useCase: 'gaming',
+    resolution: '1080p',
+    budget: 20000000,
+    formFactor: 'atx',
+    preferQuiet: false
+  };
 
   constructor(
     private buildService: UserBuildService,
@@ -171,6 +183,12 @@ export class PcBuilderComponent implements OnInit {
     });
   }
 
+  async ensureBuildReady(): Promise<void> {
+    if (this.currentBuild?.id) return;
+    const res = await firstValueFrom(this.buildService.createBuild(this.authService.getUserIdSafe()!, this.buildName));
+    this.setCurrentBuildFromResponse(res.data);
+  }
+
   openProductSelector(category: BuildCategory) {
     this.selectedCategory = category;
     this.showProductModal = true;
@@ -275,14 +293,112 @@ export class PcBuilderComponent implements OnInit {
   }
 
   getProductImage(product: any): string {
+    const baseUrl = environment.apiUrl || 'http://localhost:8080';
+
+    // API trả về product.image là mảng string URL
+    if (product.image && Array.isArray(product.image) && product.image.length > 0) {
+      const imgPath = product.image[0];
+      // Nếu đã là URL đầy đủ thì trả về luôn
+      if (imgPath.startsWith('http')) return imgPath;
+      // Nếu là đường dẫn tương đối thì thêm baseUrl
+      return `${baseUrl}${imgPath}`;
+    }
+    // Fallback cho trường hợp cũ (images là mảng object)
     if (product.images && product.images.length > 0) {
-      return product.images[0].imageUrl;
+      const imgPath = product.images[0].imageUrl || product.images[0];
+      if (imgPath.startsWith('http')) return imgPath;
+      return `${baseUrl}${imgPath}`;
     }
     return '/placeholder.svg';
   }
 
   get selectedItems(): BuildCategory[] {
     return this.buildCategories.filter(cat => !!cat.selectedProduct);
+  }
+
+  normalize(text: string): string {
+    return (text || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toUpperCase();
+  }
+
+  async applyAiSuggestions(parts: AiSuggestedPart[]) {
+    if (!parts || parts.length === 0) {
+      this.aiError = 'AI khong tra ve linh kien phu hop. Vui long thu lai voi thong tin ro hon.';
+      return;
+    }
+
+    await this.ensureBuildReady();
+    const buildId = this.currentBuild?.id;
+    if (!buildId) return;
+
+    const typeAliases: Record<string, string[]> = {
+      CPU: ['CPU'],
+      MAINBOARD: ['MAINBOARD', 'MB'],
+      RAM: ['RAM'],
+      GPU: ['GPU', 'VGA', 'CARD', 'CARD DO HOA'],
+      STORAGE: ['O CUNG', 'SSD', 'HDD', 'STORAGE'],
+      PSU: ['NGUON', 'PSU', 'POWER'],
+      CASE: ['CASE', 'VO CASE'],
+      COOLER: ['COOLER', 'TAN NHIET'],
+      MONITOR: ['MAN HINH', 'MONITOR']
+    };
+
+    for (const part of parts) {
+      const normPart = this.normalize(part.productType);
+      const targetCat = this.buildCategories.find(cat => {
+        const normName = this.normalize(cat.name);
+        const aliases = typeAliases[cat.name] || [];
+        return normName === normPart || aliases.some(a => this.normalize(a) === normPart);
+      });
+
+      if (!targetCat) continue;
+
+      // Remove old item if exists
+      if (targetCat.selectedProduct) {
+        try {
+          await firstValueFrom(this.buildService.removeProductFromBuild(buildId, targetCat.selectedProduct.id));
+        } catch (e) {
+          console.warn('Cannot remove old product for category', targetCat.name, e);
+        }
+      }
+
+      // Add new suggestion
+      try {
+        await firstValueFrom(this.buildService.addProductToBuild(buildId, part.productId, 1));
+        targetCat.selectedProduct = {
+          id: part.productId,
+          name: part.productName,
+          price: part.price ?? 0,
+          images: []
+        };
+        targetCat.quantity = 1;
+      } catch (e) {
+        console.error('Cannot add suggested product', part, e);
+      }
+    }
+
+    this.calculateTotal();
+  }
+
+  suggestWithAI() {
+    this.aiError = '';
+    this.aiNote = '';
+    this.aiLoading = true;
+
+    this.buildService.aiSuggest(this.aiConfig).subscribe({
+      next: async (response) => {
+        this.aiNote = response.data?.note || '';
+        await this.applyAiSuggestions(response.data?.parts || []);
+        this.aiLoading = false;
+      },
+      error: (err) => {
+        this.aiError = err?.error?.message || 'Khong the goi y tu dong, vui long thu lai.';
+        this.aiLoading = false;
+      }
+    });
   }
 
   printQuote() {

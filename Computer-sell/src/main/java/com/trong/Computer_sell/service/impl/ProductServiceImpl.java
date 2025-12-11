@@ -184,15 +184,27 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Product với ID: " + id));
 
+        String brandName = (product.getBrandId() != null)
+                ? product.getBrandId().getName()
+                : null;
+
+        String categoryName = (product.getCategory() != null)
+                ? product.getCategory().getName()
+                : null;
+
+        Object productType = (product.getProductTypeId() != null)
+                ? productTypeRepository.findProductTypeById(product.getProductTypeId().getId())
+                : null;
+
         return ProductDetailResponseDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
                 .description(product.getDescription())
-                .brandName(product.getBrandId().getName())
-                .categoryName(product.getCategory().getName())
+                .brandName(brandName)
+                .categoryName(categoryName)
                 .stock(product.getStock())
-                .productType(productTypeRepository.findProductTypeById(product.getProductTypeId().getId()))
+                .productType((String)productType)
                 .warrantyPeriod(product.getWarrantyPeriod())
                 .image(product.getImages().stream().map(image -> image.getImageUrl()).collect(Collectors.toList()))
                 .build();
@@ -231,13 +243,25 @@ public class ProductServiceImpl implements ProductService {
 
 
         List<ProductResponseDTO> products = productPage.stream().map(product -> {
+            String brandName = (product.getBrandId() != null)
+                    ? product.getBrandId().getName()
+                    : null;
+
+            String categoryName = (product.getCategory() != null)
+                    ? product.getCategory().getName()
+                    : null;
+
+            String productType = (product.getProductTypeId() != null)
+                    ? product.getProductTypeId().getName()
+                    : null;
+
             return ProductResponseDTO.builder()
                     .id(product.getId())
                     .name(product.getName())
                     .price(product.getPrice())
-                    .brandName(product.getBrandId().getName())
-                    .categoryName(product.getCategory().getName())
-                    .productType(product.getProductTypeId().getName())
+                    .brandName(brandName)
+                    .categoryName(categoryName)
+                    .productType(productType)
                     .image(product.getImages().stream().map(image -> image.getImageUrl()).collect(Collectors.toList()))
                     .warrantyPeriod(product.getWarrantyPeriod())
                     .stock(product.getStock())
@@ -281,13 +305,28 @@ public class ProductServiceImpl implements ProductService {
             productPage = productRepository.searchProductByBrandId(brandId, pageable);
         }
         List<ProductResponseDTO> products = productPage.stream().map(product -> {
+            String brandName = (product.getBrandId() != null)
+                    ? brandRepository.findBrandById(product.getBrandId().getId()).getName()
+                    : null;
+
+            String categoryName = (product.getCategory() != null)
+                    ? categoryRepository.findCategoryNameById(product.getCategory().getId())
+                    : null;
+
+            String productType = (product.getProductTypeId() != null)
+                    ? product.getProductTypeId().getName()
+                    : null;
+
             return ProductResponseDTO.builder()
+                    .id(product.getId())
                     .name(product.getName())
                     .price(product.getPrice())
-                    .brandName(brandRepository.findBrandById(product.getBrandId().getId()).getName())
-                    .categoryName(categoryRepository.findCategoryNameById(product.getCategory().getId()))
+                    .brandName(brandName)
+                    .categoryName(categoryName)
+                    .productType(productType)
                     .image(productImageRepository.findProductImageByProductId(product.getId()))
                     .warrantyPeriod(product.getWarrantyPeriod())
+                    .stock(product.getStock())
                     .build();
         }).collect(Collectors.toList());
 
@@ -328,13 +367,28 @@ public class ProductServiceImpl implements ProductService {
             productPage = productRepository.searchProductByCategoryId(categoryId, pageable);
         }
         List<ProductResponseDTO> products = productPage.stream().map(product -> {
+            String brandName = (product.getBrandId() != null)
+                    ? brandRepository.findBrandById(product.getBrandId().getId()).getName()
+                    : null;
+
+            String categoryName = (product.getCategory() != null)
+                    ? categoryRepository.findCategoryNameById(product.getCategory().getId())
+                    : null;
+
+            String productType = (product.getProductTypeId() != null)
+                    ? product.getProductTypeId().getName()
+                    : null;
+
             return ProductResponseDTO.builder()
+                    .id(product.getId())
                     .name(product.getName())
                     .price(product.getPrice())
-                    .brandName(brandRepository.findBrandById(product.getBrandId().getId()).getName())
-                    .categoryName(categoryRepository.findCategoryNameById(product.getCategory().getId()))
+                    .brandName(brandName)
+                    .categoryName(categoryName)
+                    .productType(productType)
                     .image(productImageRepository.findProductImageByProductId(product.getId()))
                     .warrantyPeriod(product.getWarrantyPeriod())
+                    .stock(product.getStock())
                     .build();
         }).collect(Collectors.toList());
 

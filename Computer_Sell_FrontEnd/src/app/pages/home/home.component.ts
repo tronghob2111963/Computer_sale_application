@@ -47,7 +47,7 @@ export class HomeComponent implements OnInit {
     private auth: AuthService,
     private route: ActivatedRoute,
     private productTypeService: ProductTypeService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProductTypes();
@@ -79,20 +79,20 @@ export class HomeComponent implements OnInit {
         ? this.productService.listProductsByCategory<any>(categoryId, { page: 0, size: 12, sortBy: 'createdAt:desc' })
         : this.productService.listProducts<any>({ page: 0, size: 12, sortBy: 'createdAt:desc' });
     source$.subscribe({
-        next: (res: ResponseEnvelope<PageResponse<any>>) => {
-          const items = res?.data?.items ?? [];
-          this.products = items.map((p: any) => ({
-            ...p,
-            displayImage: buildImageUrl(this.baseUrl, Array.isArray(p?.image) && p.image.length ? p.image[0] : undefined)
-          }));
-          this.loading = false;
-        },
-        error: (err) => {
-          this.error = 'Khong the tai danh sach san pham';
-          this.loading = false;
-          console.error(err);
-        }
-      });
+      next: (res: ResponseEnvelope<PageResponse<any>>) => {
+        const items = res?.data?.items ?? [];
+        this.products = items.map((p: any) => ({
+          ...p,
+          displayImage: buildImageUrl(this.baseUrl, Array.isArray(p?.image) && p.image.length ? p.image[0] : undefined)
+        }));
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Khong the tai danh sach san pham';
+        this.loading = false;
+        console.error(err);
+      }
+    });
   }
 
   refresh(): void {
@@ -120,11 +120,13 @@ export class HomeComponent implements OnInit {
 
   // Section-based filtering by product type (tabs per section)
   buildSections(): void {
-    this.sections = this.productTypes.map((pt) => {
-      const slug = this.toSlug(pt.name);
+    // Sử dụng các banner có sẵn, xoay vòng giữa các ảnh
+    const availableBanners = ['/banners/main-1.jpg', '/banners/slide_1.jpg', '/banners/slide_2.jpg'];
+
+    this.sections = this.productTypes.map((pt, index) => {
       return {
         title: pt.name,
-        banner: `/banners/${slug}.jpg`,
+        banner: availableBanners[index % availableBanners.length],
         cta: `Xem tat ca ${pt.name}`,
         tabs: [{ label: pt.name, typeId: pt.id }],
         selectedTypeId: pt.id,

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 
@@ -31,4 +32,13 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
             "AND p.productTypeId.id = :productTypeId")
     Page<ProductEntity> searchProductByTypeAndKeyword(UUID productTypeId, String keyword, Pageable pageable);
 
+    // Gợi ý theo ngân sách: chọn sản phẩm giá gần mức mục tiêu nhất (đang sắp xếp giảm dần)
+    @Query("SELECT p FROM ProductEntity p " +
+            "WHERE p.productTypeId.id = :productTypeId " +
+            "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+            "ORDER BY p.price DESC")
+    Page<ProductEntity> suggestByTypeAndMaxPrice(UUID productTypeId, BigDecimal maxPrice, Pageable pageable);
+
+    @Query("SELECT p FROM ProductEntity p WHERE p.productTypeId.id = :productTypeId ORDER BY p.price ASC")
+    Page<ProductEntity> findCheapestByType(UUID productTypeId, Pageable pageable);
 }

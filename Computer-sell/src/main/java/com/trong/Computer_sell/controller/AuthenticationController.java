@@ -27,12 +27,8 @@ public class AuthenticationController {
     @Operation(summary = "Get Access Token", description = "Get access token and refresh token by user name and password")
     @PostMapping("/access-token")
     public TokenResponse getAccessToken(@RequestBody SignInRequest request){
-       try{
-           log.info("Access Token Request");
-           return authenticationService.getAccessToken(request);
-       } catch (Exception e) {
-           throw new RuntimeException(e);
-       }
+        log.info("Access Token Request for user: {}", request.getUsername());
+        return authenticationService.getAccessToken(request);
     }
 
 

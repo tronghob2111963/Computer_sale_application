@@ -10,6 +10,7 @@ import com.trong.Computer_sell.model.UserEntity;
 import com.trong.Computer_sell.repository.ProductCommentRepository;
 import com.trong.Computer_sell.repository.ProductRepository;
 import com.trong.Computer_sell.repository.UserRepository;
+import com.trong.Computer_sell.service.NotificationService;
 import com.trong.Computer_sell.service.ProductCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ public class ProductCommentServiceImpl implements ProductCommentService {
     private final ProductCommentRepository commentRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -62,6 +64,25 @@ public class ProductCommentServiceImpl implements ProductCommentService {
                 throw new IllegalArgumentException("Parent comment does not belong to product");
             }
             entity.setParent(parent);
+
+            // Gửi thông báo cho người viết comment gốc khi có reply
+            if (parent.getUser() != null && !parent.getUser().getId().equals(user.getId())) {
+                String replierName = user.getFirstName() + " " + user.getLastName();
+                notificationService.notifyCommentReplied(
+                    parent.getUser().getId(),
+                    parent.getId(),
+                    product.getName(),
+                    replierName.trim().isEmpty() ? user.getUsername() : replierName
+                );
+            }
+        } else {
+            // Comment mới (không phải reply) - thông báo cho Admin
+            String userName = user.getFirstName() + " " + user.getLastName();
+            notificationService.notifyNewComment(
+                entity.getId(),
+                product.getName(),
+                userName.trim().isEmpty() ? user.getUsername() : userName
+            );
         }
 
         ProductCommentEntity saved = commentRepository.save(entity);

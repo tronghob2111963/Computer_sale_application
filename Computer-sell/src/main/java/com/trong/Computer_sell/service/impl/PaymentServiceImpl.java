@@ -7,9 +7,11 @@ import com.trong.Computer_sell.model.OrderEntity;
 import com.trong.Computer_sell.model.PaymentEntity;
 import com.trong.Computer_sell.repository.OrderRepository;
 import com.trong.Computer_sell.repository.PaymentRepository;
+import com.trong.Computer_sell.service.NotificationService;
 import com.trong.Computer_sell.service.PaymentService;
 import com.trong.Computer_sell.service.vnpay.VNPayService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +25,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final VNPayService vnPayService;
+    private final NotificationService notificationService;
 
     @Override
     public PaymentResponse createCashPayment(UUID orderId) {
@@ -51,22 +55,47 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse confirmPayment(UUID paymentId) {
-        PaymentEntity payment = paymentRepository.findById(paymentId)
+        // Fetch payment cùng với order và user để tránh lazy loading issues
+        PaymentEntity payment = paymentRepository.findByIdWithOrderAndUser(paymentId)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
 
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
         paymentRepository.save(payment);
 
         OrderEntity order = payment.getOrder();
+        OrderStatus oldStatus = order.getStatus();
 
-        // Nếu tất cả payment đều SUCCESS → order hoàn tất
+        // Nếu tất cả payment đều SUCCESS → order chuyển sang CONFIRMED (đã xác nhận thanh toán)
         boolean allPaid = order.getPayments().stream()
                 .allMatch(p -> p.getPaymentStatus() == PaymentStatus.SUCCESS);
 
         if (allPaid) {
             order.setPaymentStatus(PaymentStatus.PAID);
-            order.setStatus(OrderStatus.COMPLETED);
+            // Chuyển sang CONFIRMED thay vì COMPLETED để đơn hàng còn cần xử lý giao hàng
+            order.setStatus(OrderStatus.CONFIRMED);
             orderRepository.save(order);
+
+            // Gửi thông báo cho user về việc thanh toán được xác nhận
+            try {
+                if (order.getUser() != null) {
+                    UUID userId = order.getUser().getId();
+                    String amount = payment.getAmount() != null ? 
+                            String.format("%,.0f VNĐ", payment.getAmount()) : "";
+                    
+                    // Gửi thông báo thanh toán thành công
+                    notificationService.notifyPaymentConfirmed(userId, order.getId(), amount);
+                    
+                    // Gửi thông báo về việc đơn hàng chuyển trạng thái
+                    notificationService.notifyOrderStatusChanged(userId, order.getId(), 
+                            oldStatus != null ? oldStatus.name() : "PENDING", OrderStatus.CONFIRMED.name());
+                    
+                    log.info("Sent payment confirmation notifications to user {} for order {}", userId, order.getId());
+                } else {
+                    log.warn("Order {} has no user, skipping notification", order.getId());
+                }
+            } catch (Exception e) {
+                log.error("Failed to send notification for payment {}: {}", paymentId, e.getMessage());
+            }
         }
 
         return PaymentResponse.fromEntity(payment);
@@ -151,7 +180,7 @@ public class PaymentServiceImpl implements PaymentService {
         String paymentId = params.get("vnp_TxnRef");
         String status = params.get("vnp_TransactionStatus");
 
-        PaymentEntity payment = paymentRepository.findById(UUID.fromString(paymentId))
+        PaymentEntity payment = paymentRepository.findByIdWithOrderAndUser(UUID.fromString(paymentId))
                 .orElse(null);
 
         if (payment == null) return "Payment not found";
@@ -161,11 +190,29 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setTransactionId(params.get("vnp_TransactionNo"));
 
             OrderEntity order = payment.getOrder();
+            OrderStatus oldStatus = order.getStatus();
             order.setPaymentStatus(PaymentStatus.PAID);
-            order.setStatus(OrderStatus.PROCESSING);
+            order.setStatus(OrderStatus.CONFIRMED);
 
             orderRepository.save(order);
             paymentRepository.save(payment);
+
+            // Gửi thông báo cho user về việc thanh toán VNPay thành công
+            try {
+                if (order.getUser() != null) {
+                    UUID userId = order.getUser().getId();
+                    String amount = payment.getAmount() != null ? 
+                            String.format("%,.0f VNĐ", payment.getAmount()) : "";
+                    
+                    notificationService.notifyPaymentConfirmed(userId, order.getId(), amount);
+                    notificationService.notifyOrderStatusChanged(userId, order.getId(), 
+                            oldStatus != null ? oldStatus.name() : "PENDING", OrderStatus.CONFIRMED.name());
+                    
+                    log.info("Sent VNPay payment notifications to user {} for order {}", userId, order.getId());
+                }
+            } catch (Exception e) {
+                log.error("Failed to send VNPay notification for payment {}: {}", paymentId, e.getMessage());
+            }
 
         } else {
             payment.setPaymentStatus(PaymentStatus.FAILED);

@@ -6,6 +6,15 @@ spring:
     name: Computer-sell
   profiles:
     active: "@spring.profile.active@"
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
 
 management:
   endpoint:
@@ -37,4 +46,23 @@ vietqr:
   account-no: "1026162961"             # Số tài khoản ngân hàng
   account-name: "HO KIM TRONG"  # Tên chủ tài khoản
   template: "compact2"                 # Template QR (compact, compact2, qr_only, print)
+
+# Gemini API Configuration
+gemini:
+  api:
+    key: "${GEMINI_API_KEY:AIzaSyBpxvxj-YSNhFIUPH5MsNyFiHGb7WaC95w}"
+
+# OpenAI API Configuration for RAG Chatbot
+openai:
+  api-key: "${OPENAI_API_KEY}"
+  embedding-model: "text-embedding-3-large"
+  chat-model: "gpt-4o-mini"
+  base-url: "https://api.openai.com/v1"
+  embedding-dimension: 1536
+  max-tokens: 2000
+  temperature: 0.7
+
+# SendGrid Configuration
+sendgrid:
+  api-key: "${SENDGRID_API_KEY}"
 

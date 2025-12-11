@@ -9,6 +9,7 @@ import com.trong.Computer_sell.model.PaymentEntity;
 import com.trong.Computer_sell.repository.OrderRepository;
 import com.trong.Computer_sell.repository.PaymentRepository;
 import com.trong.Computer_sell.service.LocalImageService;
+import com.trong.Computer_sell.service.NotificationService;
 import com.trong.Computer_sell.service.VietQRService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class VietQRServiceImpl implements VietQRService {
     private final OrderRepository orderRepository;
     private final VietQRConfig vietQRConfig;
     private final LocalImageService localImageService;
+    private final NotificationService notificationService;
 
     @Override
     public PaymentResponse createVietQRPayment(UUID orderId) {
@@ -106,7 +108,8 @@ public class VietQRServiceImpl implements VietQRService {
 
     @Override
     public PaymentResponse confirmVietQRPayment(UUID paymentId) {
-        PaymentEntity payment = paymentRepository.findById(paymentId)
+        // Fetch payment cùng với order và user để tránh lazy loading issues
+        PaymentEntity payment = paymentRepository.findByIdWithOrderAndUser(paymentId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thanh toán"));
 
         if (!"VIETQR".equalsIgnoreCase(payment.getPaymentMethod())) {
@@ -117,11 +120,35 @@ public class VietQRServiceImpl implements VietQRService {
         payment.setNote("Đã xác nhận thanh toán VietQR");
         paymentRepository.save(payment);
 
-        // Cập nhật trạng thái đơn hàng
+        // Cập nhật trạng thái đơn hàng sang CONFIRMED (đã xác nhận thanh toán, chờ xử lý giao hàng)
         OrderEntity order = payment.getOrder();
+        OrderStatus oldStatus = order.getStatus();
         order.setPaymentStatus(PaymentStatus.PAID);
-        order.setStatus(OrderStatus.PROCESSING);
+        order.setStatus(OrderStatus.CONFIRMED);
         orderRepository.save(order);
+
+        // Gửi thông báo cho user về việc thanh toán được xác nhận
+        try {
+            if (order.getUser() != null) {
+                UUID userId = order.getUser().getId();
+                String amount = payment.getAmount() != null ? 
+                        String.format("%,.0f VNĐ", payment.getAmount()) : "";
+                
+                // Gửi thông báo thanh toán thành công
+                notificationService.notifyPaymentConfirmed(userId, order.getId(), amount);
+                
+                // Gửi thông báo về việc đơn hàng chuyển trạng thái
+                notificationService.notifyOrderStatusChanged(userId, order.getId(), 
+                        oldStatus != null ? oldStatus.name() : "PENDING", OrderStatus.CONFIRMED.name());
+                
+                log.info("Sent notifications to user {} for order {}", userId, order.getId());
+            } else {
+                log.warn("Order {} has no user, skipping notification", order.getId());
+            }
+        } catch (Exception e) {
+            log.error("Failed to send notification for payment {}: {}", paymentId, e.getMessage());
+            // Không throw exception để không ảnh hưởng đến việc xác nhận thanh toán
+        }
 
         log.info("Confirmed VietQR payment {} for order {}", paymentId, order.getId());
         return PaymentResponse.fromEntity(payment);
@@ -129,13 +156,34 @@ public class VietQRServiceImpl implements VietQRService {
 
     @Override
     public PaymentResponse rejectVietQRPayment(UUID paymentId, String reason) {
-        PaymentEntity payment = paymentRepository.findById(paymentId)
+        // Fetch payment cùng với order và user để tránh lazy loading issues
+        PaymentEntity payment = paymentRepository.findByIdWithOrderAndUser(paymentId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thanh toán"));
 
         payment.setPaymentStatus(PaymentStatus.FAILED);
         payment.setNote("Từ chối: " + (reason != null ? reason : "Không hợp lệ"));
         payment.setProofImageUrl(null); // Xóa ảnh cũ để user có thể gửi lại
         paymentRepository.save(payment);
+
+        // Gửi thông báo cho user về việc thanh toán bị từ chối
+        try {
+            OrderEntity order = payment.getOrder();
+            if (order.getUser() != null) {
+                UUID userId = order.getUser().getId();
+                String rejectReason = reason != null ? reason : "Không hợp lệ";
+                notificationService.createNotification(
+                        userId,
+                        com.trong.Computer_sell.common.NotificationType.PAYMENT_CONFIRMED,
+                        "Thanh toán bị từ chối",
+                        "Thanh toán VietQR cho đơn hàng của bạn đã bị từ chối. Lý do: " + rejectReason + ". Vui lòng gửi lại ảnh xác nhận.",
+                        order.getId(),
+                        "ORDER"
+                );
+                log.info("Sent rejection notification to user {} for payment {}", userId, paymentId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to send rejection notification for payment {}: {}", paymentId, e.getMessage());
+        }
 
         log.info("Rejected VietQR payment {} with reason: {}", paymentId, reason);
         return PaymentResponse.fromEntity(payment);

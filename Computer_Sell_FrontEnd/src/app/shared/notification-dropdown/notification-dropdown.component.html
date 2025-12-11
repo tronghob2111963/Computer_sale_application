@@ -1,0 +1,104 @@
+<div class="relative">
+    <!-- Bell Icon Button -->
+    <button (click)="toggleDropdown()"
+        class="relative bg-gray-100 rounded-full p-3 hover:bg-blue-100 transition-all duration-300 group">
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-7 w-7 text-gray-700 group-hover:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+
+        <!-- Badge -->
+        <span *ngIf="unreadCount > 0"
+            class="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow-lg animate-pulse">
+            {{ unreadCount > 99 ? '99+' : unreadCount }}
+        </span>
+    </button>
+
+    <!-- Dropdown Panel -->
+    <div *ngIf="isOpen"
+        class="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 flex justify-between items-center">
+            <h3 class="font-semibold text-lg">Thông báo</h3>
+            <button *ngIf="unreadCount > 0" (click)="markAllAsRead()"
+                class="text-sm text-blue-100 hover:text-white transition-colors">
+                Đánh dấu tất cả đã đọc
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="isLoading" class="p-8 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="text-gray-500 mt-2">Đang tải...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && notifications.length === 0" class="p-8 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-3" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <p class="text-gray-500">Không có thông báo mới</p>
+        </div>
+
+        <!-- Notification List -->
+        <div *ngIf="!isLoading && notifications.length > 0" class="max-h-96 overflow-y-auto">
+            <div *ngFor="let notification of notifications" (click)="markAsRead(notification, $event)"
+                class="flex items-start gap-3 p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                [class.bg-blue-50]="!notification.isRead">
+
+                <!-- Icon -->
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"
+                    [ngClass]="getIconColor(notification.type)">
+                    <i class="fas" [ngClass]="getIcon(notification.type)"></i>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-800 text-sm" [class.font-bold]="!notification.isRead">
+                        {{ notification.title }}
+                    </p>
+                    <p class="text-gray-600 text-sm mt-1 line-clamp-2">
+                        {{ notification.message }}
+                    </p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <p class="text-gray-400 text-xs">
+                            {{ notification.timeAgo }}
+                        </p>
+                        <!-- Nút xem chi tiết đơn hàng -->
+                        <button *ngIf="notification.referenceType === 'ORDER' && notification.referenceId"
+                            (click)="viewOrderDetail(notification, $event)"
+                            class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors">
+                            Xem đơn hàng
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <span *ngIf="!notification.isRead" class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    <button (click)="deleteNotification(notification, $event)"
+                        class="text-gray-400 hover:text-red-500 transition-colors p-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-50 px-4 py-3 text-center border-t">
+            <button (click)="viewAllNotifications()"
+                class="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors">
+                Xem tất cả thông báo
+            </button>
+        </div>
+    </div>
+</div>

@@ -111,7 +111,7 @@ export class AdminProductsComponent implements OnInit {
           this.loading = false;
         },
         error: (err) => {
-          this.error = err?.error?.message || 'Kh�ng t?i du?c danh s�ch s?n ph?m';
+          this.error = err?.error?.message || 'Không tải được danh sách sản phẩm';
           this.loading = false;
           this.showToast('error', this.error);
         }
@@ -163,7 +163,7 @@ export class AdminProductsComponent implements OnInit {
 
   openEdit(item: any): void {
     if (!item?.id) {
-      this.error = 'Kh�ng th? ch?nh s?a: thi?u product id trong danh s�ch';
+      this.error = 'Không thể chỉnh sửa: thiếu product id trong danh sách';
       this.showToast('error', this.error);
       return;
     }
@@ -190,7 +190,7 @@ export class AdminProductsComponent implements OnInit {
         };
       },
       error: (err) => {
-        this.error = err?.error?.message || 'Kh�ng t?i du?c chi ti?t s?n ph?m';
+        this.error = err?.error?.message || 'Không tải được chi tiết sản phẩm';
         this.showToast('error', this.error);
       }
     });
@@ -226,11 +226,11 @@ export class AdminProductsComponent implements OnInit {
         this.loading = false;
         this.showModal = false;
         this.loadProducts();
-        this.showToast('success', this.isEditing ? 'C?p nh?t s?n ph?m th�nh c�ng!' : 'Th�m s?n ph?m m?i th�nh c�ng!');
+        this.showToast('success', this.isEditing ? 'Cập nhật sản phẩm thành công!' : 'Thêm sản phẩm mới thành công!');
       },
       error: (err) => {
         this.loading = false;
-        const msg = err?.error?.message || 'Luu s?n ph?m th?t b?i';
+        const msg = err?.error?.message || 'Lưu sản phẩm thất bại';
         this.error = msg;
         this.showToast('error', msg);
       }

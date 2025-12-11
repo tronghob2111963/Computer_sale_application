@@ -11,6 +11,7 @@ import com.trong.Computer_sell.model.ShippingOrderEntity;
 import com.trong.Computer_sell.repository.OrderRepository;
 import com.trong.Computer_sell.repository.ShippingOrderRepository;
 import com.trong.Computer_sell.service.AdminOrderService;
+import com.trong.Computer_sell.service.NotificationService;
 import com.trong.Computer_sell.service.StockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderRepository orderRepository;
     private final ShippingOrderRepository shippingOrderRepository;
     private final StockService stockService;
+    private final NotificationService notificationService;
 
     // ================================
     // 1. Lấy toàn bộ đơn hàng
@@ -66,7 +68,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     // ================================
     @Override
     public void updateOrderStatus(UUID orderId, OrderStatus newStatus) {
-        OrderEntity order = orderRepository.findById(orderId)
+        // Fetch order cùng với user để tránh lazy loading issues khi gửi thông báo
+        OrderEntity order = orderRepository.findByIdWithUser(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
 
         OrderStatus currentStatus = order.getStatus();
@@ -83,6 +86,23 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         order.setStatus(newStatus);
         orderRepository.save(order);
         log.info("Order {} status changed from {} → {}", orderId, currentStatus, newStatus);
+
+        // Gửi thông báo cho user về thay đổi trạng thái đơn hàng
+        try {
+            if (order.getUser() != null) {
+                notificationService.notifyOrderStatusChanged(
+                    order.getUser().getId(),
+                    orderId,
+                    currentStatus.name(),
+                    newStatus.name()
+                );
+                log.info("Sent order status notification to user {} for order {}", order.getUser().getId(), orderId);
+            } else {
+                log.warn("Order {} has no user, skipping notification", orderId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to send notification for order {}: {}", orderId, e.getMessage());
+        }
 
         // Nếu chuyển sang SHIPPING => tạo phiếu vận chuyển
         if (newStatus == OrderStatus.SHIPPING) {
@@ -145,7 +165,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     // ================================
     @Override
     public void processCancelRequest(UUID orderId, boolean approve) {
-        OrderEntity order = orderRepository.findById(orderId)
+        // Fetch order cùng với user để tránh lazy loading issues khi gửi thông báo
+        OrderEntity order = orderRepository.findByIdWithUser(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
 
         if (order.getStatus() != OrderStatus.CANCEL_REQUEST) {
@@ -171,9 +192,39 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             }
             order.setStatus(OrderStatus.CANCELED);
             log.info("Order {} cancel request APPROVED - Stock returned", orderId);
+            
+            // Gửi thông báo cho user về việc yêu cầu hủy được duyệt
+            try {
+                if (order.getUser() != null) {
+                    notificationService.notifyOrderStatusChanged(
+                        order.getUser().getId(),
+                        orderId,
+                        OrderStatus.CANCEL_REQUEST.name(),
+                        OrderStatus.CANCELED.name()
+                    );
+                    log.info("Sent cancel approved notification to user {}", order.getUser().getId());
+                }
+            } catch (Exception e) {
+                log.error("Failed to send cancel approved notification for order {}: {}", orderId, e.getMessage());
+            }
         } else {
             order.setStatus(OrderStatus.CONFIRMED);
             log.info("Order {} cancel request REJECTED → set CONFIRMED", orderId);
+            
+            // Gửi thông báo cho user về việc yêu cầu hủy bị từ chối
+            try {
+                if (order.getUser() != null) {
+                    notificationService.notifyOrderStatusChanged(
+                        order.getUser().getId(),
+                        orderId,
+                        OrderStatus.CANCEL_REQUEST.name(),
+                        OrderStatus.CONFIRMED.name()
+                    );
+                    log.info("Sent cancel rejected notification to user {}", order.getUser().getId());
+                }
+            } catch (Exception e) {
+                log.error("Failed to send cancel rejected notification for order {}: {}", orderId, e.getMessage());
+            }
         }
 
         orderRepository.save(order);

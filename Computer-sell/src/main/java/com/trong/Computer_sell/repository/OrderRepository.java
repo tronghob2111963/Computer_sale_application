@@ -84,4 +84,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     """)
     BigDecimal getTotalRevenue(@Param("start") LocalDateTime start,
                                @Param("end") LocalDateTime end);
+
+    /**
+     * Lấy đơn hàng kèm user (để gửi thông báo)
+     */
+    @Query("SELECT o FROM OrderEntity o LEFT JOIN FETCH o.user WHERE o.id = :id")
+    Optional<OrderEntity> findByIdWithUser(@Param("id") UUID id);
 }

@@ -33,7 +33,12 @@ public class AppConfig {
     @Value("${spring.sendgrid.api-key}")
     private String apiKey;
     //khoi tao spring web security
-    private String[] WHITE_LIST = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/auth/**", "user/register", "/user/save", "/product/**","/category/**", "/brand/**", "/product-types/**"};
+    private String[] WHITE_LIST = {
+            "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", 
+            "/auth/**", "user/register", "/user/save", 
+            "/product/**", "/category/**", "/brand/**", "/product-types/**",
+            "/api/chat/**", "/api/chatbot/**", "/api/embeddings/**"  // RAG Chatbot endpoints
+    };
 
     private final CustomizeRequestFilter requestFilter;
     private final UserServiceDetail userServiceDetail;

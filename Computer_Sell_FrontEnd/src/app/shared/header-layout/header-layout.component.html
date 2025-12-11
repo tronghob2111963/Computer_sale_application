@@ -100,6 +100,9 @@
       </div>
 
 
+      <!-- Notification Bell (chỉ hiện khi đã đăng nhập) -->
+      <app-notification-dropdown *ngIf="isLoggedIn"></app-notification-dropdown>
+
       <!-- Cart -->
       <div class="relative cursor-pointer icon-hover group" (click)="router.navigate(['/cart'])">
         <div class="bg-gray-100 rounded-full p-3 group-hover:bg-blue-100 transition-all duration-300">

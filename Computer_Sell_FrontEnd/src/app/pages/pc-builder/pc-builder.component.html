@@ -4,6 +4,54 @@
     <p>Chon linh kien de xay dung cau hinh PC cua ban</p>
   </div>
 
+  <div class="ai-panel">
+    <div class="field">
+      <label>Nhu cau</label>
+      <select [(ngModel)]="aiConfig.useCase">
+        <option value="gaming">Gaming</option>
+        <option value="creator">Do hoa / Render</option>
+        <option value="office">Van phong / Hoc tap</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Do phan giai</label>
+      <select [(ngModel)]="aiConfig.resolution">
+        <option value="1080p">1080p</option>
+        <option value="1440p">1440p</option>
+        <option value="4k">4K</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Ngân sách (VND)</label>
+      <input type="number" min="3000000" step="500000" [(ngModel)]="aiConfig.budget" />
+    </div>
+    <div class="field">
+      <label>Form factor</label>
+      <select [(ngModel)]="aiConfig.formFactor">
+        <option value="atx">ATX</option>
+        <option value="matx">mATX</option>
+        <option value="itx">ITX</option>
+      </select>
+    </div>
+    <div class="field checkbox">
+      <label>
+        <input type="checkbox" [(ngModel)]="aiConfig.preferQuiet" />
+        Ưu tiên mát / êm
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn primary" type="button" (click)="suggestWithAI()" [disabled]="aiLoading">
+        {{ aiLoading ? 'Dang goi y...' : 'Goi y AI' }}
+      </button>
+    </div>
+  </div>
+
+  @if (aiNote || aiError) {
+  <div class="ai-feedback" [class.error]="aiError">
+    <strong>{{ aiError ? 'Loi' : 'Ghi chu' }}:</strong> {{ aiError || aiNote }}
+  </div>
+  }
+
   <div class="build-list">
     @for (category of buildCategories; track category.id) {
     <div class="build-item">

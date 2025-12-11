@@ -36,42 +36,49 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
     private final UserServiceDetail userDetailsService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        log.info("Customize request filter", request.getMethod(), request.getRequestURI());
-
-        //TODO :check authority by request URL
+        log.info("Customize request filter - {} {}", request.getMethod(), request.getRequestURI());
 
         String authHeader = request.getHeader("Authorization");
         if(authHeader != null && authHeader.startsWith("Bearer ")) {
             authHeader = authHeader.substring(7);
-            log.info("Customize request filter", authHeader.substring(0,20));
+            log.info("Token found, extracting username...");
             String username = "";
             try {
                 username = jwtService.extractUsername(authHeader, TokenType.ACCESS_TOKEN);
-                log.info("username: {}", username);
+                log.info("✅ Username extracted: {}", username);
             }catch (Exception e) {
-                log.error("Access denied!!!", e.getMessage());
-                response.setStatus(HttpServletResponse.SC_OK);
+                log.error("❌ Token validation failed: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                response.getWriter().write("{\"msg\":\"Access denied!!!\"}");
+                response.getWriter().write("{\"code\":403,\"message\":\"Access denied - Invalid or expired token\"}");
                 return;
-
             }
 
-            UserDetails userDetails = userDetailsService.UserServiceDetail().loadUserByUsername(username);
-            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities()
-            );
-            // Set details for the authentication object
-
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            securityContext.setAuthentication(authentication);
-            SecurityContextHolder.setContext(securityContext);
+            try {
+                UserDetails userDetails = userDetailsService.UserServiceDetail().loadUserByUsername(username);
+                SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities()
+                );
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                securityContext.setAuthentication(authentication);
+                SecurityContextHolder.setContext(securityContext);
+                log.info("✅ Authentication set for user: {}", username);
+            } catch (Exception e) {
+                log.error("❌ User loading failed: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"code\":403,\"message\":\"Access denied - User not found\"}");
+                return;
+            }
+            
             filterChain.doFilter(request, response);
             return;
         }
 
+        log.debug("No Authorization header found");
         filterChain.doFilter(request, response);
 
     }

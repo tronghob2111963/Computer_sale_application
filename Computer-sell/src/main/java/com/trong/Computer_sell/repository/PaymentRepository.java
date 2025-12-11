@@ -63,4 +63,7 @@ public interface PaymentRepository extends JpaRepository<PaymentEntity, UUID> {
     List<PaymentEntity> findByOrderId(UUID orderId);
 
     List<PaymentEntity> findByOrder(OrderEntity order);
+
+    @Query("SELECT p FROM PaymentEntity p LEFT JOIN FETCH p.order o LEFT JOIN FETCH o.user WHERE p.id = :paymentId")
+    Optional<PaymentEntity> findByIdWithOrderAndUser(@Param("paymentId") UUID paymentId);
 }

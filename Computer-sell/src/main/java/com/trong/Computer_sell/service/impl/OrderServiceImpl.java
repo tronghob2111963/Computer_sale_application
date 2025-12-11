@@ -11,6 +11,7 @@ import com.trong.Computer_sell.common.ProductStatus;
 import com.trong.Computer_sell.model.OrderCancelRequestEntity;
 import com.trong.Computer_sell.model.*;
 import com.trong.Computer_sell.repository.*;
+import com.trong.Computer_sell.service.NotificationService;
 import com.trong.Computer_sell.service.OrderService;
 import com.trong.Computer_sell.service.StockService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -38,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderCancelRequestRepository cancelRequestRepository;
     private final PaymentRepository paymentRepository;
     private final StockService stockService;
+    private final NotificationService notificationService;
 
     @Override
     public OrderResponse createOrder(OrderRequest request) {
@@ -117,6 +121,12 @@ public class OrderServiceImpl implements OrderService {
         paymentRepository.save(payment);
 
         log.info("Order {} created with status PENDING (stock not deducted yet)", order.getId());
+
+        // Gửi thông báo cho Admin về đơn hàng mới
+        String customerName = user.getFirstName() + " " + user.getLastName();
+        String totalFormatted = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+        notificationService.notifyNewOrder(order.getId(), customerName, totalFormatted);
+
         return OrderResponse.fromEntity(order);
     }
 
@@ -163,11 +173,16 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         cancelRequestRepository.save(cancelRequest);
+
+        // Gửi thông báo cho Admin về yêu cầu hủy đơn
+        String customerName = order.getUser().getFirstName() + " " + order.getUser().getLastName();
+        notificationService.notifyCancelRequest(orderId, customerName, reason != null ? reason : "Không có lý do");
     }
 
     @Override
     public OrderResponse updateOrderStatus(UUID orderId, OrderStatus newStatus) {
-        OrderEntity order = orderRepository.findById(orderId)
+        // Fetch order cùng với user để gửi thông báo
+        OrderEntity order = orderRepository.findByIdWithUser(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         OrderStatus oldStatus = order.getStatus();
@@ -200,6 +215,21 @@ public class OrderServiceImpl implements OrderService {
             }
             order.setPaymentStatus(PaymentStatus.PAID);
             orderRepository.save(order);
+        }
+
+        // 6. Gửi thông báo cho user về thay đổi trạng thái đơn hàng
+        try {
+            if (order.getUser() != null) {
+                notificationService.notifyOrderStatusChanged(
+                    order.getUser().getId(),
+                    orderId,
+                    oldStatus.name(),
+                    newStatus.name()
+                );
+                log.info("Sent order status notification to user {} for order {}", order.getUser().getId(), orderId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to send notification for order {}: {}", orderId, e.getMessage());
         }
 
         log.info("Order {} status changed: {} → {}", orderId, oldStatus, newStatus);

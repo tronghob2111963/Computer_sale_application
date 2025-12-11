@@ -6,11 +6,12 @@ import { CartService } from '../../services/cart.service';
 import { AuthStateService } from '../../services/auth-state.service';
 import { Subscription } from 'rxjs';
 import { CategoryService, CategoryDTO } from '../../services/category.service';
+import { NotificationDropdownComponent } from '../notification-dropdown/notification-dropdown.component';
 
 @Component({
   selector: 'app-header-layout',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NotificationDropdownComponent],
   templateUrl: './header-layout.component.html',
   styleUrls: ['./header-layout.component.scss']
 })
@@ -88,11 +89,22 @@ export class HeaderLayoutComponent implements OnInit, OnDestroy {
   }
 
   private loadCartCount(): void {
-    const uid = this.authService.getUserId();
-    if (!uid) { this.cartCount = 0; return; }
+    const uid = this.authService.getUserIdSafe();
+    if (!uid) {
+      console.warn('⚠️ loadCartCount - No userId available');
+      this.cartCount = 0;
+      return;
+    }
+    console.log('📦 Loading cart for userId:', uid);
     this.cartService.viewCart(uid).subscribe({
-      next: (c) => this.cartCount = c.items.reduce((s, i) => s + i.quantity, 0),
-      error: () => this.cartCount = 0
+      next: (c) => {
+        this.cartCount = c.items.reduce((s, i) => s + i.quantity, 0);
+        console.log('✅ Cart count updated:', this.cartCount);
+      },
+      error: (err) => {
+        console.error('❌ Error loading cart:', err);
+        this.cartCount = 0;
+      }
     });
   }
 

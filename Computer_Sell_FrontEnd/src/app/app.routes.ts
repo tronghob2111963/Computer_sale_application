@@ -33,6 +33,7 @@ import { AdminCustommerComponent } from './pages/admin/admin-custommer/admin-cus
 import { VnpayReturnComponent } from './pages/payment-return/vnpay-return.component';
 import { PcBuilderComponent } from './pages/pc-builder/pc-builder.component';
 import { MyBuildsComponent } from './pages/my-builds/my-builds.component';
+import { NotificationsComponent } from './pages/notifications/notifications.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -46,6 +47,7 @@ export const routes: Routes = [
   { path: 'payment/vnpay-return', component: VnpayReturnComponent },
   { path: 'pc-builder', component: PcBuilderComponent },
   { path: 'my-builds', component: MyBuildsComponent },
+  { path: 'notifications', component: NotificationsComponent },
   {
     path: 'admin',
     component: AdminLayoutComponent,

@@ -24,7 +24,7 @@ spring:
   sendgrid:
     api-key: ${SENDGRID_API_KEY}
     from-email: trongho.373664@gmail.com
-    template-id: ${TEMPLATE_ID}
+    template-id: ${TEMPLATE_ID:test-template}
     verification-link: http://localhost:8080/user/comfirm-email
 
 springdoc:
@@ -51,12 +51,32 @@ vnpay:
   ipn-url: "http://localhost:8080/api/payments/vnpay/ipn"
   pay-url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
 
+# AI Provider: openai hoặc gemini
+ai:
+  provider: ${AI_PROVIDER:gemini}
 
+# Gemini Configuration (Free tier - recommended)
+gemini:
+  api-key: ${GEMINI_API_KEY:AIzaSyBpxvxj-YSNhFIUPH5MsNyFiHGb7WaC95w}
+  base-url: https://generativelanguage.googleapis.com/v1beta
+  chat-model: gemini-2.0-flash
+  embedding-model: text-embedding-004
+  max-tokens: 2048
+  temperature: 0.7
 
+# OpenAI API Configuration (backup)
+openai:
+  api-key: "${OPENAI_API_KEY:}"
+  embedding-model: "text-embedding-3-large"
+  chat-model: "gpt-4o-mini"
+  base-url: "https://api.openai.com/v1"
+  embedding-dimension: 1536
+  max-tokens: 2000
+  temperature: 0.7
 
 jwt:
   secretKey: abc@123
   expMinutes: 60
   expDate: 14
-  accessKey: ${ACCESS_KEY}
-  refreshKey: ${REFRESH_KEY}
+  accessKey: ${ACCESS_KEY:test-access-key}
+  refreshKey: ${REFRESH_KEY:test-refresh-key}

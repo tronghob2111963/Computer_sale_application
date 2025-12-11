@@ -1,7 +1,6 @@
 package com.trong.Computer_sell.exception;
 
 
-import java.nio.file.AccessDeniedException;
 import java.util.Date;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -10,6 +9,9 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import com.trong.Computer_sell.DTO.response.common.ResponseData;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -60,11 +62,19 @@ public class GloBalExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseData<?> handleAccessDeniedException(AccessDeniedException ex) {
         return new ResponseData<>(HttpStatus.FORBIDDEN.value(), "Bạn không có quyền thực hiện hành động này!", null);
     }
 
+    @ExceptionHandler({BadCredentialsException.class, DisabledException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseData<?> handleAuthenticationException(Exception ex) {
+        return new ResponseData<>(HttpStatus.UNAUTHORIZED.value(), "Sai tên đăng nhập hoặc mật khẩu!", null);
+    }
+
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseData<?> handleGeneralException(Exception ex) {
         return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã có lỗi xảy ra: " + ex.getMessage(), null);
     }

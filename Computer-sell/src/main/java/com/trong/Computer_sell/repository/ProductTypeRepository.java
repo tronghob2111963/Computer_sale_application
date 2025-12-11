@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
+import java.util.Optional;
 
 
 @Repository
@@ -13,4 +14,6 @@ public interface ProductTypeRepository extends JpaRepository<ProductTypeEntity, 
 
     @Query("SELECT pt.name FROM ProductTypeEntity pt WHERE pt.id = :id")
     String findProductTypeById(UUID id);
+
+    Optional<ProductTypeEntity> findFirstByNameIgnoreCase(String name);
 }
