@@ -3,6 +3,8 @@ package com.trong.Computer_sell.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,6 +32,7 @@ public class ChatMessageEntity {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "products_suggested", columnDefinition = "jsonb")
     private String productsSuggested;
 

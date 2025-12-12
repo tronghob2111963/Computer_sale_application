@@ -42,9 +42,6 @@ public class UserEntity implements UserDetails, Serializable {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-
-
-
     @Column(name="username", unique = true, nullable = false, length = 256)
     private String username;
 

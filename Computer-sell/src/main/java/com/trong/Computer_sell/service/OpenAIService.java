@@ -2,7 +2,7 @@ package com.trong.Computer_sell.service;
 
 import java.util.List;
 
-public interface cd OpenAIService {
+public interface  OpenAIService {
     
     /**
      * Generate embedding vector for given text

@@ -50,7 +50,7 @@ vietqr:
 # Gemini API Configuration
 gemini:
   api:
-    key: "${GEMINI_API_KEY:AIzaSyBpxvxj-YSNhFIUPH5MsNyFiHGb7WaC95w}"
+    key: "${GEMINI_API_KEY:AIzaSyBQi9trEfEtbWAtOiGH3LXmv-_mwd_WbRI}"
 
 # OpenAI API Configuration for RAG Chatbot
 openai:

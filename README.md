@@ -1,1 +1,0 @@
-# Computer_sale_application

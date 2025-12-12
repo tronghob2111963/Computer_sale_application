@@ -88,8 +88,16 @@ public class RAGServiceImpl implements RAGService {
 
         } catch (Exception e) {
             log.error("Error in RAG chat: {}", e.getMessage(), e);
+            
+            String errorMessage;
+            if (e.getMessage() != null && (e.getMessage().contains("rate limit") || e.getMessage().contains("429"))) {
+                errorMessage = "Hệ thống đang bận, vui lòng đợi khoảng 30 giây rồi thử lại nhé! 🙏";
+            } else {
+                errorMessage = "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.";
+            }
+            
             return RAGChatResponse.builder()
-                    .answer("Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.")
+                    .answer(errorMessage)
                     .products(Collections.emptyList())
                     .sessionId(request.getSessionId())
                     .timestamp(LocalDateTime.now())

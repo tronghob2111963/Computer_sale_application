@@ -18,6 +18,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +33,12 @@ public class GeminiServiceImpl implements OpenAIService {
     private final ObjectMapper objectMapper;
     private WebClient webClient;
 
-    private static final int MAX_RETRIES = 20;
-    private static final long INITIAL_RETRY_DELAY_MS = 5000; // 5 seconds
+    private static final int MAX_RETRIES = 6;
+    private static final long INITIAL_RETRY_DELAY_MS = 8000; // base backoff 8s for free-tier limits
+    private static final long MAX_RETRY_DELAY_MS = 60000; // do not exceed 60s wait
+    private static final long MIN_DELAY_BETWEEN_CALLS_MS = 5000; // 5 seconds between API calls
+    private static final Semaphore API_RATE_LIMITER = new Semaphore(1); // prevent concurrent Gemini hits
+    private static volatile long nextAllowedRequestTimeMs = 0;
 
     private WebClient getWebClient() {
         if (webClient == null) {
@@ -46,43 +53,24 @@ public class GeminiServiceImpl implements OpenAIService {
 
     @Override
     public float[] createEmbedding(String text) {
-        int retries = 0;
-        Exception lastException = null;
+        return executeWithRetry("embedding", () -> doCreateEmbedding(text));
+    }
 
-        while (retries < MAX_RETRIES) {
-            try {
-                return doCreateEmbedding(text);
-            } catch (WebClientResponseException.TooManyRequests e) {
-                lastException = e;
-                retries++;
-                long delay = INITIAL_RETRY_DELAY_MS * retries;
-                log.warn("Gemini rate limited (429). Retry {}/{} after {}ms", retries, MAX_RETRIES, delay);
+    private void waitForRateLimit() {
+        synchronized (GeminiServiceImpl.class) {
+            long now = System.currentTimeMillis();
+            long waitUntil = Math.max(now, nextAllowedRequestTimeMs);
+            long waitTime = waitUntil - now;
+            if (waitTime > 0) {
                 try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException ie) {
+                    log.debug("Rate limiting: waiting {}ms before next API call", waitTime);
+                    Thread.sleep(waitTime);
+                } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while waiting for retry", ie);
-                }
-            } catch (Exception e) {
-                if (e.getMessage() != null && e.getMessage().contains("429")) {
-                    lastException = e;
-                    retries++;
-                    long delay = INITIAL_RETRY_DELAY_MS * retries;
-                    log.warn("Gemini rate limited. Retry {}/{} after {}ms", retries, MAX_RETRIES, delay);
-                    try {
-                        Thread.sleep(delay);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        throw new RuntimeException("Interrupted while waiting for retry", ie);
-                    }
-                } else {
-                    throw e;
                 }
             }
+            nextAllowedRequestTimeMs = System.currentTimeMillis() + MIN_DELAY_BETWEEN_CALLS_MS;
         }
-
-        log.error("Failed to create embedding after {} retries", MAX_RETRIES);
-        throw new RuntimeException("Gemini rate limit exceeded. Please wait a moment and try again.", lastException);
     }
 
     private float[] doCreateEmbedding(String text) {
@@ -149,43 +137,7 @@ public class GeminiServiceImpl implements OpenAIService {
 
     @Override
     public String chatCompletionWithHistory(String systemPrompt, List<ChatMessage> conversationHistory, String userMessage) {
-        int retries = 0;
-        Exception lastException = null;
-
-        while (retries < MAX_RETRIES) {
-            try {
-                return doChatCompletion(systemPrompt, conversationHistory, userMessage);
-            } catch (WebClientResponseException.TooManyRequests e) {
-                lastException = e;
-                retries++;
-                long delay = INITIAL_RETRY_DELAY_MS * retries;
-                log.warn("Gemini rate limited (429). Retry {}/{} after {}ms", retries, MAX_RETRIES, delay);
-                try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while waiting for retry", ie);
-                }
-            } catch (Exception e) {
-                if (e.getMessage() != null && e.getMessage().contains("429")) {
-                    lastException = e;
-                    retries++;
-                    long delay = INITIAL_RETRY_DELAY_MS * retries;
-                    log.warn("Gemini rate limited. Retry {}/{} after {}ms", retries, MAX_RETRIES, delay);
-                    try {
-                        Thread.sleep(delay);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        throw new RuntimeException("Interrupted while waiting for retry", ie);
-                    }
-                } else {
-                    throw e;
-                }
-            }
-        }
-
-        log.error("Failed to get chat completion after {} retries", MAX_RETRIES);
-        throw new RuntimeException("Gemini rate limit exceeded. Please wait a moment and try again.", lastException);
+        return executeWithRetry("chat completion", () -> doChatCompletion(systemPrompt, conversationHistory, userMessage));
     }
 
     private String doChatCompletion(String systemPrompt, List<ChatMessage> conversationHistory, String userMessage) {
@@ -262,6 +214,105 @@ public class GeminiServiceImpl implements OpenAIService {
         } catch (Exception e) {
             log.error("Error in Gemini chat completion: {}", e.getMessage());
             throw new RuntimeException("Failed to get chat completion from Gemini: " + e.getMessage(), e);
+        }
+    }
+
+    private <T> T executeWithRetry(String operationName, Callable<T> action) {
+        int attempt = 0;
+        Exception lastException = null;
+
+        while (attempt <= MAX_RETRIES) {
+            try {
+                return withRateLimit(action);
+            } catch (WebClientResponseException.TooManyRequests e) {
+                lastException = e;
+                attempt++;
+                long delay = calculateBackoffDelay(attempt, e);
+                log.warn("{} hit Gemini rate limit (attempt {}/{}). Waiting {}ms (Retry-After: {}s)", 
+                        operationName, attempt, MAX_RETRIES, delay, getRetryAfterSeconds(e));
+                pushNextAllowedTime(delay);
+                sleepQuietly(delay);
+            } catch (WebClientResponseException e) {
+                if (e.getStatusCode().is5xxServerError()) {
+                    lastException = e;
+                    attempt++;
+                    long delay = calculateBackoffDelay(attempt, e);
+                    log.warn("{} failed with status {} (attempt {}/{}). Waiting {}ms before retry", 
+                            operationName, e.getStatusCode(), attempt, MAX_RETRIES, delay);
+                    pushNextAllowedTime(delay);
+                    sleepQuietly(delay);
+                } else {
+                    throw e;
+                }
+            } catch (Exception e) {
+                if (e.getMessage() != null && e.getMessage().contains("429")) {
+                    lastException = e;
+                    attempt++;
+                    long delay = calculateBackoffDelay(attempt, null);
+                    log.warn("{} hit Gemini rate limit (by message) attempt {}/{} - waiting {}ms", 
+                            operationName, attempt, MAX_RETRIES, delay);
+                    pushNextAllowedTime(delay);
+                    sleepQuietly(delay);
+                } else {
+                    throw new RuntimeException("Failed to call Gemini " + operationName + ": " + e.getMessage(), e);
+                }
+            }
+        }
+
+        log.error("Failed to complete {} after {} retries", operationName, MAX_RETRIES);
+        throw new RuntimeException("Gemini rate limit exceeded. Please wait a moment and try again.", lastException);
+    }
+
+    private <T> T withRateLimit(Callable<T> action) throws Exception {
+        API_RATE_LIMITER.acquire();
+        try {
+            waitForRateLimit();
+            return action.call();
+        } finally {
+            API_RATE_LIMITER.release();
+        }
+    }
+
+    private long calculateBackoffDelay(int attempt, WebClientResponseException exception) {
+        long retryAfterMs = getRetryAfterMs(exception);
+        double exponential = INITIAL_RETRY_DELAY_MS * Math.pow(1.5, Math.max(0, attempt - 1));
+        long baseDelay = retryAfterMs > 0 ? retryAfterMs : (long) exponential;
+        long jitter = ThreadLocalRandom.current().nextLong(500, 1500);
+        return Math.min(baseDelay + jitter, MAX_RETRY_DELAY_MS);
+    }
+
+    private long getRetryAfterMs(WebClientResponseException exception) {
+        if (exception == null || exception.getHeaders() == null) {
+            return -1;
+        }
+        List<String> retryAfter = exception.getHeaders().get("Retry-After");
+        if (retryAfter != null && !retryAfter.isEmpty()) {
+            try {
+                return Long.parseLong(retryAfter.get(0)) * 1000;
+            } catch (NumberFormatException ignored) {
+                return -1;
+            }
+        }
+        return -1;
+    }
+
+    private long getRetryAfterSeconds(WebClientResponseException exception) {
+        long ms = getRetryAfterMs(exception);
+        return ms > 0 ? ms / 1000 : -1;
+    }
+
+    private void pushNextAllowedTime(long additionalDelayMs) {
+        synchronized (GeminiServiceImpl.class) {
+            long candidate = System.currentTimeMillis() + additionalDelayMs;
+            nextAllowedRequestTimeMs = Math.max(nextAllowedRequestTimeMs, candidate);
+        }
+    }
+
+    private void sleepQuietly(long delay) {
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
         }
     }
 }
