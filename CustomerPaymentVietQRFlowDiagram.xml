@@ -1,0 +1,133 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" version="29.2.7">
+  <diagram id="customer-payment-vietqr-flow" name="Customer Payment VietQR Flow Diagram">
+    <mxGraphModel dx="3565" dy="1858" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="2400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=25" value="Start" vertex="1">
+          <mxGeometry height="70" width="140" x="560" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="step1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Order created with&#xa;PENDING status" vertex="1">
+          <mxGeometry height="80" width="300" x="480" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow1" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="Select payment method" vertex="1">
+          <mxGeometry height="70" width="300" x="480" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow2" edge="1" parent="1" source="step1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="decision1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=25" value="Payment&#xa;Method?" vertex="1">
+          <mxGeometry height="120" width="200" x="530" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow3" edge="1" parent="1" source="step2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="decision1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="codStep1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=22" value="Create COD Payment" vertex="1">
+          <mxGeometry height="80" width="350" x="50" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowCod1" edge="1" parent="1" source="decision1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="codStep1" value="COD">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="codStep2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=22" value="Order Status = CONFIRMED&#xa;PaymentStatus = UNPAID&#xa;(Chờ giao hàng)" vertex="1">
+          <mxGeometry height="100" width="350" x="50" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowCod2" edge="1" parent="1" source="codStep1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="codStep2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="codStep3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=22" value="Shipper delivers order&#xa;to customer" vertex="1">
+          <mxGeometry height="80" width="350" x="50" y="860" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowCod3" edge="1" parent="1" source="codStep2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="codStep3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="codStep4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=22" value="Customer pays cash&#xa;upon receiving goods" vertex="1">
+          <mxGeometry height="80" width="350" x="50" y="980" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowCod4" edge="1" parent="1" source="codStep3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="codStep4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vietqrStep1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=22" value="Create VietQR Payment" vertex="1">
+          <mxGeometry height="80" width="380" x="820" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVietqr1" edge="1" parent="1" source="decision1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="vietqrStep1" value="VIETQR">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vietqrStep2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=22" value="Generate VietQR Code&#xa;Payment Status = PENDING" vertex="1">
+          <mxGeometry height="80" width="380" x="820" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVietqr2" edge="1" parent="1" source="vietqrStep1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="vietqrStep2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVietqr3" edge="1" parent="1" source="vietqrStep2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="vietqrStep4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1010" y="850" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vietqrStep4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=22" value="User completes and uploads transfer proof&lt;br&gt;(Screenshot)" vertex="1">
+          <mxGeometry height="80" width="420" x="800" y="940" as="geometry" />
+        </mxCell>
+        <mxCell id="vietqrStep5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=22" value="User uploads transfer proof&#xa;(Screenshot)" vertex="1">
+          <mxGeometry height="80" width="380" x="820" y="1090" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVietqr5" edge="1" parent="1" source="vietqrStep4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="vietqrStep5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vietqrStep6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=22" value="Waiting for Admin verification" vertex="1">
+          <mxGeometry height="80" width="380" x="820" y="1210" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVietqr6" edge="1" parent="1" source="vietqrStep5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="vietqrStep6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="decision2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=22;fontColor=#333333" value="Admin&#xa;Review" vertex="1">
+          <mxGeometry height="120" width="200" x="910" y="1330" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVietqr7" edge="1" parent="1" source="vietqrStep6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="decision2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVietqrSuccess" edge="1" parent="1" source="decision2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=18;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="notifyStep" value="Confirm">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1010" y="1530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vietqrFailed" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=22" value="Payment Status = FAILED&#xa;User notified of rejection" vertex="1">
+          <mxGeometry height="80" width="340" x="1220" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVietqrFailed" edge="1" parent="1" source="decision2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=18" target="vietqrFailed" value="Reject">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="failedEnd" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=22" value="Exit&#xa;(Failed)" vertex="1">
+          <mxGeometry height="70" width="140" x="1320" y="1760" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowFailedEnd" edge="1" parent="1" source="vietqrFailed" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="failedEnd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="notifyStep" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=22" value="Send notification to user&#xa;(Payment confirmed)" vertex="1">
+          <mxGeometry height="80" width="340" x="410" y="1720" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowToNotify1" edge="1" parent="1" source="codStep4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="notifyStep">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="225" y="1740" />
+            </Array>
+            <mxPoint x="225" y="1200" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="successStep" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=22" value="Display success message" vertex="1">
+          <mxGeometry height="70" width="300" x="430" y="1870" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowSuccess" edge="1" parent="1" source="notifyStep" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="successStep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="end" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=22" value="End&#xa;(Success)" vertex="1">
+          <mxGeometry height="70" width="140" x="510" y="2020" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowEnd" edge="1" parent="1" source="successStep" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

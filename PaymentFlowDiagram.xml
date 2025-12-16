@@ -1,0 +1,126 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" version="29.2.7">
+  <diagram id="payment-flow" name="Payment Flow Diagram">
+    <mxGraphModel dx="2852" dy="1486" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=25" value="Start" vertex="1">
+          <mxGeometry height="70" width="140" x="560" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="step1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Order created with&#xa;PENDING status" vertex="1">
+          <mxGeometry height="80" width="300" x="480" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow1" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="Select payment method" vertex="1">
+          <mxGeometry height="70" width="300" x="480" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow2" edge="1" parent="1" source="step1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="decision1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=25" value="Payment&#xa;Method?" vertex="1">
+          <mxGeometry height="120" width="200" x="530" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow3" edge="1" parent="1" source="step2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="decision1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cashStep1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" value="Create Cash Payment&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="350" x="100" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowCash1" edge="1" parent="1" source="decision1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="cashStep1" value="CASH">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cashStep2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" value="Payment Status = SUCCESS&#xa;Order PaymentStatus = SUCCESS" vertex="1">
+          <mxGeometry height="80" width="410" x="70" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowCash2" edge="1" parent="1" source="cashStep1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="cashStep2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vnpayStep1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Create VNPay Payment&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="380" x="850" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVnpay1" edge="1" parent="1" source="decision1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="vnpayStep1" value="VNPAY">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vnpayStep2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Generate VNPay payment URL&#xa;Payment Status = PENDING" vertex="1">
+          <mxGeometry height="80" width="380" x="850" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVnpay2" edge="1" parent="1" source="vnpayStep1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="vnpayStep2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vnpayStep3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="Redirect user to&#xa;VNPay payment gateway" vertex="1">
+          <mxGeometry height="80" width="340" x="870" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVnpay3" edge="1" parent="1" source="vnpayStep2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="vnpayStep3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vnpayStep4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="User completes payment&#xa;on VNPay" vertex="1">
+          <mxGeometry height="80" width="340" x="870" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVnpay4" edge="1" parent="1" source="vnpayStep3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="vnpayStep4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vnpayStep5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="VNPay sends IPN callback&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="340" x="870" y="1080" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVnpay5" edge="1" parent="1" source="vnpayStep4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="vnpayStep5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="decision2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" value="Transaction&#xa;Status = 00?" vertex="1">
+          <mxGeometry height="120" width="200" x="940" y="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVnpay6" edge="1" parent="1" source="vnpayStep5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="decision2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vnpaySuccess" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" value="Payment Status = SUCCESS&#xa;Order Status = CONFIRMED&#xa;Order PaymentStatus = PAID" vertex="1">
+          <mxGeometry height="100" width="380" x="850" y="1360" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVnpaySuccess" edge="1" parent="1" source="decision2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="vnpaySuccess" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vnpayFailed" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" value="Payment Status = FAILED" vertex="1">
+          <mxGeometry height="70" width="300" x="1200" y="1220" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowVnpayFailed" edge="1" parent="1" source="decision2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="vnpayFailed" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="failedEnd" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=25" value="Exit&#xa;(Failed)" vertex="1">
+          <mxGeometry height="70" width="140" x="1280" y="1340" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowFailedEnd" edge="1" parent="1" source="vnpayFailed" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="failedEnd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="notifyStep" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="Send notification to user&#xa;(Payment confirmed)" vertex="1">
+          <mxGeometry height="80" width="340" x="430" y="1500" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowToNotify1" edge="1" parent="1" source="cashStep2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="notifyStep">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="275" y="1540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrowToNotify2" edge="1" parent="1" source="vnpaySuccess" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="notifyStep">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="1540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="successStep" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" value="Display success message" vertex="1">
+          <mxGeometry height="70" width="300" x="450" y="1620" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowSuccess" edge="1" parent="1" source="notifyStep" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="successStep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="end" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=25" value="Exit" vertex="1">
+          <mxGeometry height="70" width="140" x="530" y="1730" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowEnd" edge="1" parent="1" source="successStep" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

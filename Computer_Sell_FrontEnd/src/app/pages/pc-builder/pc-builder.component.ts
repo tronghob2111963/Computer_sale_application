@@ -29,12 +29,12 @@ export class PcBuilderComponent implements OnInit {
     { id: 'cpu', name: 'CPU', icon: '/placeholder.svg', quantity: 1 },
     { id: 'mainboard', name: 'MAINBOARD', icon: '/placeholder.svg', quantity: 1 },
     { id: 'ram', name: 'RAM', icon: '/placeholder.svg', quantity: 1 },
-    { id: 'gpu', name: 'CARD DO HOA', icon: '/placeholder.svg', quantity: 1 },
-    { id: 'storage', name: 'O CUNG', icon: '/placeholder.svg', quantity: 1 },
-    { id: 'psu', name: 'NGUON (PSU)', icon: '/placeholder.svg', quantity: 1 },
-    { id: 'cooling', name: 'TAN NHIET', icon: '/placeholder.svg', quantity: 1 },
-    { id: 'case', name: 'VO CASE', icon: '/placeholder.svg', quantity: 1 },
-    { id: 'monitor', name: 'MAN HINH', icon: '/placeholder.svg', quantity: 1 }
+    { id: 'gpu', name: 'Card Đồ Họa', icon: '/placeholder.svg', quantity: 1 },
+    { id: 'storage', name: 'Ổ Cứng', icon: '/placeholder.svg', quantity: 1 },
+    { id: 'psu', name: 'Nguồn (PSU)', icon: '/placeholder.svg', quantity: 1 },
+    { id: 'cooling', name: 'Tản Nhiệt', icon: '/placeholder.svg', quantity: 1 },
+    { id: 'case', name: 'Vỏ Case', icon: '/placeholder.svg', quantity: 1 },
+    { id: 'monitor', name: 'Màn Hình', icon: '/placeholder.svg', quantity: 1 }
   ];
 
   currentBuild: UserBuild | null = null;
@@ -42,11 +42,13 @@ export class PcBuilderComponent implements OnInit {
   selectedCategory: BuildCategory | null = null;
   availableProducts: any[] = [];
   totalPrice = 0;
-  buildName = 'Cau hinh PC cua toi';
+  buildName = 'Cấu hình PC của tôi';
   isLoading = false;
   aiLoading = false;
   aiError = '';
   aiNote = '';
+  aiProfile = '';
+  aiEstimatedTotal = 0;
   aiConfig: AiSuggestRequest = {
     useCase: 'gaming',
     resolution: '1080p',
@@ -326,7 +328,7 @@ export class PcBuilderComponent implements OnInit {
 
   async applyAiSuggestions(parts: AiSuggestedPart[]) {
     if (!parts || parts.length === 0) {
-      this.aiError = 'AI khong tra ve linh kien phu hop. Vui long thu lai voi thong tin ro hon.';
+      this.aiError = 'AI không trả về linh kiện phù hợp. Vui lòng thử lại với thông tin rõ hơn.';
       return;
     }
 
@@ -372,7 +374,8 @@ export class PcBuilderComponent implements OnInit {
           id: part.productId,
           name: part.productName,
           price: part.price ?? 0,
-          images: []
+          images: [],
+          reason: part.reason || 'AI gợi ý'
         };
         targetCat.quantity = 1;
       } catch (e) {
@@ -386,16 +389,20 @@ export class PcBuilderComponent implements OnInit {
   suggestWithAI() {
     this.aiError = '';
     this.aiNote = '';
+    this.aiProfile = '';
+    this.aiEstimatedTotal = 0;
     this.aiLoading = true;
 
     this.buildService.aiSuggest(this.aiConfig).subscribe({
       next: async (response) => {
         this.aiNote = response.data?.note || '';
+        this.aiProfile = response.data?.profile || '';
+        this.aiEstimatedTotal = response.data?.estimatedTotal || 0;
         await this.applyAiSuggestions(response.data?.parts || []);
         this.aiLoading = false;
       },
       error: (err) => {
-        this.aiError = err?.error?.message || 'Khong the goi y tu dong, vui long thu lai.';
+        this.aiError = err?.error?.message || 'Không thể gợi ý tự động, vui lòng thử lại.';
         this.aiLoading = false;
       }
     });

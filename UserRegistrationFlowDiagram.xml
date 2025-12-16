@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2025-12-15T00:00:00.000Z" agent="Kiro" version="21.0.0" type="device">
+  <diagram id="user-registration-flow" name="User Registration Flow">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="USER REGISTRATION FLOW DIAGRAM&#xa;Computer Sell Application" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Start Node -->
+        <mxCell id="start" value="START" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="490" y="80" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Step 1: User Input -->
+        <mxCell id="step1" value="User submits registration form&#xa;POST /user/register&#xa;(UserCreationRequestDTO)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="450" y="160" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Start to Step1 -->
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="start" target="step1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Step 2: Validate Input -->
+        <mxCell id="step2" value="Validate Input Data&#xa;(@Valid annotation)&#xa;- Username not null&#xa;- Password not null&#xa;- Email valid format&#xa;- FirstName, LastName not blank" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1">
+          <mxGeometry x="430" y="260" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Step1 to Step2 -->
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step1" target="step2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decision 1: Validation OK? -->
+        <mxCell id="decision1" value="Validation&#xa;Passed?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="490" y="380" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Step2 to Decision1 -->
+        <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step2" target="decision1">
+          <mxGeometry relative="1" as="geometry" />
+       </mxCell>
+
+        <!-- Error Response: Validation Failed -->
+        <mxCell id="error1" value="Return Error Response&#xa;HTTP 400 BAD_REQUEST&#xa;Validation Error Message" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="700" y="385" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Decision1 to Error1 (No) -->
+        <mxCell id="arrow4" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision1" target="error1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Step 3: Check Username Exists -->
+        <mxCell id="step3" value="Check Username Exists&#xa;userRepository.findByUsername()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="450" y="490" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Decision1 to Step3 (Yes) -->
+        <mxCell id="arrow5" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision1" target="step3">
+          <mxGeometry relative="1" as="geometry" />
+        <mxCell>
+
+        <!-- Decision 2: Username Exists? -->
+        <mxCell id="decision2" value="Username&#xa;Exists?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="490" y="580" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Step3 to Decision2 -->
+        <mxCell id="arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step3" target="decision2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Error Response: Username Exists -->
+        <mxCell id="error2" value="Throw Exception&#xa;'Username already exists'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="700" y="590" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Decision2 to Error2 (Yes) -->
+        <mxCell id="arrow7" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision2" target="error2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+       <!-- Step 4: Check Email Exists -->
+        <mxCell id="step4" value="Check Email Exists&#xa;userRepository.findByEmail()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="200" y="580" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Decision2 to Step4 (No) -->
+        <mxCell id="arrow8" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision2" target="step4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Decision 3: Email Exists? -->
+        <mxCell id="decision3" value="Email&#xa;Exists?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="240" y="680" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step4 to Decision3 -->
+        <mxCell id="arrow9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step4" target="decision3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Error Response: Email Exists -->
+        <mxCell id="error3" value="Throw Exception&#xa;'Email already exists'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="50" y="690" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Decision3 to Error3 (Yes) -->
+        <mxCell id="arrow10" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision3" target="error3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 5: Check Phone Exists -->
+        <mxCell id="step5" value="Check Phone Exists&#xa;userRepository.findByPhone()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="200" y="790" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Decision3 to Step5 (No) -->
+        <mxCell id="arrow11" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision3" target="step5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Decision 4: Phone Exists? -->
+        <mxCell id="decision4" value="Phone&#xa;Exists?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="240" y="880" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step5 to Decision4 -->
+        <mxCell id="arrow12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step5" target="decision4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Error Response: Phone Exists -->
+        <mxCell id="error4" value="Throw Exception&#xa;'Phone already exists'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="50" y="890" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Decision4 to Error4 (Yes) -->
+        <mxCell id="arrow13" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision4" target="error4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+    
+    <!-- Step 6: Encode Password -->
+        <mxCell id="step6" value="Encode Password&#xa;passwordEncoder.encode(password)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6" vertex="1" parent="1">
+          <mxGeometry x="450" y="880" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Decision4 to Step6 (No) -->
+        <mxCell id="arrow14" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision4" target="step6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 7: Create UserEntity -->
+        <mxCell id="step7" value="Create UserEntity&#xa;- Set username, password (encoded)&#xa;- Set firstName, lastName, gender&#xa;- Set dateOfBirth, phone, email&#xa;- Set userType = CUSTOMER&#xa;- Set status = ACTIVE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="430" y="970" width="240" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step6 to Step7 -->
+        <mxCell id="arrow15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step6" target="step7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 8: Save User to Database -->
+        <mxCell id="step8" value="Save User to Database&#xa;userRepository.save(user)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="450" y="1100" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step7 to Step8 -->
+        <mxCell id="arrow16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step7" target="step8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Decision 5: User ID Generated? -->
+        <mxCell id="decision5" value="User ID&#xa;Generated?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1">
+          <mxGeometry x="490" y="1190" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step8 to Decision5 -->
+        <mxCell id="arrow17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step8" target="decision5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 9: Save Addresses -->
+        <mxCell id="step9" value="Create &amp; Save Addresses&#xa;Loop through addresses list&#xa;addressRepository.saveAll()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="450" y="1300" width="200" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Decision5 to Step9 (Yes) -->
+        <mxCell id="arrow18" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision5" target="step9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+ 
+       <!-- Step 10: Assign Role -->
+        <mxCell id="step10" value="Assign CUSTOMER Role&#xa;userRoleService.assignRoleToUser(user, 4)&#xa;- Find Role by ID = 4&#xa;- Create UserHasRole&#xa;- Save to database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6" vertex="1" parent="1">
+          <mxGeometry x="430" y="1400" width="240" height="90" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step9 to Step10 -->
+        <mxCell id="arrow19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step9" target="step10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 11: Send Verification Email -->
+        <mxCell id="step11" value="Send Verification Email&#xa;emailService.emailVerification()&#xa;- Generate secretCode (UUID)&#xa;- Create email with template&#xa;- Send via SendGrid API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1">
+          <mxGeometry x="430" y="1520" width="240" height="90" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step10 to Step11 -->
+        <mxCell id="arrow20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step10" target="step11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Decision 6: Email Sent? -->
+        <mxCell id="decision6" value="Email&#xa;Sent?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="490" y="1640" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step11 to Decision6 -->
+        <mxCell id="arrow21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step11" target="decision6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Error Response: Email Failed -->
+        <mxCell id="error5" value="Throw RuntimeException&#xa;Email sending failed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="700" y="1650" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Decision6 to Error5 (No) -->
+        <mxCell id="arrow22" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision6" target="error5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 12: Return Success Response -->
+        <mxCell id="step12" value="Return Success Response&#xa;HTTP 201 CREATED&#xa;'User created successfully'&#xa;Return: user.getId() (UUID)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="430" y="1750" width="240" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Decision6 to Step12 (Yes) -->
+        <mxCell id="arrow23" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision6" target="step12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- End Node -->
+        <mxCell id="end" value="END" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="490" y="1860" width="120" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow: Step12 to End -->
+        <mxCell id="arrow24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="step12" target="end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Error End Nodes -->
+        <mxCell id="errorEnd1" value="END&#xa;(Error)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="730" y="480" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowErr1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="error1" target="errorEnd1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="errorEnd2" value="END&#xa;(Error)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="730" y="680" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowErr2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="error2" target="errorEnd2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="errorEnd3" value="END&#xa;(Error)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="65" y="780" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowErr3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="error3" target="errorEnd3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="errorEnd4" value="END&#xa;(Error)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="65" y="980" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowErr4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="error4" target="errorEnd4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="errorEnd5" value="END&#xa;(Error)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="730" y="1740" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowErr5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="error5" target="errorEnd5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend" value="LEGEND" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="900" y="100" width="100" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legendStart" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="900" y="140" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legendStartText" value="Start/End" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0" vertex="1" parent="1">
+          <mxGeometry x="940" y="140" width="80" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legendProcess" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="900" y="170" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legendProcessText" value="Process/Action" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0" vertex="1" parent="1">
+          <mxGeometry x="940" y="170" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legendDecision" value="" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="900" y="200" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legendDecisionText" value="Decision" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0" vertex="1" parent="1">
+          <mxGeometry x="940" y="200" width="80" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legendValidation" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1">
+          <mxGeometry x="900" y="230" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legendValidationText" value="Validation/Email" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0" vertex="1" parent="1">
+          <mxGeometry x="940" y="230" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legendSecurity" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6" vertex="1" parent="1">
+          <mxGeometry x="900" y="260" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legendSecurityText" value="Security/Role" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0" vertex="1" parent="1">
+          <mxGeometry x="940" y="260" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legendSuccess" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="900" y="290" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legendSuccessText" value="Success" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0" vertex="1" parent="1">
+          <mxGeometry x="940" y="290" width="80" height="20" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

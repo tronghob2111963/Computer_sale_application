@@ -2,6 +2,7 @@ package com.trong.Computer_sell.config;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,7 +12,9 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class GeminiConfig {
     
+    @Value("${gemini.api.key:}")
     private String apiKey;
+    
     private String baseUrl = "https://generativelanguage.googleapis.com/v1beta";
     private String chatModel = "gemini-2.0-flash";
     private String embeddingModel = "text-embedding-004";

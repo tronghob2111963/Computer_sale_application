@@ -1,0 +1,153 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" version="29.2.7">
+  <diagram name="Admin Payment Management Flow" id="admin-payment-flow">
+    <mxGraphModel dx="1426" dy="743" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1a365d;" value="ADMIN PAYMENT MANAGEMENT FLOW DIAGRAM" vertex="1">
+          <mxGeometry height="40" width="600" x="500" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="Admin Login" vertex="1">
+          <mxGeometry height="50" width="120" x="720" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="paymentsPage" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Admin Payments Page&#xa;(admin-payments)" vertex="1">
+          <mxGeometry height="60" width="160" x="700" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="loadAll" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Parallel Load:&#xa;loadOverview()&#xa;loadMonthly()&#xa;loadPayments()" vertex="1">
+          <mxGeometry height="80" width="160" x="700" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="overviewAPI" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="GET /api/admin/payments/statistics/overview" vertex="1">
+          <mxGeometry height="50" width="200" x="460" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="monthlyAPI" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="GET /api/admin/payments/statistics/monthly/{year}" vertex="1">
+          <mxGeometry height="50" width="220" x="900" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="searchAPI" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="GET /api/admin/payments/search" vertex="1">
+          <mxGeometry height="50" width="160" x="700" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="filterSection" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Bộ lọc:&#xa;- Keyword&#xa;- Status&#xa;- Start/End Date&#xa;- Sort By" vertex="1">
+          <mxGeometry height="100" width="160" x="700" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="paymentList" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Danh sách thanh toán&#xa;(Phân trang)" vertex="1">
+          <mxGeometry height="50" width="160" x="700" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="selectPayment" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Chọn giao dịch" vertex="1">
+          <mxGeometry height="80" width="160" x="700" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="viewDetailBtn" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Xem chi tiết" vertex="1">
+          <mxGeometry height="40" width="100" x="500" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="openDetailPanel" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="openDetail()&#xa;GET /api/admin/payments/{id}" vertex="1">
+          <mxGeometry height="50" width="180" x="460" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="detailPanel" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Detail Panel:&#xa;- Order Info&#xa;- Payment Method&#xa;- Amount&#xa;- Transaction ID&#xa;- Proof Image (VietQR)" vertex="1">
+          <mxGeometry height="100" width="180" x="460" y="830" as="geometry" />
+        </mxCell>
+        <mxCell id="confirmBtn" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Xác nhận&#xa;thanh toán" vertex="1">
+          <mxGeometry height="40" width="100" x="960" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="checkCanConfirm" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="canConfirm()?&#xa;Status != SUCCESS/PAID/FAILED" vertex="1">
+          <mxGeometry height="80" width="180" x="920" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="confirmPaymentAPI" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="confirmPayment()&#xa;POST /api/payments/confirm/{id}" vertex="1">
+          <mxGeometry height="50" width="180" x="920" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="vietqrTitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1a365d;" value="VIETQR FLOW" vertex="1">
+          <mxGeometry height="30" width="150" x="1200" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="vietqrCheck" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="VietQR Payment?&#xa;(Có ảnh chứng từ)" vertex="1">
+          <mxGeometry height="80" width="160" x="1180" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="viewProofImage" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Xem ảnh chứng từ&#xa;openProofImageModal()" vertex="1">
+          <mxGeometry height="50" width="160" x="1160" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="vietqrDecision" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Approve/Reject?" vertex="1">
+          <mxGeometry height="80" width="160" x="1180" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="approveVietQR" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="confirmVietQRPayment()&#xa;→ SUCCESS" vertex="1">
+          <mxGeometry height="50" width="140" x="1100" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="rejectVietQR" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="rejectVietQRPayment()&#xa;→ FAILED" vertex="1">
+          <mxGeometry height="50" width="140" x="1280" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="success" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="Thành công&#xa;showToast()&#xa;loadPayments()&#xa;loadOverview()" vertex="1">
+          <mxGeometry height="70" width="160" x="700" y="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow1" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="paymentsPage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow2" edge="1" parent="1" source="paymentsPage" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="loadAll">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow3" edge="1" parent="1" source="loadAll" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="overviewAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow4" edge="1" parent="1" source="loadAll" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="monthlyAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow5" edge="1" parent="1" source="loadAll" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="searchAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow6" edge="1" parent="1" source="searchAPI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="filterSection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow7" edge="1" parent="1" source="filterSection" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="paymentList">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow8" edge="1" parent="1" source="paymentList" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="selectPayment">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow9" edge="1" parent="1" source="selectPayment" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="viewDetailBtn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow10" edge="1" parent="1" source="viewDetailBtn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="openDetailPanel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow11" edge="1" parent="1" source="openDetailPanel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="detailPanel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow12" edge="1" parent="1" source="selectPayment" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="confirmBtn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow13" edge="1" parent="1" source="confirmBtn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="checkCanConfirm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow14" edge="1" parent="1" source="checkCanConfirm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="confirmPaymentAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow15" edge="1" parent="1" source="selectPayment" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="vietqrCheck">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow16" edge="1" parent="1" source="vietqrCheck" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="viewProofImage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow17" edge="1" parent="1" source="viewProofImage" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="vietqrDecision">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow18" edge="1" parent="1" source="vietqrDecision" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="approveVietQR">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow19" edge="1" parent="1" source="vietqrDecision" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="rejectVietQR">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow20" edge="1" parent="1" source="confirmPaymentAPI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" target="success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow21" edge="1" parent="1" source="approveVietQR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" target="success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow22" edge="1" parent="1" source="rejectVietQR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" target="success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow23" edge="1" parent="1" source="success" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#82b366;" target="loadAll">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="1055" />
+              <mxPoint x="600" y="290" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

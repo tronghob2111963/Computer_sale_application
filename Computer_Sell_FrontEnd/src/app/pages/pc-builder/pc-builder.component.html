@@ -46,9 +46,21 @@
     </div>
   </div>
 
-  @if (aiNote || aiError) {
+  @if (aiProfile || aiNote || aiError) {
   <div class="ai-feedback" [class.error]="aiError">
-    <strong>{{ aiError ? 'Loi' : 'Ghi chu' }}:</strong> {{ aiError || aiNote }}
+    @if (aiProfile && !aiError) {
+    <div class="ai-profile">
+      <span class="profile-badge">🤖 {{ aiProfile }}</span>
+      @if (aiEstimatedTotal > 0) {
+      <span class="estimated-total">Dự kiến: {{ formatPrice(aiEstimatedTotal) }}</span>
+      }
+    </div>
+    }
+    @if (aiNote || aiError) {
+    <div class="ai-note">
+      <strong>{{ aiError ? 'Lỗi' : 'Ghi chú' }}:</strong> {{ aiError || aiNote }}
+    </div>
+    }
   </div>
   }
 
@@ -66,6 +78,12 @@
           <div class="selected-product">
             <div class="product-name">{{ category.selectedProduct.name }}</div>
             <div class="product-price">{{ formatPrice(category.selectedProduct.price) }}</div>
+            @if (category.selectedProduct.reason) {
+            <div class="ai-reason">
+              <span class="ai-badge">🤖 AI</span>
+              {{ category.selectedProduct.reason }}
+            </div>
+            }
           </div>
           } @else {
           <div class="placeholder">Chua chon</div>
@@ -117,7 +135,8 @@
           @for (item of selectedItems; track item.id) {
           <tr>
             <td>
-              <img class="table-thumb" [src]="getProductImage(item.selectedProduct)" [alt]="item.selectedProduct.name" />
+              <img class="table-thumb" [src]="getProductImage(item.selectedProduct)"
+                [alt]="item.selectedProduct.name" />
             </td>
             <td class="product-cell">
               <div class="product-name">{{ item.selectedProduct.name }}</div>

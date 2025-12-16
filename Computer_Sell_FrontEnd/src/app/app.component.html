@@ -3,6 +3,7 @@
   <div class="page-container">
     <router-outlet></router-outlet>
   </div>
-  <app-build-pc-fab></app-build-pc-fab>
-  <app-chatbot></app-chatbot>
+  <!-- Chỉ hiển thị khi đã đăng nhập và không phải Admin -->
+  <app-build-pc-fab *ngIf="isLoggedIn && !isAdminRoute"></app-build-pc-fab>
+  <app-chatbot *ngIf="isLoggedIn && !isAdminRoute"></app-chatbot>
 </main>

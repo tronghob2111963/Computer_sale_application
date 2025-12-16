@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2025-12-15T00:00:00.000Z" agent="Kiro" version="21.0.0" type="device">
+  <diagram id="user-build-pc-flow" name="User Build PC Flow Diagram">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="2400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="USER BUILD PC FLOW DIAGRAM&#xa;Computer Sell Application" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="550" y="20" width="500" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Start Node -->
+        <mxCell id="start" value="Start" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="730" y="100" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 1: User Login -->
+        <mxCell id="step1" value="User logged in&#xa;(Authentication required)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="650" y="210" width="300" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="start" target="step1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Decision 1: Build Method -->
+        <mxCell id="decision1" value="Build&#xa;Method?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="700" y="330" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="step1" target="decision1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- ========== MANUAL BUILD BRANCH (LEFT) ========== -->
+        <mxCell id="manualTitle" value="MANUAL BUILD" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="200" y="420" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Manual Step 1: Create Build -->
+        <mxCell id="manual1" value="Create new build&#xa;POST /builds/create&#xa;(name, userId)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="150" y="470" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowManual1" value="Manual" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" edge="1" parent="1" source="decision1" target="manual1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Manual Step 2: Browse Products -->
+        <mxCell id="manual2" value="Browse products by type&#xa;(CPU, GPU, RAM, etc.)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="150" y="610" width="300" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowManual2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="manual1" target="manual2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Manual Step 3: Select Product -->
+        <mxCell id="manual3" value="Select product&#xa;and quantity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="150" y="730" width="300" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowManual3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="manual2" target="manual3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decision 2: Product Valid -->
+        <mxCell id="decision2" value="Product&#xa;Available?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="200" y="850" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowManual4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="manual3" target="decision2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Error: Product not found -->
+        <mxCell id="errorProduct" value="Show error message&#xa;'Product not found'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="20" y="870" width="250" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowError1" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" edge="1" parent="1" source="decision2" target="errorProduct">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Loop back to browse -->
+        <mxCell id="arrowLoopBack" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1" edge="1" parent="1" source="errorProduct" target="manual2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="20" y="650" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Manual Step 4: Add to Build -->
+        <mxCell id="manual4" value="Add product to build&#xa;POST /builds/{buildId}/add-product" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="130" y="1010" width="340" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowManual5" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" edge="1" parent="1" source="decision2" target="manual4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Manual Step 5: Calculate Total -->
+        <mxCell id="manual5" value="Calculate and update&#xa;total price" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="150" y="1130" width="300" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowManual6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="manual4" target="manual5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Decision 3: Add More -->
+        <mxCell id="decision3" value="Add more&#xa;parts?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="200" y="1250" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowManual7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="manual5" target="decision3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Loop back to browse products -->
+        <mxCell id="arrowAddMore" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" edge="1" parent="1" source="decision3" target="manual2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="1310" />
+              <mxPoint x="500" y="650" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      
+  <!-- ========== AI SUGGEST BRANCH (RIGHT) ========== -->
+        <mxCell id="aiTitle" value="AI SUGGESTION" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#9673a6" vertex="1" parent="1">
+          <mxGeometry x="1150" y="420" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Step 1: Enter Requirements -->
+        <mxCell id="ai1" value="Enter requirements&#xa;(useCase, resolution, budget,&#xa;formFactor, preferQuiet)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="1050" y="470" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowAI1" value="AI Suggest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" edge="1" parent="1" source="decision1" target="ai1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Step 2: Resolve Profile -->
+        <mxCell id="ai2" value="Resolve build profile&#xa;(Gaming 1080p/1440p/4K,&#xa;Creator, Office)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="1050" y="610" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowAI2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="ai1" target="ai2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Step 3: Calculate Budget Share -->
+        <mxCell id="ai3" value="Calculate budget share&#xa;for each part type&#xa;(CPU, GPU, RAM, etc.)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="1050" y="750" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowAI3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="ai2" target="ai3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Step 4: Loop Parts -->
+        <mxCell id="ai4" value="For each part type:&#xa;Search products by type&#xa;and target price" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="1050" y="890" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowAI4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="ai3" target="ai4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Decision 4: Product Found -->
+        <mxCell id="decision4" value="Product&#xa;Found?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="1100" y="1030" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowAI5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="ai4" target="decision4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Fallback: Keyword Search -->
+        <mxCell id="aiFallback" value="Fallback: Search by&#xa;keyword aliases" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="1350" y="1050" width="250" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowFallback" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" edge="1" parent="1" source="decision4" target="aiFallback">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Step 5: Pick Best Product -->
+        <mxCell id="ai5" value="Pick best available product&#xa;(prioritize in-stock items)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="1050" y="1190" width="300" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowAI6" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" edge="1" parent="1" source="decision4" target="ai5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowFallbackMerge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="aiFallback" target="ai5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1475" y="1230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- AI Step 6: Build Suggestion List -->
+        <mxCell id="ai6" value="Add to suggestion list&#xa;with reason" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="1050" y="1310" width="300" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowAI7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="ai5" target="ai6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+   
+     <!-- ========== MERGE PATHS ========== -->
+        
+        <!-- Display Build Result -->
+        <mxCell id="displayResult" value="Display build result&#xa;(parts list, total price,&#xa;profile notes)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="650" y="1450" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrow from Manual to Display -->
+        <mxCell id="arrowManualToDisplay" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" edge="1" parent="1" source="decision3" target="displayResult">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="1500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Arrow from AI to Display -->
+        <mxCell id="arrowAIToDisplay" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="ai6" target="displayResult">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1200" y="1500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Decision 5: User Action -->
+        <mxCell id="decision5" value="User&#xa;Action?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="700" y="1600" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowToAction" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="displayResult" target="decision5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Action: Update Quantity -->
+        <mxCell id="actionUpdate" value="Update product quantity&#xa;PUT /builds/{buildId}/update-quantity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="400" y="1620" width="280" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowUpdate" value="Update" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=18" edge="1" parent="1" source="decision5" target="actionUpdate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Action: Remove Product -->
+        <mxCell id="actionRemove" value="Remove product&#xa;DELETE /builds/{buildId}/&#xa;remove-product/{productId}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="920" y="1610" width="300" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowRemove" value="Remove" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=18" edge="1" parent="1" source="decision5" target="actionRemove">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Loop back after update/remove -->
+        <mxCell id="arrowUpdateLoop" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1" edge="1" parent="1" source="actionUpdate" target="displayResult">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="540" y="1750" />
+              <mxPoint x="800" y="1750" />
+              <mxPoint x="800" y="1560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrowRemoveLoop" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1" edge="1" parent="1" source="actionRemove" target="displayResult">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1070" y="1750" />
+              <mxPoint x="800" y="1750" />
+              <mxPoint x="800" y="1560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Save/Finish Build -->
+        <mxCell id="saveBuild" value="Save build&#xa;(Build saved to user account)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="650" y="1820" width="300" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowSave" value="Save" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=18" edge="1" parent="1" source="decision5" target="saveBuild">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Display Success -->
+        <mxCell id="successMsg" value="Display success message&#xa;'Build saved successfully'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="650" y="1940" width="300" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowSuccess" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="saveBuild" target="successMsg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- End Node -->
+        <mxCell id="end" value="Exit" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=25" vertex="1" parent="1">
+          <mxGeometry x="730" y="2060" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrowEnd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" edge="1" parent="1" source="successMsg" target="end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2025-01-01T00:00:00.000Z" agent="Kiro" version="21.0.0">
+  <diagram name="Admin Order Management Flow" id="admin-order-flow">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="ADMIN ORDER MANAGEMENT FLOW DIAGRAM" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1a365d;" vertex="1" parent="1">
+          <mxGeometry x="500" y="20" width="600" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Start -->
+        <mxCell id="start" value="Admin Login" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="80" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin Orders Page -->
+        <mxCell id="ordersPage" value="Admin Orders Page&#xa;(admin-orders)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="700" y="160" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Load Orders -->
+        <mxCell id="loadOrders" value="load()&#xa;GET /api/v1/admin/orders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="700" y="250" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Build Summary -->
+        <mxCell id="buildSummary" value="buildSummary()&#xa;Thống kê đơn hàng:&#xa;- Total, Pending&#xa;- Shipping, Completed&#xa;- Cancel, Awaiting Payment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="700" y="340" width="160" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Filter Section -->
+        <mxCell id="filterSection" value="Bộ lọc:&#xa;- Status&#xa;- Start Date&#xa;- End Date" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="920" y="250" width="140" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Order List Display -->
+        <mxCell id="orderList" value="Hiển thị danh sách&#xa;đơn hàng" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="700" y="470" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Select Order -->
+        <mxCell id="selectOrder" value="Chọn đơn hàng" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="700" y="550" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== ORDER STATUS TIMELINE ========== -->
+        <mxCell id="timelineTitle" value="ORDER STATUS LIFECYCLE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1a365d;" vertex="1" parent="1">
+          <mxGeometry x="100" y="80" width="250" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="statusPending" value="PENDING&#xa;Đơn mới tạo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="100" y="120" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="statusConfirmed" value="CONFIRMED&#xa;Đã xác nhận" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="100" y="200" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="statusShipping" value="SHIPPING&#xa;Đang giao" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="100" y="280" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="statusCompleted" value="COMPLETED&#xa;Hoàn thành" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="100" y="360" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="statusCancelReq" value="CANCEL_REQUEST&#xa;Yêu cầu hủy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="260" y="200" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="statusCanceled" value="CANCELED&#xa;Đã hủy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="260" y="280" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Timeline Arrows -->
+        <mxCell id="tArrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="statusPending" target="statusConfirmed">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="tArrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="statusConfirmed" target="statusShipping">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="tArrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="statusShipping" target="statusCompleted">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="tArrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#d79b00;dashed=1;" edge="1" parent="1" source="statusPending" target="statusCancelReq">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="tArrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#b85450;" edge="1" parent="1" source="statusCancelReq" target="statusCanceled">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== UPDATE STATUS FLOW ========== -->
+        <mxCell id="updateStatusBtn" value="Cập nhật&#xa;trạng thái" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="560" width="100" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="checkCurrentStatus" value="Kiểm tra trạng thái&#xa;hiện tại" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="460" y="650" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="statusLocked" value="COMPLETED/CANCELED&#xa;Không thể thay đổi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="280" y="660" width="150" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="allowedTransitions" value="Chuyển trạng thái hợp lệ:&#xa;PENDING → CONFIRMED&#xa;CONFIRMED → SHIPPING&#xa;SHIPPING → COMPLETED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="460" y="770" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="confirmModal" value="confirmSetStatus()&#xa;Hiển thị Modal xác nhận" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="880" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="callUpdateAPI" value="setStatus()&#xa;PUT /api/v1/admin/orders/{id}/status" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="460" y="960" width="180" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== CANCEL REQUEST FLOW ========== -->
+        <mxCell id="cancelRequestBtn" value="Xử lý yêu cầu&#xa;hủy đơn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="960" y="560" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cancelDecision" value="Approve/Reject?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="940" y="650" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="approveCancel" value="Approve&#xa;confirmProcessCancel(true)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="860" y="770" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="rejectCancel" value="Reject&#xa;confirmProcessCancel(false)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="770" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="processCancelAPI" value="processCancel()&#xa;PUT /api/v1/admin/orders/{id}/cancel-request" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="900" y="860" width="240" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== VIETQR PAYMENT FLOW ========== -->
+        <mxCell id="paymentSyncTitle" value="VIETQR PAYMENT FLOW" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#1a365d;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="560" width="200" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vietqrFlow" value="VietQR Payment:&#xa;1. User chuyển khoản&#xa;2. Upload ảnh xác nhận&#xa;3. Admin xác nhận/từ chối" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="600" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vietqrConfirm" value="Admin Confirm:&#xa;PUT /vietqr/{id}/confirm&#xa;→ PaymentStatus = PAID" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="700" width="180" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vietqrReject" value="Admin Reject:&#xa;PUT /vietqr/{id}/reject&#xa;→ PaymentStatus = FAILED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="780" width="180" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="codNote" value="COD: Chỉ complete&#xa;sau khi shipper&#xa;xác nhận thu tiền" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="860" width="180" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Success/Toast -->
+        <mxCell id="success" value="Thành công&#xa;showToast()&#xa;load()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="1050" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== ARROWS ========== -->
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="start" target="ordersPage">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ordersPage" target="loadOrders">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="loadOrders" target="buildSummary">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="buildSummary" target="orderList">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="orderList" target="selectOrder">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="filterSection" target="loadOrders">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Update Status Flow -->
+        <mxCell id="arrow7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="selectOrder" target="updateStatusBtn">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="updateStatusBtn" target="checkCurrentStatus">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="checkCurrentStatus" target="statusLocked">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="checkCurrentStatus" target="allowedTransitions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="allowedTransitions" target="confirmModal">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="confirmModal" target="callUpdateAPI">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Cancel Request Flow -->
+        <mxCell id="arrow13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="selectOrder" target="cancelRequestBtn">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="cancelRequestBtn" target="cancelDecision">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="cancelDecision" target="approveCancel">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="cancelDecision" target="rejectCancel">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="approveCancel" target="processCancelAPI">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="rejectCancel" target="processCancelAPI">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Success Arrows -->
+        <mxCell id="arrow19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="callUpdateAPI" target="success">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="processCancelAPI" target="success">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Loop back -->
+        <mxCell id="arrow21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#82b366;" edge="1" parent="1" source="success" target="loadOrders">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="1080"/>
+              <mxPoint x="600" y="280"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="LEGEND" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="80" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="110" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1t" value="API Call / Success" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="110" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="140" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2t" value="UI Component" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="140" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="170" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3t" value="Data Processing" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="170" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg4" value="" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="200" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg4t" value="Decision" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="200" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="230" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg5t" value="Action Button" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="230" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- Guard Rules Box -->
+        <mxCell id="guardBox" value="GUARD RULES (Không cho phép)&#xa;&#xa;• PENDING → SHIPPING (phải confirm trước)&#xa;• SHIPPING → CONFIRMED (chỉ đi tiến)&#xa;• COMPLETED → * (không thể thay đổi)&#xa;• CANCELED → * (không thể mở lại)&#xa;• CANCEL_REQUEST → CONFIRMED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="450" width="300" height="140" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

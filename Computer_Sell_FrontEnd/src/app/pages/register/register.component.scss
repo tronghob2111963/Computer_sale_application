@@ -1,7 +1,27 @@
+/* register.component.scss */
+
+/* Full width register container */
+:host {
+    display: block;
+    margin: 0 -12px;
+    width: calc(100% + 24px);
+}
+
+.register-container {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+/* Input focus effects */
+input:focus {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+/* Toast animation */
 @keyframes slideIn {
     0% {
         opacity: 0;
-        transform: translateX(50px);
+        transform: translateX(100px);
     }
 
     100% {
@@ -12,4 +32,38 @@
 
 .animate-slide-in {
     animation: slideIn 0.5s ease-out forwards;
+}
+
+/* Smooth transitions */
+input,
+button {
+    transition: all 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Checkbox custom style */
+input[type="checkbox"] {
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #10b981;
+    border-color: #10b981;
 }

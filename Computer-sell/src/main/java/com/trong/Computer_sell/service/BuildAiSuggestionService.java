@@ -6,4 +6,5 @@ import com.trong.Computer_sell.DTO.response.build.BuildSuggestResponse;
 public interface BuildAiSuggestionService {
     BuildSuggestResponse suggest(BuildSuggestRequest request);
     Object getPresetGuide();
+    Object getAllProductTypes();
 }

@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Configuration;
 public class GroqConfig {
     
     private String apiKey;
-    private String baseUrl = "https://api.groq.com/openai/v1";
-    private String chatModel = "llama-3.1-70b-versatile";
-    private int maxTokens = 2048;
-    private double temperature = 0.7;
+    private String baseUrl;
+    private String chatModel;
+    private int maxTokens;
+    private double temperature;
 }

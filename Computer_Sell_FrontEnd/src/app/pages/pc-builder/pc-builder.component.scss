@@ -87,17 +87,53 @@ $card-border: #dbe7fb;
 
 .ai-feedback {
   margin-bottom: 12px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid $card-border;
-  background: #f5fbff;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d0e8ff;
+  background: linear-gradient(135deg, #f0f9ff, #e6f4ff);
   color: $text;
-  font-weight: 600;
 
   &.error {
-    background: #fff3f3;
+    background: linear-gradient(135deg, #fff3f3, #ffe8e8);
     border-color: #f4cccc;
     color: #c0392b;
+  }
+
+  .ai-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+
+    .profile-badge {
+      background: linear-gradient(135deg, $primary, #4dabf7);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(28, 126, 214, 0.3);
+    }
+
+    .estimated-total {
+      background: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      color: $primary-dark;
+      border: 1px solid $card-border;
+    }
+  }
+
+  .ai-note {
+    font-size: 13px;
+    color: $muted;
+    line-height: 1.5;
+
+    strong {
+      color: $text;
+    }
   }
 }
 
@@ -180,6 +216,28 @@ $card-border: #dbe7fb;
     color: $primary-dark;
     font-weight: 700;
     font-size: 14px;
+  }
+
+  .ai-reason {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: linear-gradient(135deg, #f0f9ff, #e6f4ff);
+    border-radius: 6px;
+    font-size: 12px;
+    color: $muted;
+    border: 1px solid #d0e8ff;
+
+    .ai-badge {
+      background: linear-gradient(135deg, $primary, #4dabf7);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 10px;
+    }
   }
 }
 
@@ -268,7 +326,7 @@ $card-border: #dbe7fb;
     color: #fff;
 
     &:hover {
-      background: darken($danger, 6%);
+      background: #c0392b;
     }
   }
 }

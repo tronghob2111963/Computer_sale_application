@@ -159,4 +159,16 @@ public class UserBuildController {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
     }
+
+    @Operation(summary = "Debug: List all product types", description = "Liet ke tat ca ProductType trong database")
+    @GetMapping("/debug/product-types")
+    public ResponseData<Object> debugProductTypes() {
+        try {
+            return new ResponseData<>(HttpStatus.OK.value(), "Product types loaded",
+                    buildAiSuggestionService.getAllProductTypes());
+        } catch (Exception e) {
+            log.error("Cannot load product types", e);
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
 }
