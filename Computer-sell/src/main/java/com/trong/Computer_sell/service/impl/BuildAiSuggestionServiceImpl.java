@@ -41,7 +41,7 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
 
     // Tên các loại linh kiện - sẽ được map với ProductType trong database
     private static final List<String> PART_TYPES = List.of(
-            "CPU", "MAINBOARD", "RAM", "GPU", "STORAGE", "PSU", "COOLER", "CASE"
+            "CPU", "MAINBOARD", "RAM", "GPU", "STORAGE", "PSU", "COOLER", "CASE", "MONITOR"
     );
 
     @Override
@@ -61,7 +61,15 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
             log.info("AI Response: {}", aiResponse);
             
             // Parse response từ AI
-            return parseAiResponse(aiResponse, budget, request);
+            BuildSuggestResponse response = parseAiResponse(aiResponse, budget, request);
+            
+            // Nếu AI trả về parts rỗng hoặc không có linh kiện, dùng fallback
+            if (response.getParts() == null || response.getParts().isEmpty()) {
+                log.warn("AI returned empty parts, falling back to rule-based");
+                return fallbackSuggestion(request, budget, availableProducts);
+            }
+            
+            return response;
         } catch (Exception e) {
             log.error("AI suggestion failed, falling back to rule-based", e);
             return fallbackSuggestion(request, budget, availableProducts);
@@ -138,34 +146,31 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
 
     private String buildSystemPrompt() {
         return """
-            Bạn là chuyên gia tư vấn build PC. Nhiệm vụ của bạn là chọn linh kiện phù hợp nhất từ danh sách sản phẩm có sẵn dựa trên nhu cầu và ngân sách của khách hàng.
+            Bạn là chuyên gia tư vấn build PC. Chọn linh kiện từ danh sách sản phẩm có sẵn.
+            
+            ⚠️⚠️⚠️ QUY TẮC NGÂN SÁCH - BẮT BUỘC TUÂN THỦ:
+            1. TỔNG GIÁ TẤT CẢ LINH KIỆN PHẢI <= NGÂN SÁCH
+            2. Nếu ngân sách quá thấp (< 10 triệu), chỉ gợi ý các linh kiện rẻ nhất hoặc trả về ít linh kiện hơn
+            3. Nếu không thể build PC trong ngân sách, ghi rõ trong note: "Ngân sách không đủ để build PC hoàn chỉnh"
+            4. KHÔNG BAO GIỜ gợi ý cấu hình vượt ngân sách
+            
+            QUY TẮC VỀ PROFILE:
+            - Nếu khách chọn "gaming" thì profile PHẢI chứa "Gaming"
+            - Nếu khách chọn "creator" thì profile PHẢI chứa "Creator" hoặc "Đồ họa"
+            - Nếu khách chọn "office" thì profile PHẢI chứa "Office" hoặc "Văn phòng"
+            - KHÔNG ĐƯỢC đổi profile khác với yêu cầu của khách
             
             NGUYÊN TẮC CHỌN LINH KIỆN:
-            1. Gaming: Ưu tiên GPU mạnh (40-50% ngân sách), CPU cân bằng
-            2. Đồ họa/Render: Ưu tiên CPU nhiều nhân, GPU VRAM cao, RAM 32GB+
-            3. Văn phòng: CPU tích hợp đồ họa, không cần GPU rời, ưu tiên SSD
+            - Gaming: GPU (~35%), CPU (~15%), Monitor (~15%)
+            - Creator: CPU (~20%), GPU (~25%), RAM (~12%)
+            - Office: CPU với iGPU (~20%), không cần GPU rời
             
-            PHÂN BỔ NGÂN SÁCH THAM KHẢO:
-            - Gaming 1080p: CPU 18%, GPU 40%, RAM 12%, Mainboard 9%, Storage 8%, PSU 6%, Case 4%, Cooler 3%
-            - Gaming 1440p/4K: CPU 18%, GPU 45-50%, RAM 12%, còn lại chia đều
-            - Creator: CPU 25%, GPU 30%, RAM 15%, Storage 15%, còn lại chia đều
-            - Office: CPU 25%, Mainboard 18%, RAM 18%, Storage 20%, PSU 10%, Case 5%, Cooler 4%
+            LINH KIỆN: CPU, MAINBOARD, RAM, GPU, STORAGE, PSU, COOLER, CASE, MONITOR
             
-            TRẢ LỜI THEO ĐỊNH DẠNG JSON CHÍNH XÁC:
-            {
-                "profile": "Tên profile (VD: Gaming 1080p)",
-                "note": "Ghi chú ngắn về cấu hình",
-                "parts": [
-                    {
-                        "productType": "CPU",
-                        "productId": "uuid-của-sản-phẩm",
-                        "productName": "Tên sản phẩm",
-                        "reason": "Lý do chọn"
-                    }
-                ]
-            }
+            JSON FORMAT:
+            {"profile":"Gaming 1080p","note":"Ghi chú","parts":[{"productType":"CPU","productId":"uuid","productName":"Tên","reason":"Lý do"}]}
             
-            CHỈ TRẢ VỀ JSON, KHÔNG CÓ TEXT KHÁC.
+            CHỈ TRẢ VỀ JSON, KHÔNG TEXT KHÁC.
             """;
     }
 
@@ -181,6 +186,11 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
         if (Boolean.TRUE.equals(request.getPreferQuiet())) {
             sb.append("- Ưu tiên: Máy mát/êm\n");
         }
+        if (StringUtils.hasText(request.getDescription())) {
+            sb.append("\nMÔ TẢ CHI TIẾT TỪ KHÁCH HÀNG:\n");
+            sb.append("\"").append(request.getDescription()).append("\"\n");
+            sb.append("(Hãy ưu tiên đáp ứng các yêu cầu cụ thể trong mô tả này)\n");
+        }
         
         sb.append("\nDANH SÁCH SẢN PHẨM CÓ SẴN:\n");
         for (Map.Entry<String, List<ProductInfo>> entry : products.entrySet()) {
@@ -194,7 +204,10 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
             }
         }
         
-        sb.append("\nHãy chọn linh kiện phù hợp nhất cho khách hàng. Tổng giá không vượt quá ngân sách.");
+        sb.append("\n⚠️⚠️⚠️ BẮT BUỘC:\n");
+        sb.append("1. TỔNG GIÁ <= ").append(formatCurrency(budget)).append(" (KHÔNG ĐƯỢC VƯỢT!)\n");
+        sb.append("2. Profile PHẢI là \"").append(normalizeUseCase(request.getUseCase()).toUpperCase()).append("\" (không đổi sang loại khác)\n");
+        sb.append("3. Nếu ngân sách quá thấp, ghi note: \"Ngân sách không đủ\" và chọn ít linh kiện hơn\n");
         return sb.toString();
     }
 
@@ -273,20 +286,49 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
         Profile profile = resolveProfile(request);
         List<SuggestedPartDTO> parts = new ArrayList<>();
         BigDecimal estimatedTotal = BigDecimal.ZERO;
+        
+        // Tính tổng giá sản phẩm rẻ nhất của mỗi loại
+        BigDecimal minTotalPrice = BigDecimal.ZERO;
+        for (List<ProductInfo> candidates : availableProducts.values()) {
+            if (candidates != null && !candidates.isEmpty()) {
+                BigDecimal minPrice = candidates.stream()
+                        .map(p -> p.price)
+                        .min(BigDecimal::compareTo)
+                        .orElse(BigDecimal.ZERO);
+                minTotalPrice = minTotalPrice.add(minPrice);
+            }
+        }
+        
+        boolean budgetTooLow = budget.compareTo(minTotalPrice) < 0;
+        String notePrefix = budgetTooLow ? 
+                "⚠️ Ngân sách " + formatCurrency(budget) + " không đủ để build PC hoàn chỉnh (tối thiểu cần " + formatCurrency(minTotalPrice) + "). Đây là cấu hình rẻ nhất có thể: " : 
+                "";
 
         for (Map.Entry<String, BigDecimal> entry : profile.partShares.entrySet()) {
             String typeName = entry.getKey();
             BigDecimal share = entry.getValue();
             if (share == null || share.compareTo(BigDecimal.ZERO) <= 0) continue;
             
-            BigDecimal targetPrice = budget.multiply(share).setScale(0, RoundingMode.HALF_UP);
             List<ProductInfo> candidates = availableProducts.get(typeName);
             
             if (candidates != null && !candidates.isEmpty()) {
-                // Chọn sản phẩm có giá gần target nhất
-                ProductInfo chosen = candidates.stream()
-                        .min(Comparator.comparing(p -> p.price.subtract(targetPrice).abs()))
-                        .orElse(candidates.get(0));
+                ProductInfo chosen;
+                String reason;
+                
+                if (budgetTooLow) {
+                    // Ngân sách quá thấp -> chọn sản phẩm rẻ nhất
+                    chosen = candidates.stream()
+                            .min(Comparator.comparing(p -> p.price))
+                            .orElse(candidates.get(0));
+                    reason = "Sản phẩm rẻ nhất trong danh mục";
+                } else {
+                    // Ngân sách đủ -> chọn theo tỷ lệ phân bổ
+                    BigDecimal targetPrice = budget.multiply(share).setScale(0, RoundingMode.HALF_UP);
+                    chosen = candidates.stream()
+                            .min(Comparator.comparing(p -> p.price.subtract(targetPrice).abs()))
+                            .orElse(candidates.get(0));
+                    reason = "Phù hợp với mức ngân sách ~" + formatCurrency(targetPrice);
+                }
                 
                 SuggestedPartDTO part = SuggestedPartDTO.builder()
                         .productType(typeName)
@@ -295,7 +337,7 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
                         .brand(chosen.brand)
                         .price(chosen.price)
                         .stock(chosen.stock)
-                        .reason("Gần mức mục tiêu ~" + formatCurrency(targetPrice))
+                        .reason(reason)
                         .build();
                 parts.add(part);
                 estimatedTotal = estimatedTotal.add(chosen.price);
@@ -303,10 +345,10 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
         }
 
         return BuildSuggestResponse.builder()
-                .profile(profile.name + " (Fallback)")
+                .profile(profile.name)
                 .budgetInput(budget)
                 .estimatedTotal(estimatedTotal)
-                .note(profile.note)
+                .note(notePrefix + profile.note)
                 .parts(parts)
                 .build();
     }
@@ -405,6 +447,7 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
         aliases.put("PSU", List.of("PSU", "NGUON", "NGUỒN", "Nguồn", "NGUONPSU", "Nguồn (PSU)"));
         aliases.put("CASE", List.of("CASE", "VOCASE", "VO CASE", "VỎ CASE", "Vỏ Case"));
         aliases.put("COOLER", List.of("COOLER", "TANNHIET", "TAN NHIET", "TẢN NHIỆT", "Tản Nhiệt"));
+        aliases.put("MONITOR", List.of("MONITOR", "MANHINH", "MAN HINH", "MÀN HÌNH", "Màn Hình"));
         return aliases;
     }
 
@@ -423,28 +466,38 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
         if ("gaming".equals(useCase)) {
             if (resolution.contains("1440")) {
                 return new Profile("Gaming 1440p", "Ưu tiên GPU 12GB+ cho 2K",
-                        shares(Map.of("CPU", bd(0.18), "MAINBOARD", bd(0.08), "GPU", bd(0.44),
-                                "RAM", bd(0.12), "STORAGE", bd(0.07), "PSU", bd(0.06), "CASE", bd(0.03), "COOLER", bd(0.02))));
+                        shares(createPartShares(0.15, 0.07, 0.10, 0.35, 0.06, 0.05, 0.02, 0.03, 0.17)));
             }
             if (resolution.contains("4")) {
                 return new Profile("Gaming 4K", "Ưu tiên GPU mạnh VRAM cao",
-                        shares(Map.of("CPU", bd(0.18), "MAINBOARD", bd(0.07), "GPU", bd(0.50),
-                                "RAM", bd(0.12), "STORAGE", bd(0.05), "PSU", bd(0.05), "CASE", bd(0.02), "COOLER", bd(0.01))));
+                        shares(createPartShares(0.14, 0.06, 0.10, 0.38, 0.05, 0.05, 0.01, 0.02, 0.19)));
             }
             return new Profile("Gaming 1080p", "Cân bằng CPU/GPU cho Full HD",
-                    shares(Map.of("CPU", bd(0.18), "MAINBOARD", bd(0.09), "GPU", bd(0.40),
-                            "RAM", bd(0.12), "STORAGE", bd(0.08), "PSU", bd(0.06), "CASE", bd(0.04), "COOLER", bd(0.03))));
+                    shares(createPartShares(0.15, 0.08, 0.10, 0.32, 0.07, 0.05, 0.03, 0.04, 0.16)));
         }
 
         if ("creator".equals(useCase)) {
-            return new Profile("Đồ họa / Render", "Ưu tiên CPU nhiều nhân, GPU VRAM cao",
-                    shares(Map.of("CPU", bd(0.25), "MAINBOARD", bd(0.07), "GPU", bd(0.30),
-                            "RAM", bd(0.15), "STORAGE", bd(0.15), "PSU", bd(0.04), "CASE", bd(0.02), "COOLER", bd(0.02))));
+            return new Profile("Đồ họa / Render", "Ưu tiên CPU nhiều nhân, GPU VRAM cao, màn hình chất lượng",
+                    shares(createPartShares(0.20, 0.06, 0.12, 0.25, 0.12, 0.04, 0.02, 0.02, 0.17)));
         }
 
         return new Profile("Văn phòng / Học tập", "Dùng iGPU, ưu tiên SSD và RAM",
-                shares(Map.of("CPU", bd(0.25), "MAINBOARD", bd(0.18), "GPU", bd(0.00),
-                        "RAM", bd(0.18), "STORAGE", bd(0.20), "PSU", bd(0.10), "CASE", bd(0.05), "COOLER", bd(0.04))));
+                shares(createPartShares(0.20, 0.15, 0.15, 0.00, 0.17, 0.08, 0.03, 0.04, 0.18)));
+    }
+
+    private Map<String, BigDecimal> createPartShares(double cpu, double mainboard, double ram, double gpu,
+                                                      double storage, double psu, double cooler, double caseShare, double monitor) {
+        Map<String, BigDecimal> shares = new LinkedHashMap<>();
+        shares.put("CPU", bd(cpu));
+        shares.put("MAINBOARD", bd(mainboard));
+        shares.put("RAM", bd(ram));
+        shares.put("GPU", bd(gpu));
+        shares.put("STORAGE", bd(storage));
+        shares.put("PSU", bd(psu));
+        shares.put("COOLER", bd(cooler));
+        shares.put("CASE", bd(caseShare));
+        shares.put("MONITOR", bd(monitor));
+        return shares;
     }
 
     private Map<String, BigDecimal> shares(Map<String, BigDecimal> input) {

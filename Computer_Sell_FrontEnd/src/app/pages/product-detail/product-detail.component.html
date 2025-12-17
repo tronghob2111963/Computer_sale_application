@@ -76,7 +76,7 @@
       <!-- ACTIONS -->
       <div class="actions">
         <button class="btn btn-outline" (click)="addToCart()">Thêm vào giỏ</button>
-        <button class="btn btn-primary" (click)="addToCart()">Mua ngay</button>
+        <button class="btn btn-primary" (click)="buyNow()">Mua ngay</button>
       </div>
 
       <!-- SHARE -->
@@ -189,8 +189,8 @@
       </div>
 
       <!-- Rating bars -->
-        <div class="bars">
-          <div class="bar-row" *ngFor="let star of [5,4,3,2,1]">
+      <div class="bars">
+        <div class="bar-row" *ngFor="let star of [5,4,3,2,1]">
           <span class="label">{{ star }} sao <small class="muted">- {{ ratingLabels[star] }}</small></span>
 
           <div class="bar">
@@ -232,16 +232,16 @@
             <div class="avatar">{{ rv.userName?.charAt(0) || 'U' }}</div>
             <strong>{{ rv.userName || 'Khách hàng' }}</strong>
 
-        <div class="stars small">
-          <span *ngFor="let s of [1,2,3,4,5]">
-            <svg viewBox="0 0 24 24" class="apple-star small" [class.active]="rv.rating >= s">
-              <path d="M12 2.8l2.6 5.3 5.8.8-4.2 4.1 1 5.7-5.2-2.8-5.2 2.8 1-5.7-4.2-4.1 5.8-.8z" />
-            </svg>
-          </span>
+            <div class="stars small">
+              <span *ngFor="let s of [1,2,3,4,5]">
+                <svg viewBox="0 0 24 24" class="apple-star small" [class.active]="rv.rating >= s">
+                  <path d="M12 2.8l2.6 5.3 5.8.8-4.2 4.1 1 5.7-5.2-2.8-5.2 2.8 1-5.7-4.2-4.1 5.8-.8z" />
+                </svg>
+              </span>
 
-          <span class="value">{{ rv.rating }}/5</span>
-          <span class="muted value">{{ ratingLabels[rv.rating] }}</span>
-        </div>
+              <span class="value">{{ rv.rating }}/5</span>
+              <span class="muted value">{{ ratingLabels[rv.rating] }}</span>
+            </div>
           </div>
 
           <small class="muted">{{ rv.createdAt | date:'dd/MM/yyyy' }}</small>

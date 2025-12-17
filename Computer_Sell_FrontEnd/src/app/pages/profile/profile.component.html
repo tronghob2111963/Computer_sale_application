@@ -1,0 +1,274 @@
+<div class="profile-page">
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Đang tải thông tin...</p>
+    </div>
+
+    <div *ngIf="!loading && profile" class="profile-container">
+        <!-- Sidebar -->
+        <aside class="profile-sidebar">
+            <div class="avatar-section">
+                <div class="avatar">{{ getInitials() }}</div>
+                <h2 class="name">{{ getFullName() }}</h2>
+                <p class="username">&#64;{{ profile.username }}</p>
+                <span class="badge" [class.active]="profile.status === 'ACTIVE'">
+                    {{ profile.status === 'ACTIVE' ? 'Đang hoạt động' : 'Không hoạt động' }}
+                </span>
+            </div>
+
+            <nav class="profile-nav">
+                <button [class.active]="activeTab === 'info'" (click)="activeTab = 'info'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Thông tin cá nhân
+                </button>
+                <button [class.active]="activeTab === 'address'" (click)="activeTab = 'address'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Địa chỉ
+                </button>
+                <button [class.active]="activeTab === 'password'" (click)="activeTab = 'password'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Đổi mật khẩu
+                </button>
+                <button [class.active]="activeTab === 'orders'" (click)="activeTab = 'orders'" routerLink="/orders">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    Đơn hàng của tôi
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="profile-main">
+            <!-- Tab: Thông tin cá nhân -->
+            <section *ngIf="activeTab === 'info'" class="tab-content">
+                <div class="section-header">
+                    <h3>Thông tin cá nhân</h3>
+                    <button class="btn-edit" (click)="toggleEdit()">
+                        {{ editMode ? 'Hủy' : 'Chỉnh sửa' }}
+                    </button>
+                </div>
+
+                <div class="info-grid" *ngIf="!editMode">
+                    <div class="info-item">
+                        <label>Họ</label>
+                        <p>{{ profile.firstName || 'Chưa cập nhật' }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Tên</label>
+                        <p>{{ profile.lastName || 'Chưa cập nhật' }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Giới tính</label>
+                        <p>{{ getGenderLabel(profile.gender) }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Ngày sinh</label>
+                        <p>{{ formatDate(profile.dateOfBirth) }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Số điện thoại</label>
+                        <p>{{ profile.phoneNumber || 'Chưa cập nhật' }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Email</label>
+                        <p>{{ profile.email || 'Chưa cập nhật' }}</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Ngày tạo tài khoản</label>
+                        <p>{{ formatDate(profile.createdAt) }}</p>
+                    </div>
+                </div>
+
+                <!-- Edit Form -->
+                <form *ngIf="editMode" class="edit-form" (ngSubmit)="saveProfile()">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Họ</label>
+                            <input type="text" [(ngModel)]="editForm.firstName" name="firstName" placeholder="Nhập họ">
+                        </div>
+                        <div class="form-group">
+                            <label>Tên</label>
+                            <input type="text" [(ngModel)]="editForm.lastName" name="lastName" placeholder="Nhập tên">
+                        </div>
+                        <div class="form-group">
+                            <label>Giới tính</label>
+                            <select [(ngModel)]="editForm.gender" name="gender">
+                                <option value="">Chọn giới tính</option>
+                                <option value="MALE">Nam</option>
+                                <option value="FEMALE">Nữ</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày sinh</label>
+                            <input type="date" [(ngModel)]="editForm.dateOfBirth" name="dateOfBirth">
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <input type="tel" [(ngModel)]="editForm.phoneNumber" name="phoneNumber"
+                                placeholder="Nhập số điện thoại">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" [(ngModel)]="editForm.email" name="email" placeholder="Nhập email">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary" [disabled]="saving">
+                            {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Tab: Địa chỉ -->
+            <section *ngIf="activeTab === 'address'" class="tab-content">
+                <div class="section-header">
+                    <h3>Địa chỉ của tôi</h3>
+                    <button class="btn-primary" (click)="openAddressModal()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        Thêm địa chỉ
+                    </button>
+                </div>
+
+                <div class="address-list" *ngIf="addresses.length > 0">
+                    <div class="address-card" *ngFor="let addr of addresses">
+                        <div class="address-info">
+                            <span class="address-type">{{ addr.addressType === 'HOME' ? '🏠 Nhà riêng' : '🏢 Văn phòng'
+                                }}</span>
+                            <p class="address-detail">
+                                {{ addr.apartmentNumber }}, {{ addr.streetNumber }}, {{ addr.ward }}, {{ addr.city }}
+                            </p>
+                        </div>
+                        <div class="address-actions">
+                            <button class="btn-icon" (click)="openAddressModal(addr)" title="Sửa">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                            </button>
+                            <button class="btn-icon danger" (click)="deleteAddress(addr)" title="Xóa">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="empty-state" *ngIf="addresses.length === 0">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    <p>Bạn chưa có địa chỉ nào</p>
+                    <button class="btn-primary" (click)="openAddressModal()">Thêm địa chỉ mới</button>
+                </div>
+            </section>
+
+            <!-- Tab: Đổi mật khẩu -->
+            <section *ngIf="activeTab === 'password'" class="tab-content">
+                <div class="section-header">
+                    <h3>Đổi mật khẩu</h3>
+                </div>
+
+                <form class="password-form" (ngSubmit)="changePassword()">
+                    <div class="form-group">
+                        <label>Mật khẩu hiện tại</label>
+                        <input type="password" [(ngModel)]="passwordForm.currentPassword" name="currentPassword"
+                            placeholder="Nhập mật khẩu hiện tại" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu mới</label>
+                        <input type="password" [(ngModel)]="passwordForm.newPassword" name="newPassword"
+                            placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Xác nhận mật khẩu mới</label>
+                        <input type="password" [(ngModel)]="passwordForm.confirmPassword" name="confirmPassword"
+                            placeholder="Nhập lại mật khẩu mới" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary" [disabled]="changingPassword">
+                            {{ changingPassword ? 'Đang xử lý...' : 'Đổi mật khẩu' }}
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- Address Modal -->
+    <div class="modal-overlay" *ngIf="showAddressModal" (click)="closeAddressModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>{{ editingAddress ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới' }}</h3>
+                <button class="btn-close" (click)="closeAddressModal()">&times;</button>
+            </div>
+            <form class="modal-body" (ngSubmit)="saveAddress()">
+                <div class="form-group">
+                    <label>Loại địa chỉ</label>
+                    <select [(ngModel)]="addressForm.addressType" name="addressType">
+                        <option value="HOME">Nhà riêng</option>
+                        <option value="OFFICE">Văn phòng</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Số nhà/Căn hộ</label>
+                    <input type="text" [(ngModel)]="addressForm.apartmentNumber" name="apartmentNumber"
+                        placeholder="VD: 123">
+                </div>
+                <div class="form-group">
+                    <label>Đường</label>
+                    <input type="text" [(ngModel)]="addressForm.streetNumber" name="streetNumber"
+                        placeholder="VD: Nguyễn Văn Linh">
+                </div>
+                <div class="form-group">
+                    <label>Phường/Xã</label>
+                    <input type="text" [(ngModel)]="addressForm.ward" name="ward" placeholder="VD: An Khánh">
+                </div>
+                <div class="form-group">
+                    <label>Thành phố/Tỉnh</label>
+                    <input type="text" [(ngModel)]="addressForm.city" name="city" placeholder="VD: Cần Thơ">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-outline" (click)="closeAddressModal()">Hủy</button>
+                    <button type="submit" class="btn-primary" [disabled]="savingAddress">
+                        {{ savingAddress ? 'Đang lưu...' : 'Lưu địa chỉ' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" *ngIf="toast.show" [class.success]="toast.type === 'success'"
+        [class.error]="toast.type === 'error'">
+        <svg *ngIf="toast.type === 'success'" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        </svg>
+        <svg *ngIf="toast.type === 'error'" viewBox="0 0 24 24" fill="currentColor">
+            <path
+                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+        </svg>
+        {{ toast.message }}
+    </div>
+</div>

@@ -111,7 +111,7 @@ public class UserController {
 
     @Operation(summary = "find by id" , description = "Find user by id")
     @GetMapping("/find/{id}")
-    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff')")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff', 'User')")
     public ResponseData<Object> finndUserById(@PathVariable UUID id){
         log.info("Find user with user id", id);
         try{
@@ -124,7 +124,7 @@ public class UserController {
 
     @Operation(summary = "find detail by id" , description = "Find user detail by id including addresses")
     @GetMapping("/detail/{id}")
-    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff')")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff', 'User')")
     public ResponseData<Object> findUserDetailById(@PathVariable UUID id){
         log.info("Find user detail with user id: {}", id);
         try{

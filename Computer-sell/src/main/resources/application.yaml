@@ -62,7 +62,7 @@ groq:
 # Gemini API Configuration
 gemini:
   api:
-    key: "${GEMINI_API_KEY:AIzaSyBQi9trEfEtbWAtOiGH3LXmv-_mwd_WbRI}"
+    key: "${GEMINI_API_KEY:AIzaSyAQR7IRMQA8cdWhyU5ZnmLuTjp_u3fPOyg}"
   base-url: "https://generativelanguage.googleapis.com/v1beta"
   embedding-model: "text-embedding-004"
 

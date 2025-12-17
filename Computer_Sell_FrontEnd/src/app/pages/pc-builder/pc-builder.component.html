@@ -1,47 +1,56 @@
 <div class="pc-builder-wrapper">
   <div class="header-panel">
-    <h1>Tu Build Cau Hinh</h1>
-    <p>Chon linh kien de xay dung cau hinh PC cua ban</p>
+    <h1>Tự Build cấu hình PC của bạn</h1>
+    <p>Chọn linh kiện để xây dựng cấu hình PC của bạn</p>
   </div>
 
   <div class="ai-panel">
-    <div class="field">
-      <label>Nhu cau</label>
-      <select [(ngModel)]="aiConfig.useCase">
-        <option value="gaming">Gaming</option>
-        <option value="creator">Do hoa / Render</option>
-        <option value="office">Van phong / Hoc tap</option>
-      </select>
+    <div class="ai-panel-row">
+      <div class="field">
+        <label>Nhu cầu</label>
+        <select [(ngModel)]="aiConfig.useCase">
+          <option value="gaming">Gaming</option>
+          <option value="creator">Đồ Họa / Render</option>
+          <option value="office">Văn Phòng / Học tập</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Độ phân giải</label>
+        <select [(ngModel)]="aiConfig.resolution">
+          <option value="1080p">1080p</option>
+          <option value="1440p">1440p</option>
+          <option value="4k">4K</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Ngân sách (VND)</label>
+        <input type="number" min="3000000" step="500000" [(ngModel)]="aiConfig.budget" />
+      </div>
+      <div class="field">
+        <label>Form factor</label>
+        <select [(ngModel)]="aiConfig.formFactor">
+          <option value="atx">ATX</option>
+          <option value="matx">mATX</option>
+          <option value="itx">ITX</option>
+        </select>
+      </div>
+      <div class="field checkbox">
+        <label>
+          <input type="checkbox" [(ngModel)]="aiConfig.preferQuiet" />
+          Ưu tiên mát / êm
+        </label>
+      </div>
     </div>
-    <div class="field">
-      <label>Do phan giai</label>
-      <select [(ngModel)]="aiConfig.resolution">
-        <option value="1080p">1080p</option>
-        <option value="1440p">1440p</option>
-        <option value="4k">4K</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Ngân sách (VND)</label>
-      <input type="number" min="3000000" step="500000" [(ngModel)]="aiConfig.budget" />
-    </div>
-    <div class="field">
-      <label>Form factor</label>
-      <select [(ngModel)]="aiConfig.formFactor">
-        <option value="atx">ATX</option>
-        <option value="matx">mATX</option>
-        <option value="itx">ITX</option>
-      </select>
-    </div>
-    <div class="field checkbox">
-      <label>
-        <input type="checkbox" [(ngModel)]="aiConfig.preferQuiet" />
-        Ưu tiên mát / êm
-      </label>
+    <div class="field description-field">
+      <label>Mô tả yêu cầu của bạn (tùy chọn)</label>
+      <textarea [(ngModel)]="aiConfig.description"
+        placeholder="VD: Tôi muốn build PC chơi game AAA như Cyberpunk, GTA 6, có thể stream, ưu tiên màu đen, có RGB..."
+        rows="3">
+      </textarea>
     </div>
     <div class="actions">
       <button class="btn primary" type="button" (click)="suggestWithAI()" [disabled]="aiLoading">
-        {{ aiLoading ? 'Dang goi y...' : 'Goi y AI' }}
+        {{ aiLoading ? 'Đang gợi ý...' : 'Gợi ý AI' }}
       </button>
     </div>
   </div>
@@ -86,7 +95,7 @@
             }
           </div>
           } @else {
-          <div class="placeholder">Chua chon</div>
+          <div class="placeholder">Chưa chọn sản phẩm</div>
           }
         </div>
       </div>
@@ -94,17 +103,17 @@
       <div class="slot-actions">
         @if (category.selectedProduct) {
         <div class="qty-group">
-          <label>So luong</label>
+          <label>Số lượng</label>
           <input type="number" min="1" max="10" [(ngModel)]="category.quantity" (change)="updateQuantity(category)" />
         </div>
         }
 
         <div class="action-buttons">
           <button class="btn ghost" (click)="openProductSelector(category)">
-            {{ category.selectedProduct ? 'Chon lai' : 'Chon ' + category.name }}
+            {{ category.selectedProduct ? 'Chọn lại' : 'Chọn ' + category.name }}
           </button>
           @if (category.selectedProduct) {
-          <button class="btn danger" (click)="removeProduct(category)">Xoa</button>
+          <button class="btn danger" (click)="removeProduct(category)">Xóa</button>
           }
         </div>
       </div>
@@ -118,17 +127,17 @@
     </div>
 
     @if (selectedItems.length === 0) {
-    <div class="empty-summary">Chua co san pham duoc chon.</div>
+    <div class="empty-summary">Chưa có sản phẩm nào được chọn.</div>
     } @else {
     <div class="summary-table-wrapper">
       <table class="summary-table">
         <thead>
           <tr>
-            <th>Hinh anh</th>
-            <th>Ten san pham</th>
-            <th>So luong</th>
-            <th>Don gia (VND)</th>
-            <th>Tong cong (VND)</th>
+            <th>Hình ảnh</th>
+            <th>ên sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Đơn giá (VND)</th>
+            <th>Tổng cộng (VND)</th>
           </tr>
         </thead>
         <tbody>
@@ -155,9 +164,9 @@
     </div>
 
     <div class="summary-actions">
-      <button class="btn outline" type="button">Xoa tat ca</button>
-      <button class="btn primary" type="button">Them tat ca vao gio</button>
-      <button class="btn ghost" type="button" (click)="printQuote()">In bao gia</button>
+      <button class="btn outline" type="button">Xóa tất cả</button>
+      <button class="btn primary" type="button">Thêm tất cả vào giỏ</button>
+      <button class="btn ghost" type="button" (click)="printQuote()">In báo giá</button>
     </div>
     }
   </div>
@@ -185,9 +194,9 @@
             <h4>{{ product.name }}</h4>
             <p class="price">{{ formatPrice(product.price) }}</p>
             @if (product.stock > 0) {
-            <span class="stock in-stock">Con hang</span>
+            <span class="stock in-stock">Còn hàng</span>
             } @else {
-            <span class="stock out-of-stock">Het hang</span>
+            <span class="stock out-of-stock">Hết hàng</span>
             }
           </div>
         </div>

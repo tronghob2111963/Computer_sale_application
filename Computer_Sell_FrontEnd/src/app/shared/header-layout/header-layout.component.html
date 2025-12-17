@@ -92,7 +92,8 @@
               class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600 font-medium">
               Đăng xuất
             </button>
-            <button class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-gray-700 font-medium">
+            <button (click)="router.navigate(['/profile'])"
+              class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-gray-700 font-medium">
               Hồ sơ của tôi
             </button>
           </div>

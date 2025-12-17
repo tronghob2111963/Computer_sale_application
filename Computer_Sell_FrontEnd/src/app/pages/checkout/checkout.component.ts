@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { OrderService } from '../../services/order.service';
 import { PromotionService, PromotionResponse } from '../../services/promotion.service';
 import { PaymentService, VietQRPaymentResponse } from '../../services/payment.service';
+import { environment } from '../../enviroment';
 
 @Component({
   selector: 'app-checkout',
@@ -18,9 +19,11 @@ import { PaymentService, VietQRPaymentResponse } from '../../services/payment.se
 })
 export class CheckoutComponent implements OnInit {
   cart: CartDTO | null = null;
+  checkoutItems: { productId: string; quantity: number; productName: string; price: number; subtotal: number; productImg?: string }[] = [];
   loading = false;
   submitting = false;
   error: string | null = null;
+  private readonly baseUrl = environment.apiUrl || 'http://localhost:8080';
   // Form state
   paymentMethod = 'CASH';
   promoCode = '';
@@ -57,16 +60,48 @@ export class CheckoutComponent implements OnInit {
 
     const uid = this.auth.getUserIdSafe();
     if (!uid) { this.router.navigate(['/login']); return; }
+
+    // Get selected items from sessionStorage
+    const selectedIdsJson = sessionStorage.getItem('checkoutItems');
+    const selectedIds: string[] = selectedIdsJson ? JSON.parse(selectedIdsJson) : [];
+
     this.loading = true;
     this.cartService.viewCart(uid).subscribe({
-      next: (c) => { this.cart = c; this.loading = false; },
+      next: (c) => {
+        this.cart = c;
+        // Filter only selected items, or all if none specified
+        const items = (c.items || []).map(it => ({
+          ...it,
+          productImg: this.toAbsoluteImage(it.productImg)
+        }));
+
+        if (selectedIds.length > 0) {
+          this.checkoutItems = items.filter(it => selectedIds.includes(it.productId));
+        } else {
+          this.checkoutItems = items;
+        }
+
+        if (this.checkoutItems.length === 0) {
+          this.error = 'Khong co san pham nao duoc chon de thanh toan';
+        }
+        this.loading = false;
+      },
       error: () => { this.error = 'Khong the tai gio hang'; this.loading = false; }
     });
   }
 
+  private toAbsoluteImage(path?: string): string | undefined {
+    if (!path) return undefined;
+    if (/^https?:\/\//i.test(path)) return path;
+    let p = path.startsWith('/') ? path : `/${path}`;
+    if (!p.startsWith('/uploads/')) {
+      p = `/uploads/products${p}`;
+    }
+    return `${this.baseUrl}${p}`;
+  }
+
   get total(): number {
-    if (!this.cart) return 0;
-    return (this.cart.items || []).reduce((s, i) => s + i.subtotal, 0);
+    return this.checkoutItems.reduce((s, i) => s + i.subtotal, 0);
   }
 
   get discount(): number {
@@ -88,17 +123,16 @@ export class CheckoutComponent implements OnInit {
   }
 
   placeOrder(): void {
-    if (!this.cart) return;
+    if (this.checkoutItems.length === 0) return;
     const userId = this.auth.getUserIdSafe();
     if (!userId) { this.router.navigate(['/login']); return; }
-    if (!this.cart.items || this.cart.items.length === 0) { return; }
 
     this.submitting = true;
     const payload = {
       userId,
       paymentMethod: this.paymentMethod,
       promoCode: this.promoCode?.trim() || null,
-      items: this.cart.items.map(it => ({ productId: it.productId, quantity: it.quantity }))
+      items: this.checkoutItems.map(it => ({ productId: it.productId, quantity: it.quantity }))
     };
 
     this.orderService.createOrder(payload).subscribe({

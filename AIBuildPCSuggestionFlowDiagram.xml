@@ -1,140 +1,105 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" version="29.2.7">
   <diagram id="ai-build-pc-suggestion-flow" name="AI Build PC Suggestion Flow">
-    <mxGraphModel dx="1426" dy="743" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="2400" math="0" shadow="0">
+    <mxGraphModel dx="2377" dy="1238" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="2400" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=25" value="START" vertex="1">
-          <mxGeometry height="80" width="180" x="560" y="100" as="geometry" />
+        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=30;" value="START" vertex="1">
+          <mxGeometry height="80" width="180" x="560" y="30" as="geometry" />
         </mxCell>
-        <mxCell id="step1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="User enters requirements&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="160" width="400" x="450" y="220" as="geometry" />
+        <mxCell id="step1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=30;" value="User enters requirements&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="160" width="400" x="450" y="200" as="geometry" />
         </mxCell>
-        <mxCell id="arrow1" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step1">
+        <mxCell id="arrow1" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="step1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="step2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="Validate Input Data&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="120" width="460" x="420" y="420" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow2" edge="1" parent="1" source="step1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step2">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Collect Available Products&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="140" width="500" x="400" y="580" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow3" edge="1" parent="1" source="step2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step3">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="decision1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" value="Products&#xa;Available?" vertex="1">
-          <mxGeometry height="120" width="200" x="550" y="760" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow4" edge="1" parent="1" source="step3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="decision1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="error1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" value="Return Error Response&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="100" width="300" x="900" y="770" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow5" edge="1" parent="1" source="decision1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="error1" value="No">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=25" value="Build AI Prompt&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="140" width="460" x="420" y="920" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow6" edge="1" parent="1" source="decision1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="step4" value="Yes">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=25" value="Call Groq AI API&#xa;openAIService.chatCompletion()&#xa;Model: LLaMA 3.1 70B Versatile" vertex="1">
-          <mxGeometry height="120" width="460" x="420" y="1100" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow7" edge="1" parent="1" source="step4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step5">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="decision2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" value="AI Response&#xa;Success?" vertex="1">
-          <mxGeometry height="120" width="200" x="550" y="1260" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow8" edge="1" parent="1" source="step5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="decision2">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" value="Parse AI JSON Response&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="140" width="380" x="150" y="1420" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow9" edge="1" parent="1" source="decision2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="step6" value="Yes">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="Fallback: Rule-based Suggestion" vertex="1">
-          <mxGeometry height="140" width="400" x="770" y="1420" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow10" edge="1" parent="1" source="decision2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="step7" value="No">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Validate Product IDs" vertex="1">
-          <mxGeometry height="120" width="460" x="420" y="1600" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow11" edge="1" parent="1" source="step6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step8">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow12" edge="1" parent="1" source="step7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step8">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Calculate Estimated Total&#xa;Sum all component prices" vertex="1">
-          <mxGeometry height="100" width="400" x="450" y="1760" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow13" edge="1" parent="1" source="step8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step9">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Build BuildSuggestResponse" vertex="1">
-          <mxGeometry height="140" width="500" x="410" y="1900" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow14" edge="1" parent="1" source="step9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step10">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="Display AI Suggestions&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="140" width="500" x="400" y="2080" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow15" edge="1" parent="1" source="step10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step11">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="decision3" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=25" value="User&#xa;Accepts?" vertex="1">
-          <mxGeometry height="120" width="200" x="550" y="2260" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow16" edge="1" parent="1" source="step11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="decision3">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="step12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=25" value="User can modify:" vertex="1">
-          <mxGeometry height="100" width="320" x="900" y="2270" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow17" edge="1" parent="1" source="decision3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="step12" value="No">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow18" edge="1" parent="1" source="step12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step11">
+        <mxCell id="arrow2" edge="1" parent="1" source="step1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=30;" target="step3">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1060" y="2150" />
-            </Array>
+            <mxPoint x="650" y="420" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="step13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=25" value="Save to User Build" vertex="1">
-          <mxGeometry height="120" width="460" x="420" y="2420" as="geometry" />
+        <mxCell id="step3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=30;" value="Collect Available Products&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="500" x="400" y="440" as="geometry" />
         </mxCell>
-        <mxCell id="arrow19" edge="1" parent="1" source="decision3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=20" target="step13" value="Yes">
+        <mxCell id="decision1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=30;" value="Products&#xa;Available?" vertex="1">
+          <mxGeometry height="120" width="200" x="550" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow4" edge="1" parent="1" source="step3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="decision1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="step14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=25" value="Return Success Response" vertex="1">
-          <mxGeometry height="120" width="460" x="420" y="2580" as="geometry" />
+        <mxCell id="error1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=30;" value="Return Error Response&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="300" x="880" y="660" as="geometry" />
         </mxCell>
-        <mxCell id="arrow20" edge="1" parent="1" source="step13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="step14">
+        <mxCell id="arrow5" edge="1" parent="1" source="decision1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="error1" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="end" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=25" value="END" vertex="1">
-          <mxGeometry height="80" width="180" x="560" y="2740" as="geometry" />
+        <mxCell id="step4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=30;" value="&lt;font&gt;Build AI Prompt&lt;/font&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="460" x="420" y="850" as="geometry" />
         </mxCell>
-        <mxCell id="arrow21" edge="1" parent="1" source="step14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="end">
+        <mxCell id="arrow6" edge="1" parent="1" source="decision1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="step4" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="errorEnd1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=25" value="END&#xa;(Error)" vertex="1">
-          <mxGeometry height="70" width="140" x="980" y="900" as="geometry" />
+        <mxCell id="step5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=30;" value="Call Groq AI API&#xa;openAIService.chatCompletion()&#xa;Model: LLaMA 3.1 70B Versatile" vertex="1">
+          <mxGeometry height="120" width="460" x="420" y="1050" as="geometry" />
         </mxCell>
-        <mxCell id="arrowErr1" edge="1" parent="1" source="error1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2" target="errorEnd1">
+        <mxCell id="arrow7" edge="1" parent="1" source="step4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="step5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="decision2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=30;" value="AI Response&#xa;Success?" vertex="1">
+          <mxGeometry height="120" width="280" x="510" y="1230" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow8" edge="1" parent="1" source="step5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="decision2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=30;" value="Parse AI JSON Response&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="380" x="60" y="1400" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow9" edge="1" parent="1" source="decision2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="step6" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=30;" value="Fallback: Rule-based Suggestion" vertex="1">
+          <mxGeometry height="140" width="400" x="880" y="1380" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow10" edge="1" parent="1" source="decision2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="step7" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow11" edge="1" parent="1" source="step6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="step10">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="660" y="1620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow12" edge="1" parent="1" source="step7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="step10">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="660" y="1620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="step10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=30;" value="Calculate Estimated Total and Build BuildSuggestResponse" vertex="1">
+          <mxGeometry height="140" width="500" x="410" y="1660" as="geometry" />
+        </mxCell>
+        <mxCell id="step11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=30;" value="Display AI Suggestions&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="500" x="410" y="1870" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow15" edge="1" parent="1" source="step10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="step11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=30;" value="Return Success Response" vertex="1">
+          <mxGeometry height="120" width="460" x="430" y="2110" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow20" edge="1" parent="1" source="step11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="step14">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="660" y="2299.9999999999995" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="end" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=30;" value="END" vertex="1">
+          <mxGeometry height="80" width="180" x="1050" y="2130" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow21" edge="1" parent="1" source="step14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="errorEnd1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=30;" value="END&#xa;(Error)" vertex="1">
+          <mxGeometry height="70" width="140" x="1320" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="arrowErr1" edge="1" parent="1" source="error1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontSize=30;" target="errorEnd1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>

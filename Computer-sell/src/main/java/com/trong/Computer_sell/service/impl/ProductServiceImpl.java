@@ -452,6 +452,7 @@ public class ProductServiceImpl implements ProductService {
                     .productType(product.getProductTypeId().getName())
                     .image(images)
                     .warrantyPeriod(product.getWarrantyPeriod())
+                    .stock(product.getStock())
                     .build();
         }).collect(Collectors.toList());
 

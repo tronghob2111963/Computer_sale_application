@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 import { environment } from '../enviroment';
 
 export interface RAGChatRequest {
@@ -87,8 +87,31 @@ export class RAGChatbotService {
                     this.sessionId$.next(response.sessionId);
                     localStorage.setItem('rag_chat_session', response.sessionId);
                 }
+            }),
+            map(response => {
+                // Fix image URLs to use backend server
+                if (response.products) {
+                    response.products = response.products.map(product => ({
+                        ...product,
+                        imageUrl: product.imageUrl ? this.getFullImageUrl(product.imageUrl) : undefined
+                    }));
+                }
+                return response;
             })
         );
+    }
+
+    /**
+     * Get full image URL with backend base URL
+     */
+    private getFullImageUrl(imageUrl: string): string {
+        if (!imageUrl) return '';
+        // If already absolute URL, return as is
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+            return imageUrl;
+        }
+        // Prepend backend URL for relative paths
+        return `${environment.apiUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
     }
 
     /**

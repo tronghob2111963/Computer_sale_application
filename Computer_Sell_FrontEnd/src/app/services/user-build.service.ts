@@ -37,6 +37,7 @@ export interface AiSuggestRequest {
     budget: number;
     formFactor?: string;
     preferQuiet?: boolean;
+    description?: string;
 }
 
 export interface AiSuggestedPart {
