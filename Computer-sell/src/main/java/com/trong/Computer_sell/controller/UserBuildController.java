@@ -88,8 +88,49 @@ public class UserBuildController {
     public ResponseData<Object> suggestBuild(@RequestBody BuildSuggestRequest request) {
         try {
             log.info("AI suggest build for useCase: {}", request.getUseCase());
-            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Goi y cau hinh thanh cong",
-                    buildAiSuggestionService.suggest(request));
+            var response = buildAiSuggestionService.suggest(request);
+            
+            // FINAL VALIDATION IN CONTROLLER - Đảm bảo 100% profile đúng
+            if (response instanceof com.trong.Computer_sell.DTO.response.build.BuildSuggestResponse) {
+                var buildResponse = (com.trong.Computer_sell.DTO.response.build.BuildSuggestResponse) response;
+                String profile = buildResponse.getProfile();
+                String useCase = request.getUseCase() != null ? request.getUseCase().toLowerCase() : "office";
+                String resolution = request.getResolution() != null ? request.getResolution() : "1080p";
+                
+                boolean needsFix = false;
+                String correctedProfile = profile;
+                
+                if ("gaming".equals(useCase)) {
+                    if (!profile.toLowerCase().contains("gaming")) {
+                        correctedProfile = "Gaming " + resolution;
+                        needsFix = true;
+                    }
+                } else if ("creator".equals(useCase)) {
+                    if (!profile.toLowerCase().contains("creator") && !profile.toLowerCase().contains("đồ họa")) {
+                        correctedProfile = "Creator";
+                        needsFix = true;
+                    }
+                } else if ("office".equals(useCase)) {
+                    if (profile.toLowerCase().contains("gaming") || profile.toLowerCase().contains("creator")) {
+                        correctedProfile = "Office";
+                        needsFix = true;
+                    }
+                }
+                
+                if (needsFix) {
+                    log.error("⛔⛔⛔ CONTROLLER FINAL FIX: Correcting profile from '{}' to '{}' for useCase '{}'", 
+                        profile, correctedProfile, useCase);
+                    response = com.trong.Computer_sell.DTO.response.build.BuildSuggestResponse.builder()
+                            .profile(correctedProfile)
+                            .budgetInput(buildResponse.getBudgetInput())
+                            .estimatedTotal(buildResponse.getEstimatedTotal())
+                            .note(buildResponse.getNote())
+                            .parts(buildResponse.getParts())
+                            .build();
+                }
+            }
+            
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Goi y cau hinh thanh cong", response);
         } catch (Exception e) {
             log.error("AI suggest build failed", e);
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());

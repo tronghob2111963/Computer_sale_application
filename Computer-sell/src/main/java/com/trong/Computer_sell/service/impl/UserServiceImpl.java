@@ -99,6 +99,7 @@ public class UserServiceImpl implements UserService {
                 .lastName(user.getLastName())
                 .gender(user.getGender().toString())
                 .dateOfBirth(user.getDateOfBirth())
+                .status(user.getStatus())
                 .phoneNumber(user.getPhone())
                 .email(user.getEmail())
                 .build();

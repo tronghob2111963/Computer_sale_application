@@ -1,6 +1,7 @@
 package com.trong.Computer_sell.service;
 
 import com.trong.Computer_sell.DTO.response.Shipping.ShippingOrderResponse;
+import com.trong.Computer_sell.model.OrderEntity;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -13,4 +14,6 @@ public interface ShippingOrderService {
     ShippingOrderResponse getShippingOrderById(UUID id);
 
     ByteArrayInputStream exportShippingOrderToPdf(UUID id);
+
+    ShippingOrderResponse createShippingOrder(OrderEntity order);
 }

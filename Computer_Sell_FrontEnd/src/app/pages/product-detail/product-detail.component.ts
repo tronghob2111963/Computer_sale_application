@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductService, ResponseEnvelope } from '../../services/product.service';
 import { environment } from '../../enviroment';
@@ -80,18 +80,30 @@ export class ProductDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private productService: ProductService,
     private cartService: CartService,
     private auth: AuthService,
     private reviewService: ReviewService,
     private commentService: CommentService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id')!;
-    this.routeId = id;
     this.userRole = this.auth.getRole?.() || '';
-    this.fetch(id);
+
+    // Subscribe to route params to reload when navigating to different product
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id && id !== this.routeId) {
+        this.routeId = id;
+        this.fetch(id);
+        // Scroll to top when navigating to new product
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (id && !this.routeId) {
+        this.routeId = id;
+        this.fetch(id);
+      }
+    });
   }
 
   /* ======================= PRODUCT LOAD ======================= */
@@ -140,6 +152,23 @@ export class ProductDetailComponent implements OnInit {
     }
     this.cartService.addToCart(userId, pid, this.qty).subscribe({
       next: () => alert('Da them vao gio hang'),
+      error: () => alert('Them vao gio hang that bai')
+    });
+  }
+
+  buyNow() {
+    const userId = this.auth.getUserId?.() || '';
+    if (!userId) {
+      alert('Vui long dang nhap de mua hang');
+      return;
+    }
+    const pid = this.product?.id ?? this.product?.productId ?? this.routeId;
+    if (!pid) {
+      alert('Khong xac dinh duoc san pham');
+      return;
+    }
+    this.cartService.addToCart(userId, pid, this.qty).subscribe({
+      next: () => this.router.navigate(['/cart']),
       error: () => alert('Them vao gio hang that bai')
     });
   }

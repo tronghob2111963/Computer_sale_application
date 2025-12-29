@@ -54,7 +54,8 @@ export class PcBuilderComponent implements OnInit {
     resolution: '1080p',
     budget: 20000000,
     formFactor: 'atx',
-    preferQuiet: false
+    preferQuiet: false,
+    description: ''
   };
 
   constructor(
@@ -142,26 +143,35 @@ export class PcBuilderComponent implements OnInit {
   }
 
   mapProductTypesToBuildCategories(productTypes: any[]) {
+    // Map từ buildCategory.id sang tên ProductType trong database
+    // Tên phải khớp CHÍNH XÁC với cột 'name' trong bảng product_types
     const typeNameMap: { [key: string]: string } = {
       'cpu': 'CPU',
       'mainboard': 'MAINBOARD',
       'ram': 'RAM',
       'gpu': 'GPU',
-      'storage': 'O CUNG',
+      'storage': 'STORAGE',
       'psu': 'PSU',
       'case': 'CASE',
-      'cooling': 'TAN NHIET',
-      'monitor': 'MAN HINH'
+      'cooling': 'COOLER',
+      'monitor': 'Màn Hình'
     };
 
     const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 
+    console.log('Available product types from DB:', productTypes.map(t => ({ id: t.id, name: t.name })));
+
     this.buildCategories.forEach(buildCat => {
+      const targetName = typeNameMap[buildCat.id];
       const matchedType = productTypes.find(type =>
-        normalize(type.name) === normalize(typeNameMap[buildCat.id])
+        normalize(type.name) === normalize(targetName)
       );
+
       if (matchedType) {
         buildCat.productTypeId = matchedType.id;
+        console.log(`Mapped ${buildCat.id} (${buildCat.name}) -> ${matchedType.name} (${matchedType.id})`);
+      } else {
+        console.warn(`No match found for ${buildCat.id}. Looking for: ${targetName}, normalized: ${normalize(targetName || '')}`);
       }
     });
   }
@@ -336,16 +346,17 @@ export class PcBuilderComponent implements OnInit {
     const buildId = this.currentBuild?.id;
     if (!buildId) return;
 
+    // Key phải khớp với cat.name trong buildCategories
     const typeAliases: Record<string, string[]> = {
-      CPU: ['CPU'],
-      MAINBOARD: ['MAINBOARD', 'MB'],
-      RAM: ['RAM'],
-      GPU: ['GPU', 'VGA', 'CARD', 'CARD DO HOA'],
-      STORAGE: ['O CUNG', 'SSD', 'HDD', 'STORAGE'],
-      PSU: ['NGUON', 'PSU', 'POWER'],
-      CASE: ['CASE', 'VO CASE'],
-      COOLER: ['COOLER', 'TAN NHIET'],
-      MONITOR: ['MAN HINH', 'MONITOR']
+      'CPU': ['CPU'],
+      'MAINBOARD': ['MAINBOARD', 'MB'],
+      'RAM': ['RAM'],
+      'Card Đồ Họa': ['GPU', 'VGA', 'CARD', 'CARDDOHOA'],
+      'Ổ Cứng': ['STORAGE', 'OCUNG', 'SSD', 'HDD'],
+      'Nguồn (PSU)': ['PSU', 'NGUON', 'POWER'],
+      'Vỏ Case': ['CASE', 'VOCASE'],
+      'Tản Nhiệt': ['COOLER', 'TANNHIET'],
+      'Màn Hình': ['MONITOR', 'MANHINH']
     };
 
     for (const part of parts) {

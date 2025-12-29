@@ -13,6 +13,7 @@ export interface OrderRequest {
   userId: string;
   paymentMethod: string; // Must match backend enum name
   promoCode?: string | null;
+  addressId?: string | null;
   items: OrderItemRequest[];
 }
 
@@ -87,7 +88,7 @@ export class OrderService {
   private readonly API = `${environment.apiUrl}/api/orders`;
   private readonly USER_API_V1 = `${environment.apiUrl}/api/v1/user/orders`;
 
-  constructor(private http: HttpClient, private cookies: CookieService) {}
+  constructor(private http: HttpClient, private cookies: CookieService) { }
 
   createOrder(payload: OrderRequest): Observable<ResponseEnvelope<any>> {
     return this.http.post<ResponseEnvelope<any>>(`${this.API}/create`, payload, { headers: this.authHeaders() });

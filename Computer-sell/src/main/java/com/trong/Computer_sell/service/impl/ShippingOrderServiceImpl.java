@@ -4,17 +4,22 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.trong.Computer_sell.DTO.response.Shipping.ShippingOrderResponse;
+import com.trong.Computer_sell.model.AddressEntity;
 import com.trong.Computer_sell.model.OrderDetailEntity;
+import com.trong.Computer_sell.model.OrderEntity;
 import com.trong.Computer_sell.model.ShippingOrderEntity;
+import com.trong.Computer_sell.common.PaymentStatus;
 import com.trong.Computer_sell.repository.ShippingOrderRepository;
 import com.trong.Computer_sell.service.ShippingOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -27,11 +32,54 @@ public class ShippingOrderServiceImpl implements ShippingOrderService {
     private final ShippingOrderRepository shippingOrderRepository;
 
     /**
-     * 🔹 Lấy tất cả phiếu vận chuyển
+     * 🔹 Tạo phiếu vận chuyển khi đơn hàng chuyển sang SHIPPING
+     */
+    @Override
+    @Transactional
+    public ShippingOrderResponse createShippingOrder(OrderEntity order) {
+        log.info("Creating shipping order for order: {}", order.getId());
+
+        // Lấy thông tin người nhận từ user và địa chỉ giao hàng
+        String recipientName = order.getUser().getFirstName() + " " + order.getUser().getLastName();
+        String recipientPhone = order.getUser().getPhone() != null ? order.getUser().getPhone() : "";
+        
+        // Lấy địa chỉ giao hàng
+        String shippingAddress = "Chưa có địa chỉ";
+        if (order.getShippingAddress() != null) {
+            AddressEntity addr = order.getShippingAddress();
+            shippingAddress = String.format("%s, %s, %s, %s",
+                    addr.getApartmentNumber() != null ? addr.getApartmentNumber() : "",
+                    addr.getStreetNumber() != null ? addr.getStreetNumber() : "",
+                    addr.getWard() != null ? addr.getWard() : "",
+                    addr.getCity() != null ? addr.getCity() : "");
+        }
+
+        // Kiểm tra trạng thái thanh toán
+        boolean paymentCompleted = order.getPaymentStatus() == PaymentStatus.PAID 
+                || order.getPaymentStatus() == PaymentStatus.SUCCESS;
+
+        ShippingOrderEntity shippingOrder = ShippingOrderEntity.builder()
+                .order(order)
+                .recipientName(recipientName)
+                .recipientPhone(recipientPhone)
+                .shippingAddress(shippingAddress)
+                .paymentCompleted(paymentCompleted)
+                .totalAmount(order.getTotalAmount())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        ShippingOrderEntity saved = shippingOrderRepository.save(shippingOrder);
+        log.info("Shipping order created with id: {}", saved.getId());
+
+        return ShippingOrderResponse.fromEntity(saved);
+    }
+
+    /**
+     * 🔹 Lấy tất cả phiếu vận chuyển (sắp xếp theo thời gian mới nhất)
      */
     @Override
     public List<ShippingOrderResponse> getAllShippingOrders() {
-        List<ShippingOrderEntity> entities = shippingOrderRepository.findAll();
+        List<ShippingOrderEntity> entities = shippingOrderRepository.findAllOrderByCreatedAtDesc();
         if (entities.isEmpty()) {
             throw new RuntimeException("Hiện chưa có phiếu vận chuyển nào được tạo");
         }

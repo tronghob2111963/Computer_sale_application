@@ -1,5 +1,6 @@
 package com.trong.Computer_sell.DTO.response.User;
 
+import com.trong.Computer_sell.common.UserStatus;
 import lombok.*;
 
 import java.io.Serializable;
@@ -20,5 +21,6 @@ public class UserResponseDTO implements Serializable {
     private String lastName;
     private String gender;
     private LocalDate dateOfBirth;
+    private UserStatus status;
     private String phoneNumber;
 }

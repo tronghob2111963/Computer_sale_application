@@ -21,6 +21,8 @@ interface ProductSection {
   selectedTypeId?: string;
   products: any[];
   loading: boolean;
+  showAll: boolean;
+  totalProducts: number;
 }
 
 @Component({
@@ -132,6 +134,8 @@ export class HomeComponent implements OnInit {
         selectedTypeId: pt.id,
         products: [],
         loading: false,
+        showAll: false,
+        totalProducts: 0,
       } as ProductSection;
     });
 
@@ -150,10 +154,13 @@ export class HomeComponent implements OnInit {
   private loadSectionProducts(section: ProductSection): void {
     if (!section.selectedTypeId) return;
     section.loading = true;
-    this.productService.listProductsByProductType<any>(section.selectedTypeId, { page: 0, size: 10, sortBy: 'createdAt:desc' })
+    section.showAll = false;
+    // Load nhiều hơn để biết tổng số, nhưng chỉ hiển thị 10 ban đầu
+    this.productService.listProductsByProductType<any>(section.selectedTypeId, { page: 0, size: 100, sortBy: 'createdAt:desc' })
       .subscribe({
         next: (res: ResponseEnvelope<PageResponse<any>>) => {
           const items = res?.data?.items ?? [];
+          section.totalProducts = items.length;
           section.products = items.map((p: any) => ({
             ...p,
             displayImage: buildImageUrl(this.baseUrl, Array.isArray(p?.image) && p.image.length ? p.image[0] : undefined)
@@ -165,6 +172,21 @@ export class HomeComponent implements OnInit {
           section.loading = false;
         }
       });
+  }
+
+  getDisplayedProducts(section: ProductSection): any[] {
+    if (section.showAll) {
+      return section.products;
+    }
+    return section.products.slice(0, 10);
+  }
+
+  toggleShowAll(section: ProductSection): void {
+    section.showAll = !section.showAll;
+  }
+
+  hasMoreProducts(section: ProductSection): boolean {
+    return section.products.length > 10;
   }
 
   getSelectedTabLabel(section: ProductSection): string {

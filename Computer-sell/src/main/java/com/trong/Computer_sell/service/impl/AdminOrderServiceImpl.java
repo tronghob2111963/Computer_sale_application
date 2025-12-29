@@ -34,17 +34,17 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final NotificationService notificationService;
 
     // ================================
-    // 1. Lấy toàn bộ đơn hàng
+    // 1. Lấy toàn bộ đơn hàng (sắp xếp theo thời gian mới nhất)
     // ================================
     @Override
     public List<OrderResponse> getAllOrders() {
-        return orderRepository.findAll().stream()
+        return orderRepository.findAllOrderByCreatedAtDesc().stream()
                 .map(OrderResponse::fromEntity)
                 .toList();
     }
 
     // ================================
-    // 2. Lọc đơn hàng theo trạng thái hoặc thời gian
+    // 2. Lọc đơn hàng theo trạng thái hoặc thời gian (sắp xếp theo thời gian mới nhất)
     // ================================
     @Override
     public List<OrderResponse> filterOrders(OrderStatus status, LocalDateTime start, LocalDateTime end) {
@@ -55,7 +55,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         } else if (start != null && end != null) {
             orders = orderRepository.findByDateRange(start, end);
         } else {
-            orders = orderRepository.findAll();
+            orders = orderRepository.findAllOrderByCreatedAtDesc();
         }
 
         return orders.stream()
@@ -234,39 +234,57 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     //  5. Hàm hỗ trợ tạo phiếu vận chuyển khi giao hàng
     // ================================
     private void createShippingOrder(OrderEntity order) {
-        var user = order.getUser();
+        try {
+            var user = order.getUser();
 
-        // Tìm địa chỉ giao hàng chính (AddressType.SHIPPING hoặc mặc định)
-        AddressEntity address = user.getAddresses().stream()
-                .filter(a -> a.getAddressType() == AddressType.HOME)
-                .findFirst()
-                .orElseGet(() -> user.getAddresses().stream().findFirst().orElse(null));
+            // Tìm địa chỉ giao hàng chính (AddressType.HOME hoặc mặc định)
+            AddressEntity address = user.getAddresses().stream()
+                    .filter(a -> a.getAddressType() == AddressType.HOME)
+                    .findFirst()
+                    .orElseGet(() -> user.getAddresses().stream().findFirst().orElse(null));
 
-        if (address == null) {
-            throw new RuntimeException("User does not have a valid shipping address");
+            if (address == null) {
+                log.warn("User {} does not have a valid shipping address, creating shipping order with default address", user.getId());
+                // Tạo phiếu vận chuyển với địa chỉ mặc định
+                ShippingOrderEntity shipping = ShippingOrderEntity.builder()
+                        .order(order)
+                        .recipientName(user.getFirstName() + " " + user.getLastName())
+                        .recipientPhone(user.getPhone() != null ? user.getPhone() : "N/A")
+                        .shippingAddress("Chưa có địa chỉ - Vui lòng liên hệ khách hàng")
+                        .paymentCompleted(order.getPaymentStatus() == PaymentStatus.PAID)
+                        .totalAmount(order.getTotalAmount())
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                shippingOrderRepository.save(shipping);
+                log.info("Shipping order created (without address) for Order ID {}", order.getId());
+                return;
+            }
+
+            // Ghép địa chỉ đầy đủ
+            String fullAddress = String.join(", ",
+                    address.getApartmentNumber() != null ? address.getApartmentNumber() : "",
+                    address.getStreetNumber() != null ? address.getStreetNumber() : "",
+                    address.getWard() != null ? address.getWard() : "",
+                    address.getCity() != null ? address.getCity() : ""
+            ).replaceAll(",\\s*,", ",").replaceAll("^,\\s*|,\\s*$", "").trim();
+
+            // Tạo phiếu vận chuyển
+            ShippingOrderEntity shipping = ShippingOrderEntity.builder()
+                    .order(order)
+                    .recipientName(user.getFirstName() + " " + user.getLastName())
+                    .recipientPhone(user.getPhone() != null ? user.getPhone() : "N/A")
+                    .shippingAddress(fullAddress.isEmpty() ? "Chưa có địa chỉ" : fullAddress)
+                    .paymentCompleted(order.getPaymentStatus() == PaymentStatus.PAID)
+                    .totalAmount(order.getTotalAmount())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            shippingOrderRepository.save(shipping);
+            log.info("Shipping order created for Order ID {}", order.getId());
+        } catch (Exception e) {
+            log.error("Failed to create shipping order for Order ID {}: {}", order.getId(), e.getMessage());
+            // Không throw exception để không rollback transaction cập nhật trạng thái đơn hàng
         }
-
-        // Ghép địa chỉ đầy đủ
-        String fullAddress = String.join(", ",
-                address.getApartmentNumber() != null ? address.getApartmentNumber() : "",
-                address.getStreetNumber() != null ? address.getStreetNumber() : "",
-                address.getWard() != null ? address.getWard() : "",
-                address.getCity() != null ? address.getCity() : ""
-        ).replaceAll(",\\s*,", ",").trim();
-
-        // Tạo phiếu vận chuyển
-        ShippingOrderEntity shipping = ShippingOrderEntity.builder()
-                .order(order)
-                .recipientName(user.getFirstName() + " " + user.getLastName())
-                .recipientPhone(user.getPhone())
-                .shippingAddress(fullAddress)
-                .paymentCompleted(order.getPaymentStatus() == PaymentStatus.PAID)
-                .totalAmount(order.getTotalAmount())
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        shippingOrderRepository.save(shipping);
-        log.info("Shipping order created for Order ID {}", order.getId());
     }
 
     // ================================

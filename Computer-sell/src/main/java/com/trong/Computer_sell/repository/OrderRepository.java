@@ -23,14 +23,22 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     List<OrderEntity> findByUser_IdOrderByCreatedAtDesc(UUID userId);
 
     /**
-     * Lọc đơn hàng theo trạng thái (dành cho admin)
+     * Lọc đơn hàng theo trạng thái (dành cho admin) - sắp xếp theo thời gian mới nhất
      */
-    List<OrderEntity> findByStatus(OrderStatus status);
+    @Query("SELECT o FROM OrderEntity o WHERE o.status = :status ORDER BY o.createdAt DESC")
+    List<OrderEntity> findByStatus(@Param("status") OrderStatus status);
 
     /**
-     * Lọc đơn hàng theo trạng thái thanh toán
+     * Lọc đơn hàng theo trạng thái thanh toán - sắp xếp theo thời gian mới nhất
      */
-    List<OrderEntity> findByPaymentStatus(PaymentStatus paymentStatus);
+    @Query("SELECT o FROM OrderEntity o WHERE o.paymentStatus = :paymentStatus ORDER BY o.createdAt DESC")
+    List<OrderEntity> findByPaymentStatus(@Param("paymentStatus") PaymentStatus paymentStatus);
+
+    /**
+     * Lấy tất cả đơn hàng sắp xếp theo thời gian mới nhất
+     */
+    @Query("SELECT o FROM OrderEntity o ORDER BY o.createdAt DESC")
+    List<OrderEntity> findAllOrderByCreatedAtDesc();
 
     /**
      * Lấy đơn hàng có chi tiết sản phẩm (fetch join) — dùng khi hiển thị trang chi tiết đơn hàng

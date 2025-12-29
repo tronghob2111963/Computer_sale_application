@@ -7,23 +7,91 @@
   </div>
   <div *ngIf="error" class="text-red-600">{{ error }}</div>
 
-  <div *ngIf="cart && cart.items.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div *ngIf="checkoutItems.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- items -->
-    <div class="lg:col-span-2 bg-white shadow rounded overflow-hidden">
-      <div class="px-4 py-3 bg-gray-50 text-sm text-gray-600 flex justify-between">
-        <div>Sản phẩm</div>
-        <div>Tổng</div>
-      </div>
+    <div class="lg:col-span-2 space-y-4">
+      <!-- Address Section -->
+      <div class="bg-white shadow rounded overflow-hidden">
+        <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span class="font-medium text-gray-700">Địa chỉ giao hàng</span>
+          </div>
+          <button (click)="openAddressModal()" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            + Thêm địa chỉ mới
+          </button>
+        </div>
 
-      <div *ngFor="let it of cart.items" class="flex items-center justify-between px-4 py-4 border-t">
-        <div class="flex items-center gap-4">
-          <img [src]="it.productImg || '/placeholder.svg'" alt="img" class="w-14 h-14 object-cover rounded border" />
-          <div class="leading-tight">
-            <div class="font-medium">{{ it.productName }}</div>
-            <div class="text-sm text-gray-600">x{{ it.quantity }} · {{ it.price | number }} ₫</div>
+        <div class="p-4">
+          <!-- No address -->
+          <div *ngIf="addresses.length === 0" class="text-center py-6 text-gray-500">
+            <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <p>Bạn chưa có địa chỉ giao hàng</p>
+            <button (click)="openAddressModal()" class="mt-2 text-blue-600 hover:underline">Thêm địa chỉ ngay</button>
+          </div>
+
+          <!-- Address list -->
+          <div *ngIf="addresses.length > 0" class="space-y-3">
+            <div *ngFor="let addr of addresses" (click)="selectAddress(addr.id!)"
+              class="border rounded-lg p-3 cursor-pointer transition-all"
+              [ngClass]="{'border-blue-500 bg-blue-50': selectedAddressId === addr.id, 'border-gray-200 hover:border-gray-300': selectedAddressId !== addr.id}">
+              <div class="flex items-start justify-between">
+                <div class="flex items-start gap-3">
+                  <div class="mt-1">
+                    <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                      [ngClass]="{'border-blue-500': selectedAddressId === addr.id, 'border-gray-300': selectedAddressId !== addr.id}">
+                      <div *ngIf="selectedAddressId === addr.id" class="w-2 h-2 rounded-full bg-blue-500"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="inline-block px-2 py-0.5 text-xs rounded-full mb-1"
+                      [ngClass]="{'bg-blue-100 text-blue-700': addr.addressType === 'HOME', 'bg-purple-100 text-purple-700': addr.addressType !== 'HOME'}">
+                      {{ addr.addressType === 'HOME' ? '🏠 Nhà riêng' : '🏢 Văn phòng' }}
+                    </span>
+                    <p class="text-gray-800">{{ addr.apartmentNumber }}, {{ addr.streetNumber }}, {{ addr.ward }}, {{
+                      addr.city }}</p>
+                  </div>
+                </div>
+                <button (click)="openAddressModal(addr); $event.stopPropagation()"
+                  class="text-gray-400 hover:text-blue-600 p-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="font-semibold">{{ it.subtotal | number }} ₫</div>
+      </div>
+
+      <!-- Products Section -->
+      <div class="bg-white shadow rounded overflow-hidden">
+        <div class="px-4 py-3 bg-gray-50 text-sm text-gray-600 flex justify-between">
+          <div>Sản phẩm ({{ checkoutItems.length }} sản phẩm đã chọn)</div>
+          <div>Tổng</div>
+        </div>
+
+        <div *ngFor="let it of checkoutItems" class="flex items-center justify-between px-4 py-4 border-t">
+          <div class="flex items-center gap-4">
+            <img [src]="it.productImg || '/placeholder.svg'" alt="img" class="w-14 h-14 object-cover rounded border" />
+            <div class="leading-tight">
+              <div class="font-medium">{{ it.productName }}</div>
+              <div class="text-sm text-gray-600">x{{ it.quantity }} · {{ it.price | number }} ₫</div>
+            </div>
+          </div>
+          <div class="font-semibold">{{ it.subtotal | number }} ₫</div>
+        </div>
       </div>
     </div>
 
@@ -154,6 +222,61 @@
     <div class="px-4 py-3 rounded shadow text-white"
       [ngClass]="{ 'bg-green-600': toast.type==='success', 'bg-red-600': toast.type==='error' }">
       {{ toast.message }}
+    </div>
+  </div>
+
+  <!-- Address Modal -->
+  <div *ngIf="showAddressModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div class="p-4 border-b flex justify-between items-center">
+        <h3 class="text-lg font-semibold">{{ editingAddress ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới' }}</h3>
+        <button (click)="closeAddressModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Loại địa chỉ</label>
+          <select [(ngModel)]="addressForm.addressType"
+            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300">
+            <option value="HOME">Nhà riêng</option>
+            <option value="WORK">Văn phòng</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Số nhà/Căn hộ</label>
+          <input type="text" [(ngModel)]="addressForm.apartmentNumber" placeholder="VD: 123"
+            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Đường</label>
+          <input type="text" [(ngModel)]="addressForm.streetNumber" placeholder="VD: Nguyễn Văn Linh"
+            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Phường/Xã</label>
+          <input type="text" [(ngModel)]="addressForm.ward" placeholder="VD: An Khánh"
+            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Thành phố/Tỉnh</label>
+          <input type="text" [(ngModel)]="addressForm.city" placeholder="VD: Cần Thơ"
+            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button (click)="closeAddressModal()" class="flex-1 px-4 py-2 border rounded hover:bg-gray-50">
+            Hủy
+          </button>
+          <button (click)="saveAddress()" [disabled]="savingAddress"
+            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-60">
+            {{ savingAddress ? 'Đang lưu...' : 'Lưu địa chỉ' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

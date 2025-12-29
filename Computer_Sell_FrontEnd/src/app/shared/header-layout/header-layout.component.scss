@@ -46,3 +46,12 @@
     padding-left: 16px;
     padding-right: 16px;
 }
+
+/* Ensure dropdown is visible */
+header {
+    overflow: visible !important;
+}
+
+header .container {
+    overflow: visible !important;
+}

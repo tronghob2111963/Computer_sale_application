@@ -30,4 +30,9 @@ public class BuildSuggestRequest {
      * Ưu tiên máy êm/ mát
      */
     private Boolean preferQuiet;
+
+    /**
+     * Mô tả chi tiết yêu cầu của người dùng (VD: "Tôi muốn build PC chơi game AAA, stream, có RGB")
+     */
+    private String description;
 }

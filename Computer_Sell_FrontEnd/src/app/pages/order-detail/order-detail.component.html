@@ -28,6 +28,9 @@
           <button *ngIf="status === 'PENDING'" (click)="openCancel()" [disabled]="canceling" class="danger-btn">
             {{ canceling ? 'Đang hủy...' : 'Hủy đơn' }}
           </button>
+          <span *ngIf="status === 'CANCEL_REQUEST'" class="cancel-request-notice">
+            ⏳ Đang chờ admin xác nhận hủy đơn
+          </span>
         </div>
       </div>
 
