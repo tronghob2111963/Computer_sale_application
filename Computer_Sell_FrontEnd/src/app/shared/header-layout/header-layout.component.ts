@@ -116,6 +116,11 @@ export class HeaderLayoutComponent implements OnInit, OnDestroy {
     this.router.navigate(['/'], { queryParams: { categoryId: cat.id, categoryName: cat.name } });
   }
 
+  // Account dropdown helpers
+  isAccountDropdownOpen = false;
+  toggleAccountDropdown(): void { this.isAccountDropdownOpen = !this.isAccountDropdownOpen; }
+  closeAccountDropdown(): void { this.isAccountDropdownOpen = false; }
+
   private loadCategories(): void {
     this.categoryService.listCategories({ page: 0, size: 50, sortBy: 'name:asc' }).subscribe({
       next: (res) => this.categories = res?.data?.items ?? [],

@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { OrderService } from '../../services/order.service';
 import { PromotionService, PromotionResponse } from '../../services/promotion.service';
 import { PaymentService, VietQRPaymentResponse } from '../../services/payment.service';
+import { AddressService, AddressDTO } from '../../services/address.service';
 import { environment } from '../../enviroment';
 
 @Component({
@@ -43,11 +44,26 @@ export class CheckoutComponent implements OnInit {
   proofUploaded = false;
   currentOrderId: string | null = null;
 
+  // Address state
+  addresses: AddressDTO[] = [];
+  selectedAddressId: string | null = null;
+  showAddressModal = false;
+  addressForm: AddressDTO = {
+    apartmentNumber: '',
+    streetNumber: '',
+    ward: '',
+    city: '',
+    addressType: 'HOME'
+  };
+  savingAddress = false;
+  editingAddress: AddressDTO | null = null;
+
   constructor(
     private cartService: CartService,
     private orderService: OrderService,
     private promoService: PromotionService,
     private paymentService: PaymentService,
+    private addressService: AddressService,
     private auth: AuthService,
     private router: Router,
     private title: Title,
@@ -88,6 +104,101 @@ export class CheckoutComponent implements OnInit {
       },
       error: () => { this.error = 'Khong the tai gio hang'; this.loading = false; }
     });
+
+    // Load user addresses
+    this.loadAddresses(uid);
+  }
+
+  loadAddresses(userId: string): void {
+    this.addressService.getAddressesByUserId(userId).subscribe({
+      next: (res) => {
+        this.addresses = res?.data || [];
+        // Auto-select first address if available
+        if (this.addresses.length > 0 && !this.selectedAddressId) {
+          this.selectedAddressId = this.addresses[0].id || null;
+        }
+      },
+      error: (err) => {
+        console.error('Load addresses error:', err);
+      }
+    });
+  }
+
+  getSelectedAddress(): AddressDTO | null {
+    if (!this.selectedAddressId) return null;
+    return this.addresses.find(a => a.id === this.selectedAddressId) || null;
+  }
+
+  selectAddress(addressId: string): void {
+    this.selectedAddressId = addressId;
+  }
+
+  openAddressModal(address?: AddressDTO): void {
+    if (address) {
+      this.editingAddress = address;
+      this.addressForm = { ...address };
+    } else {
+      this.editingAddress = null;
+      this.addressForm = {
+        apartmentNumber: '',
+        streetNumber: '',
+        ward: '',
+        city: '',
+        addressType: 'HOME'
+      };
+    }
+    this.showAddressModal = true;
+  }
+
+  closeAddressModal(): void {
+    this.showAddressModal = false;
+    this.editingAddress = null;
+  }
+
+  saveAddress(): void {
+    const userId = this.auth.getUserIdSafe();
+    if (!userId) return;
+
+    this.savingAddress = true;
+    const payload = {
+      apartmentNumber: this.addressForm.apartmentNumber || '',
+      streetNumber: this.addressForm.streetNumber || '',
+      ward: this.addressForm.ward || '',
+      city: this.addressForm.city || '',
+      addressType: this.addressForm.addressType || 'HOME'
+    };
+
+    if (this.editingAddress?.id) {
+      this.addressService.updateAddress(userId, this.editingAddress.id, payload).subscribe({
+        next: () => {
+          this.toast = { show: true, type: 'success', message: 'Cập nhật địa chỉ thành công!' };
+          this.closeAddressModal();
+          this.savingAddress = false;
+          this.loadAddresses(userId);
+        },
+        error: (err) => {
+          this.toast = { show: true, type: 'error', message: err?.error?.message || 'Cập nhật địa chỉ thất bại' };
+          this.savingAddress = false;
+        }
+      });
+    } else {
+      this.addressService.createAddress(userId, payload).subscribe({
+        next: (res) => {
+          this.toast = { show: true, type: 'success', message: 'Thêm địa chỉ thành công!' };
+          this.closeAddressModal();
+          this.savingAddress = false;
+          this.loadAddresses(userId);
+          // Auto-select new address
+          if (res?.data?.id) {
+            this.selectedAddressId = res.data.id;
+          }
+        },
+        error: (err) => {
+          this.toast = { show: true, type: 'error', message: err?.error?.message || 'Thêm địa chỉ thất bại' };
+          this.savingAddress = false;
+        }
+      });
+    }
   }
 
   private toAbsoluteImage(path?: string): string | undefined {
@@ -127,11 +238,18 @@ export class CheckoutComponent implements OnInit {
     const userId = this.auth.getUserIdSafe();
     if (!userId) { this.router.navigate(['/login']); return; }
 
+    // Validate address
+    if (!this.selectedAddressId) {
+      this.toast = { show: true, type: 'error', message: 'Vui lòng chọn địa chỉ giao hàng' };
+      return;
+    }
+
     this.submitting = true;
     const payload = {
       userId,
       paymentMethod: this.paymentMethod,
       promoCode: this.promoCode?.trim() || null,
+      addressId: this.selectedAddressId,
       items: this.checkoutItems.map(it => ({ productId: it.productId, quantity: it.quantity }))
     };
 

@@ -1,17 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { UserService, UserProfile, UpdateProfilePayload, AddressDTO } from '../../services/user.service';
 import { UserAdminService } from '../../services/user-admin.service';
+import { AddressService, AddressRequest } from '../../services/address.service';
 
 @Component({
     selector: 'app-profile',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './profile.component.html',
-    styleUrls: ['./profile.component.scss']
+    styleUrls: ['./profile.component.scss'],
+    encapsulation: ViewEncapsulation.None
 })
 export class ProfileComponent implements OnInit {
     loading = true;
@@ -59,6 +61,7 @@ export class ProfileComponent implements OnInit {
         private authService: AuthService,
         private userService: UserService,
         private userAdminService: UserAdminService,
+        private addressService: AddressService,
         private router: Router
     ) { }
 
@@ -78,14 +81,20 @@ export class ProfileComponent implements OnInit {
 
         this.userAdminService.findById(userId).subscribe({
             next: (res) => {
+                console.log('Profile response:', res);
                 const data = res?.data || res;
                 this.profile = data;
                 this.addresses = data?.addresses || [];
+                console.log('Addresses loaded:', this.addresses);
                 this.resetEditForm();
                 this.loading = false;
+
+                // Nếu không có addresses trong response, thử load riêng
+                if (this.addresses.length === 0 && this.profile?.id) {
+                    this.loadAddresses();
+                }
             },
             error: (err) => {
-                // Nếu API find cũng lỗi, thử lấy thông tin từ auth
                 console.error('Load profile error:', err);
                 this.profile = {
                     id: userId,
@@ -94,6 +103,19 @@ export class ProfileComponent implements OnInit {
                 };
                 this.resetEditForm();
                 this.loading = false;
+            }
+        });
+    }
+
+    loadAddresses(): void {
+        if (!this.profile?.id) return;
+        this.addressService.getAddressesByUserId(this.profile.id).subscribe({
+            next: (res) => {
+                console.log('Addresses response:', res);
+                this.addresses = res?.data || res || [];
+            },
+            error: (err) => {
+                console.error('Load addresses error:', err);
             }
         });
     }
@@ -168,7 +190,10 @@ export class ProfileComponent implements OnInit {
 
 
     // Address methods
-    openAddressModal(address?: AddressDTO): void {
+    openAddressModal(event: Event, address?: AddressDTO): void {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('openAddressModal called', address);
         if (address) {
             this.editingAddress = address;
             this.addressForm = { ...address };
@@ -183,40 +208,59 @@ export class ProfileComponent implements OnInit {
             };
         }
         this.showAddressModal = true;
+        console.log('showAddressModal:', this.showAddressModal);
     }
 
     closeAddressModal(): void {
+        console.log('closeAddressModal called');
         this.showAddressModal = false;
         this.editingAddress = null;
     }
 
     saveAddress(): void {
-        if (!this.profile?.id) return;
+        if (!this.profile?.id) {
+            this.showToast('Không tìm thấy thông tin người dùng', 'error');
+            return;
+        }
         this.savingAddress = true;
 
+        const payload: AddressRequest = {
+            apartmentNumber: this.addressForm.apartmentNumber || '',
+            streetNumber: this.addressForm.streetNumber || '',
+            ward: this.addressForm.ward || '',
+            city: this.addressForm.city || '',
+            addressType: this.addressForm.addressType || 'HOME'
+        };
+
+        console.log('Saving address:', payload);
+
         if (this.editingAddress?.id) {
-            this.userService.updateAddress(this.profile.id, this.editingAddress.id, this.addressForm).subscribe({
-                next: () => {
+            this.addressService.updateAddress(this.profile.id, this.editingAddress.id, payload).subscribe({
+                next: (res) => {
+                    console.log('Update address response:', res);
                     this.showToast('Cập nhật địa chỉ thành công!', 'success');
                     this.closeAddressModal();
                     this.savingAddress = false;
                     this.loadProfile();
                 },
-                error: () => {
-                    this.showToast('Cập nhật địa chỉ thất bại', 'error');
+                error: (err) => {
+                    console.error('Update address error:', err);
+                    this.showToast(err?.error?.message || 'Cập nhật địa chỉ thất bại', 'error');
                     this.savingAddress = false;
                 }
             });
         } else {
-            this.userService.addAddress(this.profile.id, this.addressForm).subscribe({
-                next: () => {
+            this.addressService.createAddress(this.profile.id, payload).subscribe({
+                next: (res) => {
+                    console.log('Add address response:', res);
                     this.showToast('Thêm địa chỉ thành công!', 'success');
                     this.closeAddressModal();
                     this.savingAddress = false;
                     this.loadProfile();
                 },
-                error: () => {
-                    this.showToast('Thêm địa chỉ thất bại', 'error');
+                error: (err) => {
+                    console.error('Add address error:', err);
+                    this.showToast(err?.error?.message || 'Thêm địa chỉ thất bại', 'error');
                     this.savingAddress = false;
                 }
             });
@@ -227,7 +271,7 @@ export class ProfileComponent implements OnInit {
         if (!address.id || !this.profile?.id) return;
         if (!confirm('Bạn có chắc muốn xóa địa chỉ này?')) return;
 
-        this.userService.deleteAddress(this.profile.id, address.id).subscribe({
+        this.addressService.deleteAddress(this.profile.id, address.id).subscribe({
             next: () => {
                 this.showToast('Đã xóa địa chỉ', 'success');
                 this.loadProfile();

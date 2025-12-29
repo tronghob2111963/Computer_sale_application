@@ -137,12 +137,12 @@ export class OrdersComponent implements OnInit, OnDestroy {
   private toastTimer?: ReturnType<typeof setTimeout>;
 
   private readonly statusLabelMap: Record<string, string> = {
-    PENDING: 'Đang chờ duyệt',
+    PENDING: 'Chờ xác nhận',
     CONFIRMED: 'Đã xác nhận',
     SHIPPING: 'Đang vận chuyển',
     COMPLETED: 'Hoàn tất',
     CANCELED: 'Đã hủy',
-    CANCEL_REQUEST: 'Chờ hủy'
+    CANCEL_REQUEST: 'Đang chờ hủy'
   };
 
   private readonly statusToneMap: Record<string, Tone> = {
@@ -183,7 +183,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     private router: Router,
     private title: Title,
     private meta: Meta
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.title.setTitle('Trung tâm khách hàng - THComputer');

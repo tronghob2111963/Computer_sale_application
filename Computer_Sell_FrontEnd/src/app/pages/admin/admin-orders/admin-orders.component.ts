@@ -117,9 +117,9 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   };
 
   readonly confirmMessages: Partial<Record<OrderStatusType, string>> = {
-    CONFIRMED: 'Confirm this order after you have validated stock and customer information?',
-    SHIPPING: 'Move to SHIPPING when the parcel has been handed over to the carrier?',
-    COMPLETED: 'Mark as COMPLETED? All UNPAID payments will switch to SUCCESS and the order payment status becomes PAID automatically.'
+    CONFIRMED: 'Vui lòng xác nhận đơn hàng này sau khi đã kiểm tra thông tin hàng tồn kho và khách hàng?',
+    SHIPPING: 'Chuyển sang mục VẬN CHUYỂN khi bưu kiện đã được giao cho đơn vị vận chuyển?',
+    COMPLETED: 'Đánh dấu là ĐÃ HOÀN THÀNH? Tất cả các khoản thanh toán CHƯA THANH TOÁN sẽ chuyển sang THÀNH CÔNG và trạng thái thanh toán đơn hàng sẽ tự động trở thành ĐÃ THANH TOÁN.'
   };
 
   readonly statusBadgeClasses: Record<OrderStatusType, string> = {
@@ -235,16 +235,16 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
   stateGuardMessage(order: any): string {
     const key = this.normalizeStatus(order?.status);
     if (key === 'COMPLETED') {
-      return 'Order is completed and cannot change anymore.';
+      return 'Đơn hàng đã hoàn tất';
     }
     if (key === 'CANCELED') {
-      return 'Order was canceled and stays locked.';
+      return 'Đơn hàng đã bị hủy';
     }
     if (key === 'CANCEL_REQUEST') {
-      return 'Approve or reject the cancel request to finish the flow.';
+      return 'Đơn hàng đang chờ xử lý yêu cầu hủy';
     }
     if (!this.allowedNextStatuses(order).length) {
-      return 'No valid transition is available for this status.';
+      return 'Không có trạng thái tiếp theo nào được phép';
     }
     return '';
   }
@@ -292,8 +292,8 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
 
   confirmProcessCancel(order: any, approve: boolean): void {
     const message = approve
-      ? 'Approve this cancel request? Order will become CANCELED and payments remain untouched unless UNPAID.'
-      : 'Reject this cancel request and keep the current flow?';
+      ? 'Xác nhận yêu cầu hủy đơn hàng này? Đơn hàng sẽ trở thành ĐÃ HỦY và các khoản thanh toán sẽ không bị thay đổi trừ khi chưa thanh toán.'
+      : 'Từ chối yêu cầu hủy đơn hàng này và giữ nguyên quy trình hiện tại?';
     this.modal = {
       show: true,
       message,
@@ -316,9 +316,9 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.adminOrders.updateStatus(id, status).subscribe({
       next: () => {
         this.load();
-        this.showToast(`Order updated to ${status}.`, 'success');
+        this.showToast(`Đơn hàng đã được cập nhật sang ${status}.`, 'success');
       },
-      error: (e) => this.showToast(e?.error?.message || 'Update failed', 'error')
+      error: (e) => this.showToast(e?.error?.message || 'Cập nhật thất bại', 'error')
     });
   }
 
@@ -326,9 +326,9 @@ export class AdminOrdersComponent implements OnInit, OnDestroy {
     this.adminOrders.processCancel(id, approve).subscribe({
       next: () => {
         this.load();
-        this.showToast(approve ? 'Cancel request approved.' : 'Cancel request rejected.', 'success');
+        this.showToast(approve ? 'Yêu cầu hủy đã được xác nhận.' : 'Yêu cầu hủy đã bị từ chối.', 'success');
       },
-      error: (e) => this.showToast(e?.error?.message || 'Processing failed', 'error')
+      error: (e) => this.showToast(e?.error?.message || 'Xử lý thất bại', 'error')
     });
   }
 

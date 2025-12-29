@@ -40,6 +40,8 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final OrderCancelRequestRepository cancelRequestRepository;
     private final PaymentRepository paymentRepository;
+    private final AddressRepository addressRepository;
+    private final ShippingOrderRepository shippingOrderRepository;
     private final StockService stockService;
     private final NotificationService notificationService;
 
@@ -55,6 +57,14 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PENDING);
         order.setPaymentMethod(String.valueOf(PaymentMethod.valueOf(request.getPaymentMethod())));
         order.setPaymentStatus(PaymentStatus.UNPAID);
+
+        // Set shipping address if provided
+        if (request.getAddressId() != null) {
+            AddressEntity address = addressRepository.findById(request.getAddressId())
+                    .orElseThrow(() -> new RuntimeException("Address not found"));
+            order.setShippingAddress(address);
+        }
+
         orderRepository.save(order);
 
         BigDecimal total = BigDecimal.ZERO;
@@ -155,28 +165,44 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void requestCancelOrder(UUID orderId, String reason) {
+        log.info("Starting requestCancelOrder for orderId: {}, reason: {}", orderId, reason);
+        
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+
+        log.info("Found order with status: {}", order.getStatus());
 
         if (order.getStatus() != OrderStatus.PENDING) {
-            throw new RuntimeException("You can only request cancel when order is still PENDING");
+            throw new RuntimeException("You can only request cancel when order is still PENDING. Current status: " + order.getStatus());
         }
 
         order.setStatus(OrderStatus.CANCEL_REQUEST);
-        orderRepository.save(order);
+        OrderEntity savedOrder = orderRepository.saveAndFlush(order);
+        log.info("Order status updated to CANCEL_REQUEST. Saved order status: {}", savedOrder.getStatus());
 
         // Lưu yêu cầu hủy hàng
+        String finalReason = (reason != null && !reason.isBlank()) ? reason : "Không có lý do";
         OrderCancelRequestEntity cancelRequest = OrderCancelRequestEntity.builder()
                 .order(order)
-                .reason(reason)
+                .reason(finalReason)
+                .requestDate(LocalDateTime.now())
                 .processed(false)
                 .build();
 
-        cancelRequestRepository.save(cancelRequest);
+        OrderCancelRequestEntity savedCancelRequest = cancelRequestRepository.saveAndFlush(cancelRequest);
+        log.info("Cancel request saved with id: {}", savedCancelRequest.getId());
 
         // Gửi thông báo cho Admin về yêu cầu hủy đơn
-        String customerName = order.getUser().getFirstName() + " " + order.getUser().getLastName();
-        notificationService.notifyCancelRequest(orderId, customerName, reason != null ? reason : "Không có lý do");
+        try {
+            String customerName = order.getUser().getFirstName() + " " + order.getUser().getLastName();
+            notificationService.notifyCancelRequest(orderId, customerName, finalReason);
+            log.info("Notification sent to admin for cancel request");
+        } catch (Exception e) {
+            log.error("Failed to send notification: {}", e.getMessage());
+            // Don't throw - notification failure shouldn't rollback the cancel request
+        }
+        
+        log.info("requestCancelOrder completed successfully for orderId: {}", orderId);
     }
 
     @Override
@@ -204,7 +230,18 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(newStatus);
         orderRepository.save(order);
 
-        // 5. Nếu COMPLETED → cập nhật payment
+        // 5. Nếu chuyển sang SHIPPING → tạo phiếu vận chuyển
+        if (newStatus == OrderStatus.SHIPPING) {
+            try {
+                createShippingOrderForOrder(order);
+                log.info("Shipping order created for order {}", orderId);
+            } catch (Exception e) {
+                log.error("Failed to create shipping order for order {}: {}", orderId, e.getMessage());
+                // Don't throw - shipping order creation failure shouldn't rollback status update
+            }
+        }
+
+        // 6. Nếu COMPLETED → cập nhật payment
         if (newStatus == OrderStatus.COMPLETED) {
             List<PaymentEntity> payments = paymentRepository.findByOrder(order);
             for (PaymentEntity p : payments) {
@@ -217,7 +254,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.save(order);
         }
 
-        // 6. Gửi thông báo cho user về thay đổi trạng thái đơn hàng
+        // 7. Gửi thông báo cho user về thay đổi trạng thái đơn hàng
         try {
             if (order.getUser() != null) {
                 notificationService.notifyOrderStatusChanged(
@@ -297,6 +334,45 @@ public class OrderServiceImpl implements OrderService {
             case CANCEL_REQUEST -> List.of(OrderStatus.CANCELED, OrderStatus.CONFIRMED).contains(newStatus);
             default -> false;
         };
+    }
+
+    /**
+     * Tạo phiếu vận chuyển khi đơn hàng chuyển sang SHIPPING
+     */
+    private void createShippingOrderForOrder(OrderEntity order) {
+        log.info("Creating shipping order for order: {}", order.getId());
+
+        // Lấy thông tin người nhận từ user và địa chỉ giao hàng
+        String recipientName = order.getUser().getFirstName() + " " + order.getUser().getLastName();
+        String recipientPhone = order.getUser().getPhone() != null ? order.getUser().getPhone() : "";
+        
+        // Lấy địa chỉ giao hàng
+        String shippingAddress = "Chưa có địa chỉ";
+        if (order.getShippingAddress() != null) {
+            AddressEntity addr = order.getShippingAddress();
+            shippingAddress = String.format("%s, %s, %s, %s",
+                    addr.getApartmentNumber() != null ? addr.getApartmentNumber() : "",
+                    addr.getStreetNumber() != null ? addr.getStreetNumber() : "",
+                    addr.getWard() != null ? addr.getWard() : "",
+                    addr.getCity() != null ? addr.getCity() : "");
+        }
+
+        // Kiểm tra trạng thái thanh toán
+        boolean paymentCompleted = order.getPaymentStatus() == PaymentStatus.PAID 
+                || order.getPaymentStatus() == PaymentStatus.SUCCESS;
+
+        ShippingOrderEntity shippingOrder = ShippingOrderEntity.builder()
+                .order(order)
+                .recipientName(recipientName)
+                .recipientPhone(recipientPhone)
+                .shippingAddress(shippingAddress)
+                .paymentCompleted(paymentCompleted)
+                .totalAmount(order.getTotalAmount())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        ShippingOrderEntity saved = shippingOrderRepository.save(shippingOrder);
+        log.info("Shipping order created with id: {}", saved.getId());
     }
 }
 

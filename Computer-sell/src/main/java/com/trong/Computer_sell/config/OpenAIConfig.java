@@ -16,5 +16,5 @@ public class OpenAIConfig {
     private String baseUrl = "https://api.openai.com/v1";
     private int embeddingDimension = 1536;
     private int maxTokens = 2000;
-    private double temperature = 0.7;
+    private double temperature = 0.2;
 }

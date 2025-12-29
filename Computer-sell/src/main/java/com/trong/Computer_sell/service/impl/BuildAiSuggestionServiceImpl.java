@@ -63,10 +63,26 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
             // Parse response từ AI
             BuildSuggestResponse response = parseAiResponse(aiResponse, budget, request);
             
-            // Nếu AI trả về parts rỗng hoặc không có linh kiện, dùng fallback
-            if (response.getParts() == null || response.getParts().isEmpty()) {
-                log.warn("AI returned empty parts, falling back to rule-based");
+            // Nếu AI trả về null (profile sai), parts rỗng, hoặc không có linh kiện -> dùng fallback
+            if (response == null || response.getParts() == null || response.getParts().isEmpty()) {
+                log.warn("AI returned invalid/empty response, falling back to rule-based");
                 return fallbackSuggestion(request, budget, availableProducts);
+            }
+            
+            // FINAL VALIDATION: Đảm bảo profile luôn đúng trước khi trả về
+            String useCase = normalizeUseCase(request.getUseCase());
+            String resolution = request.getResolution() != null ? request.getResolution() : "1080p";
+            String correctedProfile = validateAndFixProfile(response.getProfile(), useCase, resolution);
+            if (!correctedProfile.equals(response.getProfile())) {
+                log.error("⛔⛔⛔ FINAL CHECK: Correcting profile from '{}' to '{}'", response.getProfile(), correctedProfile);
+                // Tạo response mới với profile đã sửa
+                response = BuildSuggestResponse.builder()
+                        .profile(correctedProfile)
+                        .budgetInput(response.getBudgetInput())
+                        .estimatedTotal(response.getEstimatedTotal())
+                        .note(response.getNote())
+                        .parts(response.getParts())
+                        .build();
             }
             
             return response;
@@ -146,68 +162,120 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
 
     private String buildSystemPrompt() {
         return """
-            Bạn là chuyên gia tư vấn build PC. Chọn linh kiện từ danh sách sản phẩm có sẵn.
+            Bạn là chuyên gia tư vấn build PC. CHỈ TRẢ VỀ JSON, KHÔNG TEXT KHÁC.
             
-            ⚠️⚠️⚠️ QUY TẮC NGÂN SÁCH - BẮT BUỘC TUÂN THỦ:
-            1. TỔNG GIÁ TẤT CẢ LINH KIỆN PHẢI <= NGÂN SÁCH
-            2. Nếu ngân sách quá thấp (< 10 triệu), chỉ gợi ý các linh kiện rẻ nhất hoặc trả về ít linh kiện hơn
-            3. Nếu không thể build PC trong ngân sách, ghi rõ trong note: "Ngân sách không đủ để build PC hoàn chỉnh"
-            4. KHÔNG BAO GIỜ gợi ý cấu hình vượt ngân sách
+             QUY TẮC TUYỆT ĐỐI:
             
-            QUY TẮC VỀ PROFILE:
-            - Nếu khách chọn "gaming" thì profile PHẢI chứa "Gaming"
-            - Nếu khách chọn "creator" thì profile PHẢI chứa "Creator" hoặc "Đồ họa"
-            - Nếu khách chọn "office" thì profile PHẢI chứa "Office" hoặc "Văn phòng"
-            - KHÔNG ĐƯỢC đổi profile khác với yêu cầu của khách
+            1. PROFILE PHẢI KHỚP VỚI MỤC ĐÍCH:
+               - useCase="gaming" → profile="Gaming 1080p" hoặc "Gaming 1440p" hoặc "Gaming 4K"
+               - useCase="creator" → profile="Creator" hoặc "Đồ họa"
+               - useCase="office" → profile="Office" hoặc "Văn phòng"
+              
             
-            NGUYÊN TẮC CHỌN LINH KIỆN:
-            - Gaming: GPU (~35%), CPU (~15%), Monitor (~15%)
-            - Creator: CPU (~20%), GPU (~25%), RAM (~12%)
-            - Office: CPU với iGPU (~20%), không cần GPU rời
+            2. NGÂN SÁCH:
+               - TỔNG GIÁ PHẢI TỪ 70%-100% NGÂN SÁCH
+               - KHÔNG ĐƯỢC VƯỢT QUÁ 100% NGÂN SÁCH
+               - VD: Ngân sách 20 triệu → Tổng giá 14-20 triệu (KHÔNG ĐƯỢC QUÁ 20 triệu)
             
-            LINH KIỆN: CPU, MAINBOARD, RAM, GPU, STORAGE, PSU, COOLER, CASE, MONITOR
+            3. PHÂN BỔ NGÂN SÁCH GAMING:
+               - GPU: 30-40% (QUAN TRỌNG NHẤT)
+               - CPU: 12-18%
+               - Monitor: 12-18%
+               - RAM: 8-12%
+               - Mainboard: 6-10%
+               - Storage: 5-8%
+               - PSU: 4-7%
+               - Case: 3-5%
+               - Cooler: 2-4%
+            
+            4. NGÔN NGỮ: Tất cả "note" và "reason" PHẢI BẰNG TIẾNG VIỆT
+            
+            5. LINH KIỆN BẮT BUỘC: CPU, MAINBOARD, RAM, GPU, STORAGE, PSU, COOLER, CASE, MONITOR
             
             JSON FORMAT:
-            {"profile":"Gaming 1080p","note":"Ghi chú","parts":[{"productType":"CPU","productId":"uuid","productName":"Tên","reason":"Lý do"}]}
+            {"profile":"Gaming 1080p","note":"Cấu hình gaming mạnh mẽ","parts":[{"productType":"CPU","productId":"uuid","productName":"Tên","reason":"Hiệu năng tốt cho gaming"}]}
             
-            CHỈ TRẢ VỀ JSON, KHÔNG TEXT KHÁC.
+            VÍ DỤ REASON ĐÚNG (TIẾNG VIỆT):
+            - "CPU mạnh mẽ, phù hợp cho gaming"
+            - "GPU hiệu năng cao, chơi game mượt mà"
+            - "RAM đủ lớn cho đa nhiệm"
+            
+            VÍ DỤ SAI (TIẾNG ANH):
+            - "Good for office work" 
+            - "Suitable for general use" 
             """;
     }
 
     private String buildUserPrompt(BuildSuggestRequest request, BigDecimal budget, Map<String, List<ProductInfo>> products) {
+        String useCase = normalizeUseCase(request.getUseCase());
+        String resolution = request.getResolution() != null ? request.getResolution() : "1080p";
+        
+        // Tính target price cho GPU (gaming) để AI biết cần chọn GPU mạnh
+        BigDecimal gpuTargetMin = budget.multiply(BigDecimal.valueOf(0.30));
+        BigDecimal gpuTargetMax = budget.multiply(BigDecimal.valueOf(0.40));
+        
         StringBuilder sb = new StringBuilder();
-        sb.append("NHU CẦU KHÁCH HÀNG:\n");
-        sb.append("- Mục đích sử dụng: ").append(normalizeUseCase(request.getUseCase())).append("\n");
-        sb.append("- Độ phân giải: ").append(request.getResolution() != null ? request.getResolution() : "1080p").append("\n");
-        sb.append("- Ngân sách: ").append(formatCurrency(budget)).append("\n");
-        if (StringUtils.hasText(request.getFormFactor())) {
-            sb.append("- Form factor: ").append(request.getFormFactor()).append("\n");
-        }
-        if (Boolean.TRUE.equals(request.getPreferQuiet())) {
-            sb.append("- Ưu tiên: Máy mát/êm\n");
-        }
-        if (StringUtils.hasText(request.getDescription())) {
-            sb.append("\nMÔ TẢ CHI TIẾT TỪ KHÁCH HÀNG:\n");
-            sb.append("\"").append(request.getDescription()).append("\"\n");
-            sb.append("(Hãy ưu tiên đáp ứng các yêu cầu cụ thể trong mô tả này)\n");
+        sb.append("═══════════════════════════════════════\n");
+        sb.append("⛔ THÔNG TIN BẮT BUỘC:\n");
+        sb.append("═══════════════════════════════════════\n");
+        sb.append("🎯 MỤC ĐÍCH: ").append(useCase.toUpperCase()).append("\n");
+        sb.append("📺 ĐỘ PHÂN GIẢI: ").append(resolution.toUpperCase()).append("\n");
+        sb.append("💰 NGÂN SÁCH: ").append(formatCurrency(budget)).append("\n");
+        
+        // Xác định profile bắt buộc
+        String requiredProfile;
+        if ("gaming".equals(useCase)) {
+            requiredProfile = "Gaming " + resolution;
+            sb.append("\n YÊU CẦU BẮT BUỘC:\n");
+            sb.append("- profile PHẢI LÀ: \"").append(requiredProfile).append("\"\n");
+            sb.append("- GPU giá từ ").append(formatCurrency(gpuTargetMin)).append(" đến ").append(formatCurrency(gpuTargetMax)).append("\n");
+            sb.append("- TỔNG GIÁ từ ").append(formatCurrency(budget.multiply(BigDecimal.valueOf(0.70)))).append(" đến ").append(formatCurrency(budget)).append("\n");
+            sb.append("- TỔNG GIÁ KHÔNG ĐƯỢC VƯỢT QUÁ ").append(formatCurrency(budget)).append("\n");
+            sb.append("- Tất cả 'note' và 'reason' PHẢI BẰNG TIẾNG VIỆT\n");
+            sb.append(" NGHIÊM CẤM: Không được trả về profile \"Office\" cho yêu cầu GAMING!\n");
+            sb.append(" LƯU Ý: Đây là build GAMING, KHÔNG PHẢI văn phòng!\n");
+        } else if ("creator".equals(useCase)) {
+            requiredProfile = "Creator";
+            sb.append("\nYÊU CẦU BẮT BUỘC:\n");
+            sb.append("- profile PHẢI LÀ: \"").append(requiredProfile).append("\"\n");
+            sb.append("- TỔNG GIÁ từ ").append(formatCurrency(budget.multiply(BigDecimal.valueOf(0.70)))).append(" đến ").append(formatCurrency(budget)).append("\n");
+            sb.append("- TỔNG GIÁ KHÔNG ĐƯỢC VƯỢT QUÁ ").append(formatCurrency(budget)).append("\n");
+            sb.append("- Tất cả 'note' và 'reason' PHẢI BẰNG TIẾNG VIỆT\n");
+        } else {
+            requiredProfile = "Office";
+            sb.append("\n YÊU CẦU BẮT BUỘC:\n");
+            sb.append("- profile PHẢI LÀ: \"").append(requiredProfile).append("\"\n");
+            sb.append("- TỔNG GIÁ KHÔNG ĐƯỢC VƯỢT QUÁ ").append(formatCurrency(budget)).append("\n");
+            sb.append("- Tất cả 'note' và 'reason' PHẢI BẰNG TIẾNG VIỆT\n");
         }
         
-        sb.append("\nDANH SÁCH SẢN PHẨM CÓ SẴN:\n");
+        if (StringUtils.hasText(request.getFormFactor())) {
+            sb.append("- FORM FACTOR: ").append(request.getFormFactor().toUpperCase()).append("\n");
+        }
+        if (Boolean.TRUE.equals(request.getPreferQuiet())) {
+            sb.append("- ƯU TIÊN: Máy mát/êm\n");
+        }
+        if (StringUtils.hasText(request.getDescription())) {
+            sb.append("\n MÔ TẢ THÊM: \"").append(request.getDescription()).append("\"\n");
+        }
+        
+        sb.append("\n═══════════════════════════════════════\n");
+        sb.append(" DANH SÁCH SẢN PHẨM (CHỈ CHỌN TỪ ĐÂY):\n");
+        sb.append("═══════════════════════════════════════\n");
+        
         for (Map.Entry<String, List<ProductInfo>> entry : products.entrySet()) {
-            sb.append("\n[").append(entry.getKey()).append("]\n");
+            sb.append("\n【").append(entry.getKey()).append("】\n");
             for (ProductInfo p : entry.getValue()) {
-                sb.append("- ID: ").append(p.id)
+                sb.append("• ID: ").append(p.id)
                   .append(" | ").append(p.name)
-                  .append(" | ").append(p.brand)
-                  .append(" | Giá: ").append(formatCurrency(p.price))
-                  .append(" | Còn: ").append(p.stock).append(" sp\n");
+                  .append(" | ").append(formatCurrency(p.price))
+                  .append(" | Còn: ").append(p.stock).append("\n");
             }
         }
         
-        sb.append("\n⚠️⚠️⚠️ BẮT BUỘC:\n");
-        sb.append("1. TỔNG GIÁ <= ").append(formatCurrency(budget)).append(" (KHÔNG ĐƯỢC VƯỢT!)\n");
-        sb.append("2. Profile PHẢI là \"").append(normalizeUseCase(request.getUseCase()).toUpperCase()).append("\" (không đổi sang loại khác)\n");
-        sb.append("3. Nếu ngân sách quá thấp, ghi note: \"Ngân sách không đủ\" và chọn ít linh kiện hơn\n");
+        sb.append("\n═══════════════════════════════════════\n");
+        sb.append(" NHẮC LẠI: profile=\"").append(requiredProfile).append("\", TỔNG GIÁ <= ").append(formatCurrency(budget)).append("\n");
+        
         return sb.toString();
     }
 
@@ -219,6 +287,22 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
             
             String profile = (String) responseMap.getOrDefault("profile", "Custom Build");
             String note = (String) responseMap.getOrDefault("note", "");
+            
+            // VALIDATION: Đảm bảo profile khớp với useCase
+            String useCase = normalizeUseCase(request.getUseCase());
+            String resolution = request.getResolution() != null ? request.getResolution() : "1080p";
+            String originalProfile = profile;
+            profile = validateAndFixProfile(profile, useCase, resolution);
+            
+            // Log nếu profile bị sửa (AI trả về sai)
+            if (!originalProfile.equalsIgnoreCase(profile)) {
+                log.error("AI returned INCORRECT profile '{}' for useCase '{}'. Corrected to '{}'",
+                    originalProfile, useCase, profile);
+                // Vẫn dùng kết quả AI nhưng với profile đã sửa
+            }
+            
+            // Validate và sửa note nếu không khớp với useCase
+            note = validateAndFixNote(note, useCase);
             
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> partsRaw = (List<Map<String, Object>>) responseMap.get("parts");
@@ -236,14 +320,20 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
                         ProductEntity product = productRepository.findById(productId).orElse(null);
                         
                         if (product != null) {
+                            String productType = (String) partMap.get("productType");
+                            String reason = (String) partMap.getOrDefault("reason", "AI gợi ý");
+                            
+                            // Validate và sửa reason nếu không khớp với useCase
+                            reason = validateAndFixReason(reason, useCase, productType);
+                            
                             SuggestedPartDTO part = SuggestedPartDTO.builder()
-                                    .productType((String) partMap.get("productType"))
+                                    .productType(productType)
                                     .productId(productId)
                                     .productName(product.getName())
                                     .brand(product.getBrandId() != null ? product.getBrandId().getName() : null)
                                     .price(product.getPrice())
                                     .stock(product.getStock())
-                                    .reason((String) partMap.getOrDefault("reason", "AI gợi ý"))
+                                    .reason(reason)
                                     .build();
                             parts.add(part);
                             if (product.getPrice() != null) {
@@ -254,6 +344,21 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
                         log.warn("Invalid product ID from AI: {}", productIdStr);
                     }
                 }
+            }
+            
+            // Kiểm tra tổng giá có hợp lý không (ít nhất 50% ngân sách cho gaming/creator)
+            if (("gaming".equals(useCase) || "creator".equals(useCase)) && 
+                estimatedTotal.compareTo(budget.multiply(BigDecimal.valueOf(0.50))) < 0) {
+                log.warn("AI selected parts with total {} which is too low for budget {}. Using fallback.", 
+                    estimatedTotal, budget);
+                return null; // Trigger fallback
+            }
+            
+            // Kiểm tra tổng giá không vượt quá ngân sách
+            if (estimatedTotal.compareTo(budget) > 0) {
+                log.warn("AI selected parts with total {} exceeds budget {}. Using fallback.", 
+                    estimatedTotal, budget);
+                return null; // Trigger fallback
             }
             
             return BuildSuggestResponse.builder()
@@ -268,6 +373,169 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
             log.error("Failed to parse AI response: {}", e.getMessage());
             throw new RuntimeException("Cannot parse AI response", e);
         }
+    }
+    
+    /**
+     * Validate và sửa profile nếu AI trả về sai
+     */
+    private String validateAndFixProfile(String aiProfile, String useCase, String resolution) {
+        String profileLower = aiProfile.toLowerCase();
+        
+        if ("gaming".equals(useCase)) {
+            // Nếu AI trả về Office/Văn phòng cho gaming request -> sửa lại
+            if (profileLower.contains("office") || profileLower.contains("văn phòng") || profileLower.contains("van phong")) {
+                log.error("⛔ CRITICAL ERROR: AI returned WRONG profile '{}' for GAMING request! Fixing to Gaming {}", aiProfile, resolution);
+                return "Gaming " + resolution;
+            }
+            // Nếu không chứa "gaming" -> thêm vào
+            if (!profileLower.contains("gaming")) {
+                log.warn("AI profile '{}' doesn't contain 'gaming', fixing to Gaming {}", aiProfile, resolution);
+                return "Gaming " + resolution;
+            }
+        } else if ("creator".equals(useCase)) {
+            if (!profileLower.contains("creator") && !profileLower.contains("đồ họa") && !profileLower.contains("do hoa")) {
+                log.error("⛔ CRITICAL ERROR: AI returned WRONG profile '{}' for CREATOR request! Fixing to Creator", aiProfile);
+                return "Creator";
+            }
+        } else if ("office".equals(useCase)) {
+            if (profileLower.contains("gaming") || profileLower.contains("creator")) {
+                log.error("⛔ CRITICAL ERROR: AI returned WRONG profile '{}' for OFFICE request! Fixing to Office", aiProfile);
+                return "Office";
+            }
+        }
+        
+        return aiProfile;
+    }
+    
+    /**
+     * Validate và sửa reason của từng part nếu AI trả về sai useCase
+     */
+    private String validateAndFixReason(String reason, String useCase, String productType) {
+        if (reason == null || reason.isEmpty()) {
+            return getDefaultReason(useCase, productType);
+        }
+        
+        String reasonLower = reason.toLowerCase();
+        
+        if ("gaming".equals(useCase)) {
+            // Nếu reason chứa "văn phòng", "office", "học tập" cho gaming request -> sửa lại
+            if (reasonLower.contains("văn phòng") || reasonLower.contains("van phong") || 
+                reasonLower.contains("office") || reasonLower.contains("học tập") || 
+                reasonLower.contains("hoc tap") || reasonLower.contains("general use")) {
+                log.warn("⛔ Fixing WRONG reason '{}' for GAMING {} to gaming-appropriate reason", reason, productType);
+                return getGamingReason(productType);
+            }
+        } else if ("creator".equals(useCase)) {
+            // Nếu reason chứa "gaming" hoặc "văn phòng" cho creator request -> sửa lại
+            if (reasonLower.contains("gaming") || reasonLower.contains("văn phòng") || reasonLower.contains("office")) {
+                log.warn("⛔ Fixing WRONG reason '{}' for CREATOR {} to creator-appropriate reason", reason, productType);
+                return getCreatorReason(productType);
+            }
+        } else if ("office".equals(useCase)) {
+            // Nếu reason chứa "gaming" cho office request -> sửa lại
+            if (reasonLower.contains("gaming") || reasonLower.contains("game")) {
+                log.warn("⛔ Fixing WRONG reason '{}' for OFFICE {} to office-appropriate reason", reason, productType);
+                return getOfficeReason(productType);
+            }
+        }
+        
+        return reason;
+    }
+    
+    private String getDefaultReason(String useCase, String productType) {
+        return switch (useCase) {
+            case "gaming" -> getGamingReason(productType);
+            case "creator" -> getCreatorReason(productType);
+            default -> getOfficeReason(productType);
+        };
+    }
+    
+    private String getGamingReason(String productType) {
+        if (productType == null) return "Phù hợp cho gaming";
+        return switch (productType.toUpperCase()) {
+            case "CPU" -> "CPU mạnh mẽ, phù hợp cho gaming và đa nhiệm";
+            case "GPU" -> "GPU hiệu năng cao, chơi game mượt mà";
+            case "RAM" -> "RAM đủ lớn cho gaming và chạy nhiều ứng dụng";
+            case "MAINBOARD" -> "Mainboard chất lượng, hỗ trợ WiFi và nhiều cổng kết nối";
+            case "STORAGE" -> "Tốc độ đọc/ghi nhanh, giảm thời gian load game";
+            case "PSU" -> "Nguồn ổn định, đủ công suất cho cấu hình gaming";
+            case "COOLER" -> "Tản nhiệt hiệu quả, giữ nhiệt độ ổn định khi gaming";
+            case "CASE" -> "Case thoáng khí, thiết kế gaming đẹp mắt";
+            case "MONITOR" -> "Màn hình tần số quét cao, phù hợp cho gaming";
+            default -> "Phù hợp cho cấu hình gaming";
+        };
+    }
+    
+    private String getCreatorReason(String productType) {
+        if (productType == null) return "Phù hợp cho đồ họa/render";
+        return switch (productType.toUpperCase()) {
+            case "CPU" -> "CPU nhiều nhân, mạnh mẽ cho render và xử lý video";
+            case "GPU" -> "GPU VRAM cao, tăng tốc render và xử lý đồ họa";
+            case "RAM" -> "RAM dung lượng lớn cho đa nhiệm và xử lý file nặng";
+            case "MAINBOARD" -> "Mainboard ổn định, hỗ trợ nhiều khe RAM";
+            case "STORAGE" -> "SSD tốc độ cao, giảm thời gian export/render";
+            case "PSU" -> "Nguồn ổn định cho workstation";
+            case "COOLER" -> "Tản nhiệt tốt cho CPU chạy render lâu dài";
+            case "CASE" -> "Case thoáng khí, phù hợp workstation";
+            case "MONITOR" -> "Màn hình màu chuẩn, phù hợp cho thiết kế đồ họa";
+            default -> "Phù hợp cho công việc sáng tạo nội dung";
+        };
+    }
+    
+    private String getOfficeReason(String productType) {
+        if (productType == null) return "Phù hợp cho văn phòng";
+        return switch (productType.toUpperCase()) {
+            case "CPU" -> "CPU tiết kiệm điện, đủ mạnh cho công việc văn phòng";
+            case "GPU" -> "GPU tích hợp đủ dùng cho văn phòng";
+            case "RAM" -> "RAM đủ cho đa nhiệm văn phòng";
+            case "MAINBOARD" -> "Mainboard ổn định, tiết kiệm điện";
+            case "STORAGE" -> "SSD tốc độ tốt, khởi động nhanh";
+            case "PSU" -> "Nguồn tiết kiệm điện, ổn định";
+            case "COOLER" -> "Tản nhiệt êm ái cho môi trường văn phòng";
+            case "CASE" -> "Case nhỏ gọn, phù hợp văn phòng";
+            case "MONITOR" -> "Màn hình rõ nét, bảo vệ mắt";
+            default -> "Phù hợp cho công việc văn phòng";
+        };
+    }
+    
+    /**
+     * Validate và sửa note nếu AI trả về sai useCase
+     */
+    private String validateAndFixNote(String note, String useCase) {
+        if (note == null || note.isEmpty()) {
+            return getDefaultNote(useCase);
+        }
+        
+        String noteLower = note.toLowerCase();
+        
+        if ("gaming".equals(useCase)) {
+            // Nếu note chứa "văn phòng", "office" cho gaming request -> sửa lại
+            if (noteLower.contains("văn phòng") || noteLower.contains("van phong") || 
+                noteLower.contains("office") || noteLower.contains("học tập")) {
+                log.warn("⛔ Fixing WRONG note '{}' for GAMING to gaming-appropriate note", note);
+                return "Cấu hình phù hợp cho gaming, chơi game mượt mà";
+            }
+        } else if ("creator".equals(useCase)) {
+            if (noteLower.contains("gaming") || noteLower.contains("văn phòng") || noteLower.contains("office")) {
+                log.warn("⛔ Fixing WRONG note '{}' for CREATOR to creator-appropriate note", note);
+                return "Cấu hình phù hợp cho đồ họa, render và sáng tạo nội dung";
+            }
+        } else if ("office".equals(useCase)) {
+            if (noteLower.contains("gaming") || noteLower.contains("game")) {
+                log.warn("⛔ Fixing WRONG note '{}' for OFFICE to office-appropriate note", note);
+                return "Cấu hình phù hợp cho công việc văn phòng và học tập";
+            }
+        }
+        
+        return note;
+    }
+    
+    private String getDefaultNote(String useCase) {
+        return switch (useCase) {
+            case "gaming" -> "Cấu hình phù hợp cho gaming, chơi game mượt mà";
+            case "creator" -> "Cấu hình phù hợp cho đồ họa, render và sáng tạo nội dung";
+            default -> "Cấu hình phù hợp cho công việc văn phòng và học tập";
+        };
     }
 
     private String extractJson(String text) {
@@ -286,6 +554,7 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
         Profile profile = resolveProfile(request);
         List<SuggestedPartDTO> parts = new ArrayList<>();
         BigDecimal estimatedTotal = BigDecimal.ZERO;
+        BigDecimal remainingBudget = budget;
         
         // Tính tổng giá sản phẩm rẻ nhất của mỗi loại
         BigDecimal minTotalPrice = BigDecimal.ZERO;
@@ -304,7 +573,11 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
                 "⚠️ Ngân sách " + formatCurrency(budget) + " không đủ để build PC hoàn chỉnh (tối thiểu cần " + formatCurrency(minTotalPrice) + "). Đây là cấu hình rẻ nhất có thể: " : 
                 "";
 
-        for (Map.Entry<String, BigDecimal> entry : profile.partShares.entrySet()) {
+        // Sắp xếp parts theo thứ tự ưu tiên (GPU trước cho gaming)
+        List<Map.Entry<String, BigDecimal>> sortedParts = new ArrayList<>(profile.partShares.entrySet());
+        sortedParts.sort((a, b) -> b.getValue().compareTo(a.getValue())); // Sắp xếp giảm dần theo share
+
+        for (Map.Entry<String, BigDecimal> entry : sortedParts) {
             String typeName = entry.getKey();
             BigDecimal share = entry.getValue();
             if (share == null || share.compareTo(BigDecimal.ZERO) <= 0) continue;
@@ -322,12 +595,25 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
                             .orElse(candidates.get(0));
                     reason = "Sản phẩm rẻ nhất trong danh mục";
                 } else {
-                    // Ngân sách đủ -> chọn theo tỷ lệ phân bổ
+                    // Ngân sách đủ -> chọn sản phẩm tốt nhất trong khoảng target
                     BigDecimal targetPrice = budget.multiply(share).setScale(0, RoundingMode.HALF_UP);
-                    chosen = candidates.stream()
-                            .min(Comparator.comparing(p -> p.price.subtract(targetPrice).abs()))
-                            .orElse(candidates.get(0));
-                    reason = "Phù hợp với mức ngân sách ~" + formatCurrency(targetPrice);
+                    BigDecimal maxAllowed = targetPrice.multiply(BigDecimal.valueOf(1.2)); // Cho phép vượt 20%
+                    
+                    // Ưu tiên sản phẩm đắt nhất trong khoảng cho phép (để có hiệu năng tốt nhất)
+                    Optional<ProductInfo> bestInRange = candidates.stream()
+                            .filter(p -> p.price.compareTo(maxAllowed) <= 0)
+                            .max(Comparator.comparing(p -> p.price));
+                    
+                    if (bestInRange.isPresent()) {
+                        chosen = bestInRange.get();
+                        reason = "Hiệu năng tốt nhất trong ngân sách ~" + formatCurrency(targetPrice);
+                    } else {
+                        // Không có sản phẩm nào trong khoảng -> chọn rẻ nhất
+                        chosen = candidates.stream()
+                                .min(Comparator.comparing(p -> p.price))
+                                .orElse(candidates.get(0));
+                        reason = "Sản phẩm phù hợp ngân sách";
+                    }
                 }
                 
                 SuggestedPartDTO part = SuggestedPartDTO.builder()
@@ -341,6 +627,7 @@ public class BuildAiSuggestionServiceImpl implements BuildAiSuggestionService {
                         .build();
                 parts.add(part);
                 estimatedTotal = estimatedTotal.add(chosen.price);
+                remainingBudget = remainingBudget.subtract(chosen.price);
             }
         }
 

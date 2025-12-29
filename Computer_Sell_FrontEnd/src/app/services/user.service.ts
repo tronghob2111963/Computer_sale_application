@@ -74,6 +74,10 @@ export class UserService {
         return this.http.delete<any>(`${this.API}/user/${userId}/address/${addressId}`, { headers: this.authHeaders() });
     }
 
+    getAddresses(userId: string): Observable<any> {
+        return this.http.get<any>(`${this.API}/user/${userId}/addresses`, { headers: this.authHeaders() });
+    }
+
     private authHeaders(): HttpHeaders {
         const token = this.cookies.get('accessToken');
         if (token && token !== 'undefined' && token !== 'null' && token.trim() !== '') {

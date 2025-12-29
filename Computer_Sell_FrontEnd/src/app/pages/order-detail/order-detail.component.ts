@@ -181,11 +181,18 @@ export class OrderDetailComponent implements OnInit {
   }
 
   get customerAddress(): string {
-    return this.order?.shippingAddress
-      || this.order?.address
+    // Check if shippingAddress is an object with fullAddress
+    if (this.order?.shippingAddress) {
+      if (typeof this.order.shippingAddress === 'object') {
+        return this.order.shippingAddress.fullAddress
+          || `${this.order.shippingAddress.apartmentNumber || ''}, ${this.order.shippingAddress.streetNumber || ''}, ${this.order.shippingAddress.ward || ''}, ${this.order.shippingAddress.city || ''}`;
+      }
+      return this.order.shippingAddress;
+    }
+    return this.order?.address
       || this.order?.User_address
       || this.order?.user?.address
-      || 'Chua cap nhat';
+      || 'Chưa cập nhật';
   }
 
   get customerNote(): string {

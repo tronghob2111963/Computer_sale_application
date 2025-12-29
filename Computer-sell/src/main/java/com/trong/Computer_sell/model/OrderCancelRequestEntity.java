@@ -22,12 +22,14 @@ public class OrderCancelRequestEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false, length = 500)
     private String reason; // Lý do hủy đơn
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime requestDate = LocalDateTime.now();
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean processed = false; // Đã duyệt hay chưa
 }

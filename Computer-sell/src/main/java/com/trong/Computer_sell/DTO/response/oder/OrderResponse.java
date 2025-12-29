@@ -1,6 +1,7 @@
 package com.trong.Computer_sell.DTO.response.oder;
 
 import com.trong.Computer_sell.DTO.response.payment.PaymentResponse;
+import com.trong.Computer_sell.model.AddressEntity;
 import com.trong.Computer_sell.model.OrderEntity;
 import com.trong.Computer_sell.model.OrderPromotionEntity;
 import com.trong.Computer_sell.model.PromotionEntity;
@@ -44,6 +45,24 @@ public class OrderResponse {
     //  (optional) Nếu muốn trả mã giảm
     private String promoCode;
 
+    // Shipping address
+    private ShippingAddressDTO shippingAddress;
+
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ShippingAddressDTO {
+        private UUID id;
+        private String apartmentNumber;
+        private String streetNumber;
+        private String ward;
+        private String city;
+        private String addressType;
+        private String fullAddress;
+    }
+
     public static OrderResponse fromEntity(OrderEntity entity) {
 
         // Lấy mã giảm giá (nếu có)
@@ -61,6 +80,26 @@ public class OrderResponse {
                 : entity.getOrderPromotions().stream()
                 .map(OrderPromotionEntity::getDiscountAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Build shipping address DTO
+        ShippingAddressDTO addressDTO = null;
+        if (entity.getShippingAddress() != null) {
+            AddressEntity addr = entity.getShippingAddress();
+            String fullAddress = String.format("%s, %s, %s, %s",
+                    addr.getApartmentNumber() != null ? addr.getApartmentNumber() : "",
+                    addr.getStreetNumber() != null ? addr.getStreetNumber() : "",
+                    addr.getWard() != null ? addr.getWard() : "",
+                    addr.getCity() != null ? addr.getCity() : "");
+            addressDTO = ShippingAddressDTO.builder()
+                    .id(addr.getId())
+                    .apartmentNumber(addr.getApartmentNumber())
+                    .streetNumber(addr.getStreetNumber())
+                    .ward(addr.getWard())
+                    .city(addr.getCity())
+                    .addressType(addr.getAddressType() != null ? addr.getAddressType().name() : "HOME")
+                    .fullAddress(fullAddress)
+                    .build();
+        }
 
         return OrderResponse.builder()
                 .id(entity.getId())
@@ -91,6 +130,9 @@ public class OrderResponse {
 
                 // Mã khuyến mãi
                 .promoCode(promoCode)
+
+                // Địa chỉ giao hàng
+                .shippingAddress(addressDTO)
 
                 .build();
     }

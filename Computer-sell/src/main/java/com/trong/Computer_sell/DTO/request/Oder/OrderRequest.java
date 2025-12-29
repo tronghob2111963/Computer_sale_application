@@ -12,5 +12,6 @@ public class OrderRequest {
     private UUID userId;
     private String paymentMethod;
     private String promoCode;
+    private UUID addressId;
     private List<OrderDetailRequest> items;
 }

@@ -7,6 +7,11 @@ import com.trong.Computer_sell.DTO.request.user.UserRequestDTO;
 import com.trong.Computer_sell.DTO.request.user.UserUpdateRequestDTO;
 import com.trong.Computer_sell.DTO.response.common.ResponseData;
 import com.trong.Computer_sell.DTO.response.common.ResponseError;
+import com.trong.Computer_sell.common.AddressType;
+import com.trong.Computer_sell.model.AddressEntity;
+import com.trong.Computer_sell.model.UserEntity;
+import com.trong.Computer_sell.repository.AddressRepository;
+import com.trong.Computer_sell.repository.UserRepository;
 import com.trong.Computer_sell.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +38,8 @@ public class UserController {
 
 
     private final UserService userService;
+    private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
 
 
     @Operation(summary = "list user" , description = "List of User")
@@ -158,6 +165,134 @@ public class UserController {
 
             return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User saved successfully",userService.saveUser(user));
         } catch (Exception e) {
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    // ================================
+    // ADDRESS MANAGEMENT APIs
+    // ================================
+
+    @Operation(summary = "Add address", description = "Add new address for user")
+    @PostMapping("/{userId}/address")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff', 'User')")
+    public ResponseData<Object> addAddress(@PathVariable UUID userId, @RequestBody Map<String, String> addressData) {
+        try {
+            log.info("Adding address for user: {}", userId);
+            UserEntity user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            AddressEntity address = new AddressEntity();
+            address.setUser(user);
+            address.setApartmentNumber(addressData.get("apartmentNumber"));
+            address.setStreetNumber(addressData.get("streetNumber"));
+            address.setWard(addressData.get("ward"));
+            address.setCity(addressData.get("city"));
+            address.setAddressType(AddressType.valueOf(addressData.getOrDefault("addressType", "HOME")));
+
+            AddressEntity saved = addressRepository.save(address);
+            log.info("Address added successfully for user: {}", userId);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("id", saved.getId());
+            result.put("apartmentNumber", saved.getApartmentNumber());
+            result.put("streetNumber", saved.getStreetNumber());
+            result.put("ward", saved.getWard());
+            result.put("city", saved.getCity());
+            result.put("addressType", saved.getAddressType().name());
+
+            return new ResponseData<>(HttpStatus.CREATED.value(), "Address added successfully", result);
+        } catch (Exception e) {
+            log.error("Error adding address: {}", e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Update address", description = "Update existing address")
+    @PutMapping("/{userId}/address/{addressId}")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff', 'User')")
+    public ResponseData<Object> updateAddress(@PathVariable UUID userId, @PathVariable UUID addressId, @RequestBody Map<String, String> addressData) {
+        try {
+            log.info("Updating address {} for user: {}", addressId, userId);
+            AddressEntity address = addressRepository.findById(addressId)
+                    .orElseThrow(() -> new RuntimeException("Address not found"));
+
+            if (!address.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Address does not belong to this user");
+            }
+
+            if (addressData.containsKey("apartmentNumber")) {
+                address.setApartmentNumber(addressData.get("apartmentNumber"));
+            }
+            if (addressData.containsKey("streetNumber")) {
+                address.setStreetNumber(addressData.get("streetNumber"));
+            }
+            if (addressData.containsKey("ward")) {
+                address.setWard(addressData.get("ward"));
+            }
+            if (addressData.containsKey("city")) {
+                address.setCity(addressData.get("city"));
+            }
+            if (addressData.containsKey("addressType")) {
+                address.setAddressType(AddressType.valueOf(addressData.get("addressType")));
+            }
+
+            addressRepository.save(address);
+            log.info("Address updated successfully");
+
+            return new ResponseData<>(HttpStatus.OK.value(), "Address updated successfully");
+        } catch (Exception e) {
+            log.error("Error updating address: {}", e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Delete address", description = "Delete address by id")
+    @DeleteMapping("/{userId}/address/{addressId}")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff', 'User')")
+    public ResponseData<Object> deleteAddress(@PathVariable UUID userId, @PathVariable UUID addressId) {
+        try {
+            log.info("Deleting address {} for user: {}", addressId, userId);
+            AddressEntity address = addressRepository.findById(addressId)
+                    .orElseThrow(() -> new RuntimeException("Address not found"));
+
+            if (!address.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Address does not belong to this user");
+            }
+
+            addressRepository.delete(address);
+            log.info("Address deleted successfully");
+
+            return new ResponseData<>(HttpStatus.OK.value(), "Address deleted successfully");
+        } catch (Exception e) {
+            log.error("Error deleting address: {}", e.getMessage());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get user addresses", description = "Get all addresses of a user")
+    @GetMapping("/{userId}/addresses")
+    @PreAuthorize("hasAnyAuthority('SysAdmin','Admin', 'Staff', 'User')")
+    public ResponseData<Object> getUserAddresses(@PathVariable UUID userId) {
+        try {
+            log.info("Getting addresses for user: {}", userId);
+            UserEntity user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            List<Map<String, Object>> addresses = user.getAddresses().stream().map(addr -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", addr.getId());
+                map.put("apartmentNumber", addr.getApartmentNumber());
+                map.put("streetNumber", addr.getStreetNumber());
+                map.put("ward", addr.getWard());
+                map.put("city", addr.getCity());
+                map.put("addressType", addr.getAddressType() != null ? addr.getAddressType().name() : "HOME");
+                return map;
+            }).toList();
+
+            return new ResponseData<>(HttpStatus.OK.value(), "Addresses retrieved successfully", addresses);
+        } catch (Exception e) {
+            log.error("Error getting addresses: {}", e.getMessage());
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
     }

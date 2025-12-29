@@ -6,8 +6,7 @@
       <div class="h-64 rounded-3xl bg-white/60"></div>
     </div>
 
-    <div
-      *ngIf="error"
+    <div *ngIf="error"
       class="bg-rose-50 border border-rose-100 text-rose-700 px-4 py-3 rounded-2xl flex items-center justify-between gap-4">
       <span>{{ error }}</span>
       <button type="button" class="text-sm font-semibold hover:text-rose-900" (click)="reloadData()">Thử lại</button>
@@ -16,15 +15,15 @@
     <div class="grid lg:grid-cols-[280px,1fr] gap-6 items-start" *ngIf="!dashboardLoading">
       <aside class="space-y-6" *ngIf="dashboard?.profile as profile">
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex gap-4">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-400 text-white font-semibold text-xl flex items-center justify-center">
+          <div
+            class="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-400 text-white font-semibold text-xl flex items-center justify-center">
             {{ profile.avatarText }}
           </div>
           <div class="space-y-1">
             <div class="text-lg font-semibold text-slate-900">{{ profile.fullName }}</div>
             <div class="text-sm text-slate-500">{{ profile.phoneMasked }}</div>
             <div class="flex flex-wrap gap-2 pt-2">
-              <span
-                class="px-2.5 py-1 bg-rose-50 text-rose-600 text-xs font-medium rounded-full"
+              <span class="px-2.5 py-1 bg-rose-50 text-rose-600 text-xs font-medium rounded-full"
                 *ngFor="let badge of profile.badges">
                 {{ badge }}
               </span>
@@ -33,10 +32,8 @@
         </div>
 
         <nav class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-1" *ngIf="sidebarItems.length">
-          <button
-            class="w-full flex gap-3 items-center px-3 py-3 rounded-xl text-left transition hover:bg-slate-50"
-            *ngFor="let item of sidebarItems"
-            [class.bg-slate-100]="activeSection === item.key"
+          <button class="w-full flex gap-3 items-center px-3 py-3 rounded-xl text-left transition hover:bg-slate-50"
+            *ngFor="let item of sidebarItems" [class.bg-slate-100]="activeSection === item.key"
             (click)="scrollTo(item.key)">
             <div class="text-lg">{{ item.icon }}</div>
             <div>
@@ -87,11 +84,9 @@
         </section>
 
         <section *ngIf="shortcutItems.length" class="flex flex-wrap gap-3">
-          <button
-            type="button"
+          <button type="button"
             class="px-4 py-2 rounded-full bg-white text-slate-700 border border-slate-200 hover:border-slate-400 flex items-center gap-2"
-            *ngFor="let item of shortcutItems"
-            (click)="scrollTo(item.key)">
+            *ngFor="let item of shortcutItems" (click)="scrollTo(item.key)">
             <span>{{ item.icon }}</span>
             <span class="text-sm font-medium">{{ item.label }}</span>
           </button>
@@ -151,48 +146,24 @@
                   </p>
                 </div>
                 <div class="flex flex-col items-end gap-2">
-                  <span class="text-xs px-3 py-1 rounded-full font-medium" [ngClass]="toneClasses[order.paymentStatusTone]">
+                  <span class="text-xs px-3 py-1 rounded-full font-medium"
+                    [ngClass]="toneClasses[order.paymentStatusTone]">
                     {{ order.paymentStatusLabel }}
                   </span>
-                  <span
-                    *ngIf="order.promoCode"
+                  <span *ngIf="order.promoCode"
                     class="text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">
                     Promo: {{ order.promoCode }}
                   </span>
                 </div>
               </div>
 
-              <div class="mt-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  (click)="payCash(order.id)"
-                  [disabled]="paying[order.id]"
-                  class="px-4 py-2 text-sm font-semibold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60">
-                  {{ paying[order.id] ? 'Đang xử lý...' : 'Xác nhận tiền mặt' }}
-                </button>
-                <button
-                  type="button"
-                  *ngFor="let option of onlineOptions"
-                  (click)="startOnlinePayment(order.id, option.key)"
-                  class="px-4 py-2 text-sm font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-400"
-                  [title]="option.helper">
-                  {{ option.label }}
-                </button>
-                <button
-                  type="button"
-                  *ngIf="order.cancellable"
-                  (click)="openCancelModal(order.id)"
-                  class="px-4 py-2 text-sm font-semibold rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50">
-                  Yêu cầu hủy
-                </button>
+              <div class="mt-4 space-y-3">
               </div>
 
               <div class="mt-4 border-t border-slate-200 pt-4">
                 <div class="text-xs uppercase text-slate-500 tracking-wide mb-2">Bản ghi thanh toán</div>
                 <div class="flex flex-wrap gap-2">
-                  <span
-                    class="px-3 py-1 text-xs rounded-full font-medium"
-                    *ngFor="let payment of order.payments"
+                  <span class="px-3 py-1 text-xs rounded-full font-medium" *ngFor="let payment of order.payments"
                     [ngClass]="toneSoftClasses[payment.tone]">
                     {{ payment.methodLabel }} · {{ payment.statusLabel }}
                   </span>
@@ -215,13 +186,15 @@
               Chưa có đơn hàng nào. Mua sắm ngay để nhận ưu đãi nhé!
             </div>
             <div class="space-y-4" *ngIf="data.recentOrders?.length">
-              <article class="border border-slate-100 rounded-2xl p-4 hover:border-slate-200 transition" *ngFor="let card of data.recentOrders">
+              <article class="border border-slate-100 rounded-2xl p-4 hover:border-slate-200 transition"
+                *ngFor="let card of data.recentOrders">
                 <div class="flex items-center justify-between gap-3">
                   <div>
                     <p class="text-sm font-semibold text-slate-900">{{ card.code }}</p>
                     <p class="text-xs text-slate-500">{{ card.orderDate | date:'dd/MM/yyyy HH:mm' }}</p>
                   </div>
-                  <span class="text-xs px-3 py-1 rounded-full font-medium" [ngClass]="toneClasses[card.statusTone || 'info']">
+                  <span class="text-xs px-3 py-1 rounded-full font-medium"
+                    [ngClass]="toneClasses[card.statusTone || 'info']">
                     {{ card.statusLabel }}
                   </span>
                 </div>
@@ -231,10 +204,7 @@
                   <div class="text-base font-semibold text-slate-900">{{ card.totalAmount | number:'1.0-0' }} ₫</div>
                   <div class="flex items-center gap-3 text-sm font-semibold">
                     <a [routerLink]="['/order', card.id]" class="text-sky-600 hover:text-sky-700">Chi tiết</a>
-                    <button
-                      *ngIf="card.cancellable"
-                      type="button"
-                      (click)="openCancelModal(card.id)"
+                    <button *ngIf="card.cancellable" type="button" (click)="openCancelModal(card.id)"
                       class="text-rose-500 hover:text-rose-600">
                       Hủy
                     </button>
@@ -256,7 +226,8 @@
               Chưa có ưu đãi khả dụng. Theo dõi thêm khuyến mãi tại trang chủ nhé!
             </div>
             <div class="space-y-4" *ngIf="data.offers?.length">
-              <article class="border border-slate-100 rounded-2xl p-4 flex items-center justify-between gap-4" *ngFor="let offer of data.offers">
+              <article class="border border-slate-100 rounded-2xl p-4 flex items-center justify-between gap-4"
+                *ngFor="let offer of data.offers">
                 <div>
                   <p class="text-sm font-semibold text-slate-900">{{ offer.title }}</p>
                   <p class="text-xs text-slate-500">{{ offer.highlight }}</p>
@@ -265,11 +236,13 @@
                   </p>
                 </div>
                 <div class="text-right">
-                  <div class="text-sm font-semibold text-violet-700 bg-violet-50 px-3 py-1 rounded-full inline-flex items-center gap-2">
+                  <div
+                    class="text-sm font-semibold text-violet-700 bg-violet-50 px-3 py-1 rounded-full inline-flex items-center gap-2">
                     {{ offer.code }}
                     <span class="text-[10px] uppercase text-violet-500">Sao chép</span>
                   </div>
-                  <p class="text-[11px] text-slate-500 mt-1">{{ offer.description || 'Áp dụng tại bước thanh toán' }}</p>
+                  <p class="text-[11px] text-slate-500 mt-1">{{ offer.description || 'Áp dụng tại bước thanh toán' }}
+                  </p>
                 </div>
               </article>
             </div>
@@ -290,8 +263,7 @@
 
           <div *ngIf="!ordersLoading && !orderCards.length" class="text-center text-slate-500 py-8">
             <p>Chưa có đơn hàng nào.</p>
-            <a
-              routerLink="/"
+            <a routerLink="/"
               class="inline-flex items-center justify-center px-5 py-2 mt-4 rounded-full bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700">
               Mua sắm ngay
             </a>
@@ -324,12 +296,12 @@
                     </span>
                   </td>
                   <td class="py-4 px-4 align-top space-y-2">
-                    <span class="text-xs px-3 py-1 rounded-full font-medium" [ngClass]="toneClasses[order.paymentStatusTone]">
+                    <span class="text-xs px-3 py-1 rounded-full font-medium"
+                      [ngClass]="toneClasses[order.paymentStatusTone]">
                       {{ order.paymentStatusLabel }}
                     </span>
                     <div class="flex flex-wrap gap-1">
-                      <span
-                        class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
+                      <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
                         *ngFor="let payment of order.payments">
                         {{ payment.methodLabel }}
                       </span>
@@ -340,15 +312,11 @@
                   </td>
                   <td class="py-4 pl-4 text-right align-top">
                     <div class="flex flex-wrap justify-end gap-2">
-                      <a
-                        [routerLink]="['/order', order.id]"
+                      <a [routerLink]="['/order', order.id]"
                         class="px-3 py-1.5 text-sm font-semibold text-sky-600 hover:text-sky-700">
                         Chi tiết
                       </a>
-                      <button
-                        type="button"
-                        *ngIf="order.cancellable"
-                        (click)="openCancelModal(order.id)"
+                      <button type="button" *ngIf="order.cancellable" (click)="openCancelModal(order.id)"
                         class="px-3 py-1.5 text-sm font-semibold text-rose-500 hover:text-rose-600">
                         Hủy đơn
                       </button>
@@ -364,7 +332,8 @@
   </div>
 </div>
 
-<div *ngIf="cancelModal.show" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+<div *ngIf="cancelModal.show"
+  class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center px-4">
   <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4">
     <div class="flex items-center justify-between">
       <h3 class="text-xl font-semibold text-slate-900">Gửi yêu cầu hủy đơn</h3>
@@ -373,9 +342,7 @@
     <p class="text-sm text-slate-600">
       Đơn hàng sẽ chuyển sang trạng thái chờ duyệt hủy. Vui lòng nêu lý do để chúng tôi hỗ trợ nhanh hơn.
     </p>
-    <textarea
-      rows="4"
-      [(ngModel)]="cancelModal.reason"
+    <textarea rows="4" [(ngModel)]="cancelModal.reason"
       class="w-full border border-slate-200 rounded-2xl p-3 focus:outline-none focus:ring-2 focus:ring-sky-200"
       placeholder="Ví dụ: Đặt nhầm sản phẩm, thay đổi kế hoạch..."></textarea>
     <div class="flex justify-end gap-3 pt-2">
